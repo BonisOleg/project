@@ -1,0 +1,57 @@
+<footer class="site-footer">
+  <div class="container site-footer__inner">
+    <div class="site-footer__grid">
+      <div class="site-footer__brand">
+        <div class="site-footer__title">Oyra</div>
+        <p class="site-footer__contacts">
+          <a href="tel:{{ site_settings.phone }}">{{ site_settings.phone }}</a>
+          <a href="mailto:{{ site_settings.email }}">{{ site_settings.email }}</a>
+        </p>
+      </div>
+      <div>
+        <div class="site-footer__heading">Інформація</div>
+        <div class="site-footer__links">
+          <a href="{% url 'pages:static' slug='delivery' %}">Доставка</a>
+          <a href="{% url 'pages:static' slug='payment' %}">Оплата</a>
+          <a href="{% url 'pages:static' slug='returns' %}">Повернення</a>
+          <a href="{% url 'pages:static' slug='about' %}">Про нас</a>
+          <a href="{% url 'pages:static' slug='offer' %}">Договір</a>
+        </div>
+      </div>
+      <div>
+        <div class="site-footer__heading">Інше</div>
+        <div class="site-footer__links">
+          <a href="{% url 'accounts:cabinet' %}">Кабінет</a>
+          <a href="{% url 'blog:list' %}">Новини</a>
+          <a href="{% url 'pages:faq' %}">FAQ</a>
+          <a href="{% url 'pages:static' slug='schedule' %}">Графік</a>
+        </div>
+      </div>
+      <div>
+        <div class="site-footer__heading">Ми в мережі</div>
+        <div class="site-footer__links">
+          {% if site_settings.facebook_url %}<a href="{{ site_settings.facebook_url }}" rel="noopener">Facebook</a>{% endif %}
+          {% if site_settings.youtube_url %}<a href="{{ site_settings.youtube_url }}" rel="noopener">YouTube</a>{% endif %}
+          {% if site_settings.instagram_url %}<a href="{{ site_settings.instagram_url }}" rel="noopener">Instagram</a>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="newsletter reveal">
+      <div class="newsletter__copy">
+        <div class="newsletter__title">Знижка {{ site_settings.newsletter_discount }}% за підписку</div>
+      </div>
+      <form class="newsletter__form" action="{% url 'pages:newsletter' %}" method="post">
+        {% csrf_token %}
+        <input class="field__input" type="email" name="email" placeholder="Ваш email" required>
+        <button class="btn btn--primary" type="submit">Підписатись</button>
+      </form>
+    </div>
+
+    <div class="site-footer__bottom">
+      © {% now "Y" %} Oyra
+      <a href="{% url 'pages:static' slug='privacy' %}">Конфіденційність</a>
+      <a href="{% url 'pages:static' slug='cookies' %}">Cookies</a>
+    </div>
+  </div>
+</footer>

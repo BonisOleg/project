@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container" style="padding:var(--sp-8) 0 calc(var(--sp-8) + var(--bottom-nav-h))">
+  <header style="margin-bottom:var(--sp-6)">
+    <h1 class="section__title">Обране</h1>
+    <p style="margin-top:var(--sp-3);font-size:var(--fs-sm);color:var(--c-text-secondary)">
+      Товари зберігаються у браузері. <a href="{% url 'accounts:login' %}?next={% url 'accounts:wishlist' %}">Увійдіть</a>, щоб синхронізувати з акаунтом.
+    </p>
+  </header>
+
+  <div class="product-grid">
+    {% for product in products %}
+      {% include 'partials/product_card.html' with list_mode=True %}
+    {% empty %}
+    <div style="grid-column:1/-1;padding:var(--sp-8);text-align:center;border:1px dashed var(--c-border);border-radius:var(--r-lg)">
+      <p style="color:var(--c-text-secondary);margin-bottom:var(--sp-4)">У обраному поки нічого немає.</p>
+      <a href="{% url 'catalog:list' %}" class="btn btn--primary">Переглянути каталог</a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% if hero_slides %}
+<div class="hero-carousel" data-hero-carousel>
+  <div class="hero-carousel__slides" aria-live="polite">
+    {% for slide in hero_slides %}
+    <div class="hero-carousel__slide{% if forloop.first %} is-active{% endif %}" data-hero-carousel-slide>
+      <a href="{{ slide.link_url }}" class="hero-carousel__link" tabindex="-1">
+        <img src="{{ slide.image_url }}" alt="{{ slide.alt }}" width="1920" height="1080" {% if forloop.first %}loading="eager" fetchpriority="high"{% else %}loading="lazy"{% endif %} decoding="async">
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if hero_slides|length > 1 %}
+  <div class="hero-carousel__controls">
+    <button type="button" class="hero-carousel__btn hero-carousel__btn--prev" data-hero-carousel-prev aria-label="Попереднє зображення">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" class="hero-carousel__btn hero-carousel__btn--next" data-hero-carousel-next aria-label="Наступне зображення">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+
+  <div class="hero-carousel__dots" role="tablist" aria-label="Слайди hero">
+    {% for slide in hero_slides %}
+    <button type="button" class="hero-carousel__dot{% if forloop.first %} is-active{% endif %}" data-hero-carousel-dot aria-label="Слайд {{ forloop.counter }}" {% if forloop.first %}aria-selected="true"{% else %}aria-selected="false"{% endif %}></button>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}

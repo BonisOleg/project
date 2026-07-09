@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static ui_tags %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/cabinet.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container cabinet-page">
+  <header class="cabinet-page__header">
+    <p class="cabinet-page__eyebrow">Особистий кабінет</p>
+    <h1 class="cabinet-page__title">Вітаємо{% if user.first_name %}, {{ user.first_name }}{% endif %}</h1>
+  </header>
+
+  <div class="cabinet-layout">
+    {% include 'accounts/_cabinet_nav.html' %}
+
+    <section class="cabinet-panel">
+      <h2 class="cabinet-panel__title">Мої замовлення</h2>
+      {% for order in orders %}
+      <article class="cabinet-order">
+        <div class="cabinet-order__row">
+          <span class="cabinet-order__number">{{ order.order_number }}</span>
+          <span class="cabinet-order__status">{{ order.get_status_display }}</span>
+        </div>
+        <div class="cabinet-order__row">
+          <time class="cabinet-order__meta">{{ order.created_at|date:"d.m.Y H:i" }}</time>
+          <span class="cabinet-order__total">{{ order.total|format_price }}</span>
+        </div>
+      </article>
+      {% empty %}
+      <div class="cabinet-empty">
+        <p class="cabinet-empty__text">Замовлень поки немає. Перегляньте каталог і зробіть першу покупку.</p>
+        <a href="{% url 'catalog:list' %}" class="btn btn--primary">До каталогу</a>
+      </div>
+      {% endfor %}
+    </section>
+  </div>
+</div>
+{% endblock %}

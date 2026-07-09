@@ -1,0 +1,50 @@
+{% load ui_tags %}
+<div id="cart-lines" class="cart-items">
+{% if lines %}
+  {% for line in lines %}
+  <article class="cart-item">
+    <a href="{{ line.product.get_absolute_url }}" class="cart-item__media">
+      {% if line.product.main_image %}
+      <img src="{{ line.product.main_image.image.url }}" alt="{{ line.product.name }}" width="100" height="100" loading="lazy">
+      {% else %}
+      <span class="cart-item__media--empty">Oyra</span>
+      {% endif %}
+    </a>
+    <div class="cart-item__body">
+      <h2 class="cart-item__name">
+        <a href="{{ line.product.get_absolute_url }}">{{ line.product.name }}</a>
+      </h2>
+      <p class="cart-item__sku">Артикул: {{ line.product.sku }}</p>
+      <p class="cart-item__unit">{{ line.product.price|format_price }} / шт</p>
+      <div class="cart-item__footer">
+        <form action="{% url 'cart:update' line.product.pk %}" method="post" hx-post="{% url 'cart:update' line.product.pk %}" hx-target="#cart-lines" hx-swap="outerHTML">
+          {% csrf_token %}
+          <div class="qty-control">
+            <button type="submit" name="quantity" value="{{ line.quantity|add:'-1' }}" aria-label="Зменшити">−</button>
+            <input type="text" value="{{ line.quantity }}" readonly aria-label="Кількість">
+            <button type="submit" name="quantity" value="{{ line.quantity|add:'1' }}" aria-label="Збільшити">+</button>
+          </div>
+        </form>
+        <span class="cart-item__total">{{ line.line_total|format_price }}</span>
+      </div>
+    </div>
+    <form action="{% url 'cart:remove' line.product.pk %}" method="post" hx-post="{% url 'cart:remove' line.product.pk %}" hx-target="#cart-lines" hx-swap="outerHTML">
+      {% csrf_token %}
+      <button type="submit" class="cart-item__remove" aria-label="Видалити">✕</button>
+    </form>
+  </article>
+  {% endfor %}
+{% else %}
+  <div class="cart-empty">
+    <div class="cart-empty__icon" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    </div>
+    <p class="cart-empty__title">Кошик порожній</p>
+    <p class="cart-empty__text">Додайте товари з каталогу — вони зʼявляться тут</p>
+    <a href="{% url 'catalog:list' %}" class="btn btn--primary">Переглянути каталог</a>
+  </div>
+{% endif %}
+</div>
+{% if request.htmx %}
+{% include 'cart/_cart_summary.html' with oob=True %}
+{% endif %}

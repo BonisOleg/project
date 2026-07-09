@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/cabinet.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container cabinet-page">
+  <header class="cabinet-page__header">
+    <p class="cabinet-page__eyebrow">Особистий кабінет</p>
+    <h1 class="cabinet-page__title">Обране</h1>
+  </header>
+
+  <div class="cabinet-layout">
+    {% include 'accounts/_cabinet_nav.html' %}
+
+    <section class="cabinet-panel">
+      <h2 class="cabinet-panel__title">Список бажань</h2>
+      <div class="product-grid">
+        {% for product in products %}
+          {% include 'partials/product_card.html' with list_mode=True %}
+        {% empty %}
+        <div class="cabinet-empty">
+          <p class="cabinet-empty__text">У вас в обраному нічого немає.</p>
+          <a href="{% url 'catalog:list' %}" class="btn btn--primary">Переглянути каталог</a>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

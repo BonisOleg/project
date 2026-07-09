@@ -1,0 +1,6 @@
+<nav class="cabinet-nav" aria-label="Кабінет">
+  <a href="{% url 'accounts:cabinet' %}" class="cabinet-nav__link{% if cabinet_section == 'orders' %} is-active{% endif %}">Замовлення</a>
+  <a href="{% url 'accounts:profile' %}" class="cabinet-nav__link{% if cabinet_section == 'profile' %} is-active{% endif %}">Профіль</a>
+  <a href="{% url 'accounts:wishlist' %}" class="cabinet-nav__link{% if cabinet_section == 'wishlist' %} is-active{% endif %}">Обране</a>
+  <a href="{% url 'accounts:logout' %}" class="cabinet-nav__link cabinet-nav__link--logout">Вихід</a>
+</nav>

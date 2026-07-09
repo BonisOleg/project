@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/cabinet.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container cabinet-page">
+  <header class="cabinet-page__header">
+    <p class="cabinet-page__eyebrow">Особистий кабінет</p>
+    <h1 class="cabinet-page__title">Профіль</h1>
+  </header>
+
+  <div class="cabinet-layout">
+    {% include 'accounts/_cabinet_nav.html' %}
+
+    <section class="cabinet-panel cabinet-panel--narrow">
+      <h2 class="cabinet-panel__title">Особисті дані</h2>
+      <form method="post" class="cabinet-form">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="field">
+          <label class="field__label">{{ field.label }}</label>
+          {{ field }}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn--primary">Зберегти</button>
+      </form>
+    </section>
+  </div>
+</div>
+{% endblock %}

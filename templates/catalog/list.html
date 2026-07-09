@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/catalog.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container catalog-page">
+  <nav class="breadcrumbs">
+    {% for crumb in breadcrumbs %}
+      {% if crumb.url %}<a href="{{ crumb.url }}">{{ crumb.title }}</a> / {% else %}<span>{{ crumb.title }}</span>{% endif %}
+    {% endfor %}
+  </nav>
+
+  <div class="catalog-page-header">
+    <h1 class="catalog-page-title">{{ page_title }}</h1>
+    <div class="catalog-view-toggle">
+      <a href="?view=grid" class="btn btn--sm btn--secondary{% if view_mode != 'list' %} is-active{% endif %}">Сітка</a>
+      <a href="?view=list" class="btn btn--sm btn--secondary{% if view_mode == 'list' %} is-active{% endif %}">Список</a>
+    </div>
+  </div>
+
+  {% if category and category.children.exists %}
+  <div class="category-pills category-pills--spaced reveal">
+    {% for sub in category.children.all %}
+    <a href="{{ sub.get_absolute_url }}" class="category-pill"><span>{{ sub.name }}</span></a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="catalog-body">
+    <aside class="catalog-filters reveal">
+      <div class="catalog-filters__title">Фільтри</div>
+      <form method="get" hx-get="{{ request.path }}" hx-target="#product-grid" hx-push-url="true">
+        {% if request.GET.q %}<input type="hidden" name="q" value="{{ request.GET.q }}">{% endif %}
+        <div class="filter-group">
+          <label class="field__label">Ціна від</label>
+          <input class="field__input" type="number" name="price_min" value="{{ request.GET.price_min }}" min="0">
+        </div>
+        <div class="filter-group">
+          <label class="field__label">Ціна до</label>
+          <input class="field__input" type="number" name="price_max" value="{{ request.GET.price_max }}" min="0">
+        </div>
+        <div class="filter-group">
+          <label><input type="checkbox" name="in_stock" value="1" {% if request.GET.in_stock %}checked{% endif %}> В наявності</label>
+        </div>
+        <div class="filter-group">
+          <label class="field__label">Сортування</label>
+          <select class="field__input" name="sort">
+            <option value="popular" {% if request.GET.sort == 'popular' or not request.GET.sort %}selected{% endif %}>За популярністю</option>
+            <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>Спочатку дешевше</option>
+            <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>Спочатку дорожче</option>
+            <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>За назвою</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn--primary btn--block">Застосувати</button>
+      </form>
+    </aside>
+
+    <div class="catalog-grid-wrap">
+      <div id="product-grid">
+        {% include 'catalog/_product_grid.html' %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

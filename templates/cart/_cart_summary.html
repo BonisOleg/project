@@ -1,0 +1,26 @@
+{% load ui_tags %}
+<div id="cart-summary"{% if oob %} hx-swap-oob="true"{% endif %} class="cart-summary">
+  <div class="cart-summary__row">
+    <span>Сума</span>
+    <strong>{{ subtotal|format_price }}</strong>
+  </div>
+  {% if promo %}
+  <div class="cart-summary__row cart-summary__row--discount">
+    <span>Знижка ({{ promo.code }})</span>
+    <span>−{{ promo.discount_value }}{% if promo.discount_type == 'percent' %}%{% else %} грн{% endif %}</span>
+  </div>
+  {% endif %}
+  <div class="cart-summary__divider"></div>
+  <div class="cart-summary__total">
+    <span>Разом</span>
+    <span>{{ total|format_price }}</span>
+  </div>
+  <div class="cart-summary__actions">
+    {% if lines %}
+    <a href="{% url 'orders:checkout' %}" class="btn btn--primary btn--block">Оформити замовлення</a>
+    {% else %}
+    <span class="btn btn--primary btn--block btn--disabled">Оформити замовлення</span>
+    {% endif %}
+    <a href="{% url 'catalog:list' %}" class="btn btn--secondary btn--block">Продовжити покупки</a>
+  </div>
+</div>

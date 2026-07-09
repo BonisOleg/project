@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body_class %}page-auth{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+  <div class="auth-card">
+    <header class="auth-card__header">
+      <div class="auth-card__icon" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <h1 class="auth-card__title">Вхід</h1>
+      <p class="auth-card__lead">Увійдіть, щоб керувати замовленнями та обраним</p>
+    </header>
+
+    <form class="auth-form" method="post" novalidate>
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="field{% if field.field.widget.input_type == 'checkbox' %} field--checkbox{% endif %}">
+        {% if field.field.widget.input_type != 'checkbox' %}
+        <label class="field__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {% endif %}
+        {{ field }}
+        {% if field.field.widget.input_type == 'checkbox' %}
+        <label class="field__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {% endif %}
+        {% if field.errors %}<div class="field__error">{{ field.errors.0 }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn btn--primary btn--block">Увійти</button>
+    </form>
+
+    <footer class="auth-card__footer">
+      <nav class="auth-card__links" aria-label="Додаткові дії">
+        <a href="{% url 'accounts:password_reset' %}">Забули пароль?</a>
+        <span class="auth-card__sep" aria-hidden="true">·</span>
+        <a href="{% url 'accounts:register' %}">Зареєструватися</a>
+      </nav>
+    </footer>
+  </div>
+</section>
+{% endblock %}

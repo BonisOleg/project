@@ -1,0 +1,46 @@
+{% load static ui_tags %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}{{ page_title|default:"Oyra" }} — інтернет-магазин{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ site_settings.meta_description|default:'Oyra — преміальний інтернет-магазин корисних товарів для дому, офісу та відпочинку.' }}{% endblock %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/1_reset.css' %}">
+  <link rel="stylesheet" href="{% static 'css/2_tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/3_base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components/header.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components/footer.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components/button.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components/product_card.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components/wishlist.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components/bottom_nav.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components/cookie_banner.css' %}">
+  {% block extra_css %}{% endblock %}
+  <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
+  <script type="module" src="{% static 'js/main.js' %}?v=20260703f"></script>
+</head>
+<body class="has-bottom-nav {% block body_class %}{% endblock %}">
+  {% include 'partials/header.html' %}
+
+  {% if messages %}
+  <div class="messages" role="status">
+    {% for message in messages %}
+    <div class="message message--{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <main id="main">{% block content %}{% endblock %}</main>
+
+  {% include 'partials/footer.html' %}
+  {% include 'partials/cookie_banner.html' %}
+  {% include 'partials/compare_bar.html' %}
+  {% include 'partials/bottom_nav.html' %}
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

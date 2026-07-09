@@ -1,0 +1,31 @@
+{% load oyra_content %}
+<div class="section__header">
+  <h2 class="section__title">{% block_plain 'home' 'products_section_title' %}</h2>
+  <div class="tabs" role="tablist">
+    <a href="?tab=top"
+       class="tabs__btn {% if active_tab == 'top' %}is-active{% endif %}"
+       hx-get="{% url 'core:home' %}?tab=top"
+       hx-target="#home-products-panel"
+       hx-swap="innerHTML show:none scroll:none"
+       hx-push-url="true">Топ продажу</a>
+    <a href="?tab=new"
+       class="tabs__btn {% if active_tab == 'new' %}is-active{% endif %}"
+       hx-get="{% url 'core:home' %}?tab=new"
+       hx-target="#home-products-panel"
+       hx-swap="innerHTML show:none scroll:none"
+       hx-push-url="true">Новинки</a>
+    <a href="?tab=views"
+       class="tabs__btn {% if active_tab == 'views' %}is-active{% endif %}"
+       hx-get="{% url 'core:home' %}?tab=views"
+       hx-target="#home-products-panel"
+       hx-swap="innerHTML show:none scroll:none"
+       hx-push-url="true">Топ переглядів</a>
+  </div>
+</div>
+<div class="product-grid">
+  {% for product in tab_products %}
+    {% include 'partials/product_card.html' %}
+  {% empty %}
+    <p>Товари зʼявляться незабаром.</p>
+  {% endfor %}
+</div>

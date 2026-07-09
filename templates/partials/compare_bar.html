@@ -1,0 +1,6 @@
+{% if compare_count %}
+<div class="compare-bar is-visible" id="compare-bar">
+  <span>{{ compare_count }} у порівнянні</span>
+  <a href="{% url 'catalog:compare' %}" class="btn btn--primary btn--sm">Порівняти</a>
+</div>
+{% endif %}

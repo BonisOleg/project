@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static ui_tags %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/cart.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container cart-page">
+  <h1 class="cart-page__title">{{ page_title }}</h1>
+
+  <div class="cart-layout">
+    {% include 'cart/_cart_lines.html' %}
+
+    <aside class="cart-sidebar">
+      {% include 'cart/_cart_summary.html' with lines=lines %}
+
+      <div class="cart-promo">
+        <span class="cart-promo__label">Промокод</span>
+        <form class="cart-promo__form" action="{% url 'cart:promo' %}" method="post">
+          {% csrf_token %}
+          <input class="field__input" type="text" name="promo_code" placeholder="OYRA15" autocomplete="off">
+          <button class="btn btn--secondary" type="submit">OK</button>
+        </form>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

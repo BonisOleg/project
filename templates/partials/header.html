@@ -1,0 +1,97 @@
+{% load oyra_content %}
+<header class="site-header">
+  <div class="container site-header__inner">
+    <div class="site-header__brand">
+      <button class="header-burger" type="button" aria-label="Меню" data-drawer-open>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <a href="{% url 'core:home' %}" class="site-header__logo"><span class="site-header__logo-text">Oyra</span></a>
+    </div>
+
+    {% section_visible 'site' 'header_search_visible' as show_search %}
+    {% if show_search %}
+    <form class="header-search" action="{% url 'catalog:search' %}" method="get" role="search">
+      <input class="header-search__input" type="search" name="q" placeholder="{% block_plain 'site' 'header_search_placeholder' 'Пошук товарів...' %}" autocomplete="off"
+             hx-get="{% url 'catalog:search_suggest' %}" hx-trigger="keyup changed delay:300ms" hx-target="#search-suggest">
+      <div id="search-suggest"></div>
+    </form>
+    {% endif %}
+
+    <nav class="site-nav" aria-label="Головне меню">
+      {% section_visible 'site' 'header_nav_catalog_visible' as show_catalog %}
+      {% if show_catalog %}
+      <div class="catalog-dropdown">
+        <a href="{% url 'catalog:list' %}" class="site-nav__link">{% block_plain 'site' 'header_nav_catalog_label' 'Каталог' %}</a>
+        <div class="catalog-dropdown__menu" role="menu">
+          {% for cat in categories_menu %}
+          <div>
+            <div class="catalog-dropdown__title"><a href="{{ cat.get_absolute_url }}">{{ cat.name }}</a></div>
+            <div class="catalog-dropdown__sub">
+              {% for sub in cat.children.all %}
+              <a href="{{ sub.get_absolute_url }}">{{ sub.name }}</a>
+              {% endfor %}
+            </div>
+          </div>
+          {% empty %}
+          <a href="{% url 'catalog:list' %}">Усі товари</a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {% section_visible 'site' 'header_nav_sale_visible' as show_sale %}
+      {% if show_sale %}
+      <a href="{% url 'catalog:sale' %}" class="site-nav__link">{% block_plain 'site' 'header_nav_sale_label' 'Акції' %}</a>
+      {% endif %}
+      {% section_visible 'site' 'header_nav_news_visible' as show_news %}
+      {% if show_news %}
+      <a href="{% url 'blog:list' %}" class="site-nav__link">{% block_plain 'site' 'header_nav_news_label' 'Новини' %}</a>
+      {% endif %}
+    </nav>
+
+    <div class="site-header__actions">
+      {% section_visible 'site' 'header_action_phone_visible' as show_phone %}
+      {% if show_phone %}
+      <a href="tel:{{ site_settings.phone }}" class="header-icon header-icon--phone" aria-label="Телефон">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </a>
+      {% endif %}
+      {% section_visible 'site' 'header_action_wishlist_visible' as show_wishlist %}
+      {% if show_wishlist %}
+      <a href="{% url 'accounts:wishlist' %}" class="header-icon header-icon--wishlist" aria-label="Обране">
+        <span class="header-icon__badge" id="wishlist-count">{% if wishlist_count %}{{ wishlist_count }}{% endif %}</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </a>
+      {% endif %}
+      {% section_visible 'site' 'header_action_compare_visible' as show_compare %}
+      {% if show_compare %}
+      <a href="{% url 'catalog:compare' %}" class="header-icon header-icon--compare" aria-label="Порівняння">
+        <span class="header-icon__badge" id="compare-count">{% if compare_count %}{{ compare_count }}{% endif %}</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+      </a>
+      {% endif %}
+      {% section_visible 'site' 'header_action_cart_visible' as show_cart %}
+      {% if show_cart %}
+      <a href="{% url 'cart:detail' %}" class="header-icon header-icon--cart" aria-label="Кошик">
+        <span class="header-icon__badge" id="cart-count">{% if cart_count %}{{ cart_count }}{% endif %}</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      </a>
+      {% endif %}
+      {% section_visible 'site' 'header_action_login_visible' as show_login %}
+      {% if show_login %}
+      {% if user.is_authenticated %}
+      <a href="{% url 'accounts:cabinet' %}" class="btn btn--sm btn--brand site-header__login" aria-label="Особистий кабінет">
+        <svg class="site-header__login-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="site-header__login-text">Кабінет</span>
+      </a>
+      {% else %}
+      <a href="{% url 'accounts:login' %}" class="btn btn--sm btn--brand site-header__login" aria-label="Вхід">
+        <svg class="site-header__login-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="site-header__login-text">Вхід</span>
+      </a>
+      {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+{% include 'partials/mobile_drawer.html' %}

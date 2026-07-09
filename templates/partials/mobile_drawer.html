@@ -1,0 +1,52 @@
+{% load oyra_content %}
+<div class="mobile-drawer" id="mobile-drawer" aria-hidden="true">
+  <div class="mobile-drawer__backdrop" data-drawer-close></div>
+  <div class="mobile-drawer__panel">
+    <button type="button" data-drawer-close aria-label="Закрити">✕</button>
+    {% section_visible 'site' 'header_search_visible' as show_search %}
+    {% if show_search %}
+    <form action="{% url 'catalog:search' %}" method="get">
+      <input class="field__input" type="search" name="q" placeholder="{% block_plain 'site' 'header_search_placeholder' 'Пошук...' %}" style="margin-top:1rem">
+    </form>
+    {% endif %}
+    <nav class="mobile-drawer__nav">
+      {% section_visible 'site' 'header_nav_catalog_visible' as show_catalog %}
+      {% if show_catalog %}
+      <a class="mobile-drawer__link" href="{% url 'catalog:list' %}">{% block_plain 'site' 'header_nav_catalog_label' 'Каталог' %}</a>
+      {% endif %}
+      {% section_visible 'site' 'header_nav_sale_visible' as show_sale %}
+      {% if show_sale %}
+      <a class="mobile-drawer__link" href="{% url 'catalog:sale' %}">{% block_plain 'site' 'header_nav_sale_label' 'Акції' %}</a>
+      {% endif %}
+      {% section_visible 'site' 'header_action_wishlist_visible' as show_wishlist %}
+      {% if show_wishlist %}
+      <a class="mobile-drawer__link" href="{% url 'accounts:wishlist' %}">Обране</a>
+      {% endif %}
+      {% section_visible 'site' 'header_action_compare_visible' as show_compare %}
+      {% if show_compare %}
+      <a class="mobile-drawer__link" href="{% url 'catalog:compare' %}">Порівняння</a>
+      {% endif %}
+      {% section_visible 'site' 'header_nav_news_visible' as show_news %}
+      {% if show_news %}
+      <a class="mobile-drawer__link" href="{% url 'blog:list' %}">{% block_plain 'site' 'header_nav_news_label' 'Новини' %}</a>
+      {% endif %}
+      {% section_visible 'site' 'header_nav_delivery_visible' as show_delivery %}
+      {% if show_delivery %}
+      <a class="mobile-drawer__link" href="{% url 'pages:static' slug='delivery' %}">Доставка</a>
+      {% endif %}
+      {% section_visible 'site' 'header_nav_about_visible' as show_about %}
+      {% if show_about %}
+      <a class="mobile-drawer__link" href="{% url 'pages:static' slug='about' %}">Про нас</a>
+      {% endif %}
+      {% section_visible 'site' 'header_action_login_visible' as show_login %}
+      {% if show_login %}
+      {% if user.is_authenticated %}
+      <a class="mobile-drawer__link" href="{% url 'accounts:cabinet' %}">Особистий кабінет</a>
+      {% else %}
+      <a class="mobile-drawer__link" href="{% url 'accounts:login' %}">Вхід</a>
+      <a class="mobile-drawer__link" href="{% url 'accounts:register' %}">Реєстрація</a>
+      {% endif %}
+      {% endif %}
+    </nav>
+  </div>
+</div>

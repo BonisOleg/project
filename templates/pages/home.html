@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% load static ui_tags oyra_content %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/home.css' %}?v=20260703c">
+<link rel="stylesheet" href="{% static 'css/components/hero_carousel.css' %}">
+{% endblock %}
+
+{% block content %}
+{% section_visible 'home' 'hero_section_visible' as show_hero %}
+{% if show_hero %}
+<section class="hero">
+  <div class="hero__bg"></div>
+  <div class="hero__visual reveal">
+    {% include 'partials/hero_carousel.html' %}
+  </div>
+  <div class="container hero__inner">
+    <div class="hero__content reveal">
+      <p class="hero__eyebrow">{% block_plain 'home' 'hero_eyebrow' %}</p>
+      <h1 class="hero__title">{% block_plain 'home' 'hero_title' %}</h1>
+      <p class="hero__lead">{% block_plain 'home' 'hero_lead' %}</p>
+      <div class="hero__actions">
+        <a href="{% url 'catalog:list' %}" class="btn btn--primary">{% block_plain 'home' 'hero_btn_catalog' %}</a>
+        <a href="{% url 'catalog:sale' %}" class="btn btn--secondary">{% block_plain 'home' 'hero_btn_sale' %}</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% section_visible 'home' 'products_section_visible' as show_products %}
+{% if show_products %}
+<section class="section home-tabs" id="products">
+  <div class="container">
+    <div id="home-products-panel">
+      {% include 'partials/home_products_panel.html' %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% section_visible 'home' 'categories_section_visible' as show_categories %}
+{% if show_categories %}
+<section class="section section--alt" id="categories">
+  <div class="container">
+    <h2 class="section__title reveal">{% block_plain 'home' 'categories_section_title' %}</h2>
+    <div class="category-pills category-pills--spaced reveal">
+      {% for cat in categories %}
+      <a href="{{ cat.get_absolute_url }}" class="category-pill">
+        <div class="category-pill__dot category-pill__dot--{{ cat.slug|category_accent }}"></div>
+        <span>{{ cat.name }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% section_visible 'home' 'benefits_section_visible' as show_benefits %}
+{% if show_benefits %}
+<section class="section" id="benefits">
+  <div class="container">
+    <h2 class="section__title reveal">{% block_plain 'home' 'benefits_section_title' %}</h2>
+    <div class="benefits reveal">
+      <div class="benefit-card">
+        <div class="benefit-card__title">{% block_plain 'home' 'benefit_1_title' %}</div>
+        <p class="benefit-card__text">{% block_plain 'home' 'benefit_1_text' %}</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-card__title">{% block_plain 'home' 'benefit_2_title' %}</div>
+        <p class="benefit-card__text">{% block_plain 'home' 'benefit_2_text' %}</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-card__title">{% block_plain 'home' 'benefit_3_title' %}</div>
+        <p class="benefit-card__text">{% block_plain 'home' 'benefit_3_text' %}</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-card__title">{% block_plain 'home' 'benefit_4_title' %}</div>
+        <p class="benefit-card__text">{% block_plain 'home' 'benefit_4_text' %}</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% section_visible 'home' 'about_section_visible' as show_about %}
+{% if show_about %}
+<section class="section section--alt" id="about">
+  <div class="container reveal">
+    <h2 class="section__title">{% block_plain 'home' 'about_section_title' %}</h2>
+    <p class="section__lead">{% block_plain 'home' 'about_section_lead' %}</p>
+    {% if site_settings.youtube_url %}
+    <p class="section__cta">
+      <a href="{{ site_settings.youtube_url }}" class="btn btn--secondary" rel="noopener">Відео-огляди на YouTube</a>
+    </p>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
+{% section_visible 'home' 'blog_section_visible' as show_blog %}
+{% if show_blog and blog_posts %}
+<section class="section" id="blog">
+  <div class="container">
+    <div class="section__header reveal">
+      <h2 class="section__title">{% block_plain 'home' 'blog_section_title' %}</h2>
+      <a href="{% url 'blog:list' %}" class="btn btn--secondary btn--sm">Весь блог</a>
+    </div>
+    <div class="product-grid reveal">
+      {% for post in blog_posts %}
+      <article class="product-card">
+        {% if post.image %}
+        <div class="product-card__media">
+          <img src="{{ post.image.url }}" alt="{{ post.title }}" loading="lazy">
+        </div>
+        {% endif %}
+        <div class="product-card__body">
+          <time class="product-card__date">{{ post.published_at|date:"d E Y" }}</time>
+          <h3 class="product-card__title"><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script type="module">
+// #region agent log
+function oyraHeroDebugSnapshot(runId = 'pre-fix') {
+  const hero = document.querySelector('.hero');
+  const visual = document.querySelector('.hero__visual');
+  const inner = document.querySelector('.hero__inner');
+  const content = document.querySelector('.hero__content.reveal');
+  const homeCssLink = document.querySelector('link[href*="home.css"]');
+  const visualCs = visual ? getComputedStyle(visual) : null;
+  const heroCs = hero ? getComputedStyle(hero) : null;
+  const contentCs = content ? getComputedStyle(content) : null;
+
+  const payload = {
+    sessionId: '0f4f88',
+    runId,
+    hypothesisId: 'H2-H5',
+    location: 'home.html:hero-debug',
+    message: 'hero layout snapshot',
+    data: {
+      viewport: { w: window.innerWidth, h: window.innerHeight, dpr: window.devicePixelRatio },
+      matchMedia: {
+        m768: window.matchMedia('(min-width: 768px)').matches,
+        m1024: window.matchMedia('(min-width: 1024px)').matches,
+      },
+      dom: {
+        hero: Boolean(hero),
+        visual: Boolean(visual),
+        inner: Boolean(inner),
+        content: Boolean(content),
+      },
+      rects: {
+        hero: hero ? { w: hero.getBoundingClientRect().width, h: hero.getBoundingClientRect().height } : null,
+        visual: visual ? { w: visual.getBoundingClientRect().width, h: visual.getBoundingClientRect().height } : null,
+      },
+      computed: {
+        cssVh: getComputedStyle(document.documentElement).getPropertyValue('--vh').trim() || null,
+        visualWidth: visualCs?.width || null,
+        visualHeight: visualCs?.height || null,
+        visualAspectRatio: visualCs?.aspectRatio || null,
+        heroPhotoH: visualCs?.getPropertyValue('--hero-photo-h').trim() || null,
+        contentOpacity: contentCs?.opacity || null,
+        heroDisplay: heroCs?.display || null,
+        heroGridCols: heroCs?.gridTemplateColumns || null,
+        innerGridCols: inner ? getComputedStyle(inner).gridTemplateColumns : null,
+      },
+      cssLink: homeCssLink?.href || null,
+    },
+    timestamp: Date.now(),
+  };
+
+  fetch('/debug/hero-layout/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).catch(() => {});
+
+  if (homeCssLink) {
+    fetch(`${homeCssLink.href}${homeCssLink.href.includes('?') ? '&' : '?'}dbg=${Date.now()}`, { cache: 'reload' })
+      .then((response) => response.text())
+      .then((text) => {
+        fetch('/debug/hero-layout/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: '0f4f88',
+            runId,
+            hypothesisId: 'H1',
+            location: 'home.html:hero-debug-css',
+            message: 'home.css content check',
+            data: {
+              href: homeCssLink.href,
+              hasHeroPhotoH: text.includes('--hero-photo-h'),
+              hasHeroMaxHeight: text.includes('max-height: min(31.25rem'),
+              hasAspectAuto: text.includes('aspect-ratio: auto'),
+              hasHeroRevealFix: text.includes('.hero .reveal'),
+              cssBytes: text.length,
+            },
+            timestamp: Date.now(),
+          }),
+        }).catch(() => {});
+      })
+      .catch((error) => {
+        fetch('/debug/hero-layout/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: '0f4f88',
+            runId,
+            hypothesisId: 'H1',
+            location: 'home.html:hero-debug-css',
+            message: 'home.css fetch failed',
+            data: { href: homeCssLink.href, error: String(error) },
+            timestamp: Date.now(),
+          }),
+        }).catch(() => {});
+      });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => oyraHeroDebugSnapshot('pre-fix'));
+window.addEventListener('load', () => oyraHeroDebugSnapshot('pre-fix-load'));
+window.addEventListener('resize', () => {
+  window.clearTimeout(window.__oyraHeroDbgTimer);
+  window.__oyraHeroDbgTimer = window.setTimeout(() => oyraHeroDebugSnapshot('pre-fix-resize'), 250);
+});
+// #endregion
+</script>
+{% endblock %}

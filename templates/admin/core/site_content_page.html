@@ -1,0 +1,74 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static unfold %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/admin/site_content.css' %}">
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+  .site-content-editor .site-content-fieldset .flex-row > .border,
+  .site-content-editor .site-content-fieldset .flex-row > [class*="border-base"] {
+    color: rgb(var(--color-base-100) / 1);
+    background-color: rgb(var(--color-base-900) / 1);
+    border-color: rgb(var(--color-base-700) / 1);
+  }
+</style>
+{% endblock %}
+
+{% block title %}{{ title }} · {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block content %}
+<div class="site-content-editor">
+    <div class="site-content-editor__head">
+        <div>
+            <p class="site-content-editor__eyebrow text-font-subtle-light dark:text-font-subtle-dark">
+                {% for crumb, url in breadcrumb %}
+                    {% if not forloop.last %}{{ crumb }} → {% else %}{{ crumb }}{% endif %}
+                {% endfor %}
+            </p>
+            <h1 class="site-content-editor__title text-font-important-light dark:text-font-important-dark">{{ title }}</h1>
+            {% if section.description %}
+            <p class="site-content-editor__section-desc text-font-subtle-light dark:text-font-subtle-dark">{{ section.description }}</p>
+            {% endif %}
+        </div>
+        <a href="{{ preview_url }}" class="site-content-editor__preview border border-base-200 dark:border-base-700 text-font-default-light dark:text-font-default-dark hover:border-primary-500 dark:hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-500/10" target="_blank" rel="noopener noreferrer">
+            Переглянути на сайті
+            <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+        </a>
+    </div>
+
+    {% include "unfold/helpers/messages.html" %}
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            {% include "unfold/helpers/messages/errornote.html" with errors=form.non_field_errors %}
+        {% endif %}
+
+        <div class="site-content-editor__fieldsets">
+            {% for fieldset_title, fieldset_fields in fieldsets %}
+            <section class="site-content-fieldset border border-base-200 dark:border-base-700 rounded-default shadow-sm dark:bg-base-900 p-4 md:p-5">
+                {% if fieldset_title %}
+                <h2 class="site-content-fieldset__title text-font-important-light dark:text-font-important-dark">{{ fieldset_title }}</h2>
+                {% endif %}
+                <div class="site-content-fieldset__fields">
+                    {% for field in fieldset_fields %}
+                        {% include "unfold/helpers/field.html" with field=field %}
+                    {% endfor %}
+                </div>
+            </section>
+            {% endfor %}
+        </div>
+
+        <div class="site-content-editor__actions">
+            {% component "unfold/components/button.html" with submit=1 name="_save" variant="primary" %}
+                {% trans "Зберегти" %}
+            {% endcomponent %}
+        </div>
+    </form>
+</div>
+{% endblock %}

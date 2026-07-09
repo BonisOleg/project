@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container" style="padding:var(--sp-8) 0">
+  <h1 class="section__title">{{ page.title }}</h1>
+  <form method="get" style="margin:var(--sp-5) 0;display:flex;gap:var(--sp-2)">
+    <input class="field__input" type="search" name="q" value="{{ q }}" placeholder="Пошук за назвою або артикулом">
+    <button class="btn btn--secondary" type="submit">Знайти</button>
+  </form>
+  <ul style="display:grid;gap:var(--sp-3)">
+    {% for item in items %}
+    <li style="padding:var(--sp-4);background:var(--c-surface);border-radius:var(--r-md);border:1px solid var(--c-border)">
+      <strong>{{ item.title }}</strong>
+      {% if item.sku %}<span style="color:var(--c-text-muted);margin-left:var(--sp-2)">{{ item.sku }}</span>{% endif %}
+      {% if item.file %}<a href="{{ item.file.url }}" style="margin-left:var(--sp-3)">PDF</a>{% endif %}
+      {% if item.external_url %}<a href="{{ item.external_url }}" rel="noopener">Завантажити</a>{% endif %}
+    </li>
+    {% empty %}
+    <li>Інструкції скоро зʼявляться.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

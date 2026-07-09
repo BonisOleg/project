@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Oyra — головна (premium redesign)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --vh:100dvh;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --c-bg:#f6f3ee;
+  --c-bg-alt:#ece7df;
+  --c-surface:#fff;
+  --c-ink:#1a1816;
+  --c-muted:#5c574f;
+  --c-gold:#a67c2a;
+  --c-gold-light:#c9a24d;
+  --c-gold-bg:#f3ead8;
+  --c-border:#ddd6cb;
+  --ff-display:'Cormorant Garamond',Georgia,serif;
+  --ff-base:'DM Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --container:min(87.5rem,100% - 2rem);
+  --t:280ms cubic-bezier(0.4,0,0.2,1);
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--ff-base);
+  font-size:1rem;
+  line-height:1.6;
+  color:var(--c-ink);
+  background:var(--c-bg);
+  min-height:var(--vh);
+  padding-bottom:calc(72px + var(--safe-bottom));
+}
+@media(min-width:1024px){body{padding-bottom:0}}
+img{display:block;max-width:100%;height:auto}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:none;background:none}
+.container{width:var(--container);margin-inline:auto}
+
+/* Header mock */
+.site-header{
+  position:sticky;top:0;z-index:50;
+  padding:calc(0.75rem + var(--safe-top)) 1rem 0.75rem;
+  background:rgba(246,243,238,0.92);
+  -webkit-backdrop-filter:blur(12px);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(221,214,203,0.6);
+}
+.site-header__inner{display:flex;align-items:center;justify-content:space-between;max-width:87.5rem;margin:0 auto}
+.site-header__logo{font-family:var(--ff-display);font-size:1.75rem;font-weight:500;letter-spacing:0.08em}
+.site-header__nav{display:none;gap:2rem;font-size:0.875rem;font-weight:500;color:var(--c-muted)}
+@media(min-width:768px){.site-header__nav{display:flex}}
+
+/* Hero — editorial luxury, double bezel */
+.hero{
+  position:relative;
+  min-height:calc(var(--vh) - 60px);
+  display:grid;
+  align-items:center;
+  overflow:hidden;
+  padding:3rem 0 4rem;
+}
+.hero__grain{
+  position:absolute;inset:0;opacity:0.35;pointer-events:none;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+.hero__glow{
+  position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 70% 55% at 85% 15%,rgba(201,162,77,0.18),transparent 60%),
+    radial-gradient(ellipse 50% 45% at 5% 90%,rgba(166,124,42,0.12),transparent 55%);
+}
+.hero__grid{
+  position:relative;z-index:1;
+  display:grid;gap:2.5rem;align-items:center;
+}
+@media(min-width:1024px){
+  .hero__grid{grid-template-columns:1.05fr 0.95fr;gap:3.5rem}
+}
+.hero__eyebrow{
+  display:inline-flex;align-items:center;gap:0.75rem;
+  font-size:0.6875rem;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:var(--c-gold);
+  margin-bottom:1.25rem;
+}
+.hero__eyebrow::before{content:'';width:2rem;height:1px;background:var(--c-gold)}
+.hero__title{
+  font-family:var(--ff-display);
+  font-size:clamp(2.25rem,6vw,3.75rem);
+  font-weight:500;line-height:1.05;
+  letter-spacing:-0.025em;
+  text-wrap:balance;
+  max-width:14ch;
+}
+.hero__lead{
+  margin-top:1.25rem;font-size:1.0625rem;color:var(--c-muted);
+  max-width:38ch;line-height:1.65;
+}
+.hero__actions{display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:2rem}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:44px;padding:0 1.5rem;border-radius:9999px;
+  font-size:0.875rem;font-weight:600;
+  transition:transform var(--t),background var(--t),box-shadow var(--t);
+}
+.btn:active{transform:scale(0.97)}
+.btn--primary{background:var(--c-ink);color:var(--c-bg);box-shadow:0 8px 24px rgba(26,24,22,0.15)}
+.btn--primary:hover{background:#2a2724}
+.btn--ghost{border:1px solid var(--c-border);color:var(--c-ink);background:transparent}
+.btn--ghost:hover{border-color:var(--c-gold);color:var(--c-gold)}
+.hero__visual-wrap{position:relative;padding:0.75rem}
+.hero__bezel-outer{
+  position:absolute;inset:0;border:1px solid rgba(166,124,42,0.35);
+  border-radius:2rem;pointer-events:none;
+}
+.hero__bezel-inner{
+  position:absolute;inset:12px;border:1px solid rgba(166,124,42,0.2);
+  border-radius:1.5rem;pointer-events:none;
+}
+.hero__visual{
+  position:relative;border-radius:1.25rem;overflow:hidden;
+  aspect-ratio:4/5;background:var(--c-bg-alt);
+  box-shadow:0 24px 64px rgba(26,24,22,0.12);
+}
+.hero__visual img{width:100%;height:100%;object-fit:cover}
+.hero__badge{
+  position:absolute;bottom:1.25rem;left:1.25rem;
+  padding:0.625rem 1rem;background:rgba(255,255,255,0.92);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  border-radius:0.75rem;font-size:0.8125rem;font-weight:500;
+  border:1px solid rgba(221,214,203,0.8);
+}
+
+/* Section rhythm */
+.section{padding:4rem 0}
+.section--alt{background:var(--c-bg-alt)}
+.section__label{
+  font-size:0.6875rem;font-weight:600;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--c-gold);margin-bottom:0.75rem;
+}
+.section__title{
+  font-family:var(--ff-display);
+  font-size:clamp(1.75rem,4vw,2.5rem);
+  font-weight:500;line-height:1.15;text-wrap:balance;
+}
+.section__header{
+  display:flex;flex-wrap:wrap;align-items:flex-end;
+  justify-content:space-between;gap:1.5rem;margin-bottom:2rem;
+}
+
+/* Tabs */
+.tabs{
+  display:flex;gap:0.375rem;overflow-x:auto;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:0.25rem;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tabs__btn{
+  flex-shrink:0;min-height:44px;padding:0 1.125rem;
+  border-radius:9999px;font-size:0.8125rem;font-weight:500;
+  color:var(--c-muted);border:1px solid transparent;
+  transition:all 150ms ease;
+}
+.tabs__btn.is-active{background:var(--c-ink);color:var(--c-bg)}
+
+/* Product grid */
+.product-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;
+}
+@media(min-width:768px){.product-grid{grid-template-columns:repeat(3,1fr);gap:1.25rem}}
+@media(min-width:1024px){.product-grid{grid-template-columns:repeat(4,1fr)}}
+.product-card{
+  display:flex;flex-direction:column;background:var(--c-surface);
+  border-radius:1rem;overflow:hidden;
+  border:1px solid var(--c-border);
+  transition:transform var(--t),box-shadow var(--t);
+}
+.product-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(26,24,22,0.08)}
+.product-card__media{aspect-ratio:1;background:var(--c-bg-alt);overflow:hidden}
+.product-card__media img{width:100%;height:100%;object-fit:cover}
+.product-card__body{padding:1rem;display:flex;flex-direction:column;flex:1;gap:0.375rem}
+.product-card__price{font-weight:600;font-variant-numeric:tabular-nums}
+.product-card__title{font-size:0.875rem;line-height:1.35;color:var(--c-muted)}
+
+/* Categories — bento, no emojis */
+.category-bento{
+  display:grid;gap:0.75rem;
+  grid-template-columns:repeat(2,1fr);
+  grid-auto-rows:minmax(100px,auto);
+}
+@media(min-width:768px){
+  .category-bento{
+    grid-template-columns:repeat(4,1fr);
+    grid-template-rows:repeat(2,120px);
+  }
+  .category-bento__item:first-child{grid-column:span 2;grid-row:span 2}
+}
+.category-bento__item{
+  position:relative;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:1.25rem;border-radius:1rem;
+  background:var(--c-surface);border:1px solid var(--c-border);
+  overflow:hidden;min-height:100px;
+  transition:border-color var(--t),transform var(--t);
+}
+.category-bento__item:hover{border-color:var(--c-gold);transform:translateY(-2px)}
+.category-bento__num{
+  position:absolute;top:1rem;right:1rem;
+  font-family:var(--ff-display);font-size:1.5rem;font-weight:400;
+  color:rgba(166,124,42,0.25);line-height:1;
+}
+.category-bento__name{font-weight:600;font-size:0.9375rem}
+.category-bento__count{font-size:0.75rem;color:var(--c-muted);margin-top:0.25rem}
+
+/* Benefits — asymmetric bento */
+.benefits-bento{
+  display:grid;gap:0.75rem;
+  grid-template-columns:1fr;
+}
+@media(min-width:768px){
+  .benefits-bento{
+    grid-template-columns:1.2fr 0.8fr;
+    grid-template-rows:auto auto;
+  }
+  .benefits-bento__featured{grid-row:span 2}
+}
+.benefits-bento__item{
+  padding:1.75rem;border-radius:1.25rem;
+  background:var(--c-surface);border:1px solid var(--c-border);
+}
+.benefits-bento__featured{
+  background:var(--c-ink);color:var(--c-bg);
+  border-color:var(--c-ink);
+  display:flex;flex-direction:column;justify-content:flex-end;
+  min-height:220px;
+}
+.benefits-bento__featured .benefits-bento__text{color:rgba(246,243,238,0.75)}
+.benefits-bento__tag{
+  font-size:0.6875rem;font-weight:600;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--c-gold-light);margin-bottom:0.75rem;
+}
+.benefits-bento__title{
+  font-family:var(--ff-display);
+  font-size:clamp(1.375rem,3vw,1.75rem);
+  font-weight:500;line-height:1.2;margin-bottom:0.5rem;
+}
+.benefits-bento__text{font-size:0.875rem;color:var(--c-muted);max-width:36ch;line-height:1.55}
+.benefits-bento__stat{
+  font-family:var(--ff-display);font-size:2.5rem;font-weight:400;
+  color:var(--c-gold);line-height:1;margin-bottom:0.25rem;
+}
+
+/* About editorial */
+.about-editorial{
+  display:grid;gap:2rem;align-items:start;
+}
+@media(min-width:768px){.about-editorial{grid-template-columns:0.4fr 0.6fr;gap:3rem}}
+.about-editorial__aside{
+  font-family:var(--ff-display);font-size:clamp(2rem,5vw,3rem);
+  font-weight:400;line-height:1.1;font-style:italic;color:var(--c-gold);
+}
+.about-editorial__body{font-size:1.0625rem;color:var(--c-muted);max-width:52ch;line-height:1.7}
+
+/* Blog strip */
+.blog-strip{display:grid;gap:1rem}
+@media(min-width:768px){.blog-strip{grid-template-columns:1.2fr 0.8fr 0.8fr}}
+.blog-card{
+  display:flex;flex-direction:column;border-radius:1rem;overflow:hidden;
+  background:var(--c-surface);border:1px solid var(--c-border);
+  min-height:280px;
+}
+.blog-card__media{flex:1;min-height:140px;background:var(--c-bg-alt)}
+.blog-card__media img{width:100%;height:100%;object-fit:cover}
+.blog-card__body{padding:1.25rem}
+.blog-card__date{font-size:0.75rem;color:var(--c-muted);margin-bottom:0.5rem}
+.blog-card__title{font-family:var(--ff-display);font-size:1.25rem;font-weight:500;line-height:1.25}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms;transition-duration:0.01ms}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <a href="#" class="site-header__logo">OYRA</a>
+    <nav class="site-header__nav" aria-label="Головна навігація">
+      <a href="#">Каталог</a>
+      <a href="#">Акції</a>
+      <a href="#">Блог</a>
+      <a href="#">Контакти</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero__grain" aria-hidden="true"></div>
+  <div class="hero__glow" aria-hidden="true"></div>
+  <div class="container hero__grid">
+    <div class="hero__content">
+      <p class="hero__eyebrow">Oyra — преміальний магазин</p>
+      <h1 class="hero__title">Корисні речі для дому та відпочинку</h1>
+      <p class="hero__lead">Якість, чесні ціни та доставка по всій Україні. Оплата карткою або Apple Pay через LiqPay.</p>
+      <div class="hero__actions">
+        <a href="#" class="btn btn--primary">Переглянути каталог</a>
+        <a href="#" class="btn btn--ghost">Акції</a>
+      </div>
+    </div>
+    <div class="hero__visual-wrap">
+      <div class="hero__bezel-outer" aria-hidden="true"></div>
+      <div class="hero__bezel-inner" aria-hidden="true"></div>
+      <figure class="hero__visual">
+        <img src="https://picsum.photos/seed/oyra-hero/600/750" alt="Oyra — товари для дому" width="600" height="750">
+        <figcaption class="hero__badge">Нова колекція · весна 2026</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section__header">
+      <div>
+        <p class="section__label">Каталог</p>
+        <h2 class="section__title">Популярні товари</h2>
+      </div>
+      <div class="tabs" role="tablist">
+        <button type="button" class="tabs__btn is-active">Топ продажу</button>
+        <button type="button" class="tabs__btn">Новинки</button>
+        <button type="button" class="tabs__btn">Топ переглядів</button>
+      </div>
+    </div>
+    <div class="product-grid">
+      <article class="product-card">
+        <div class="product-card__media"><img src="https://picsum.photos/seed/p1/400/400" alt="" loading="lazy"></div>
+        <div class="product-card__body">
+          <span class="product-card__price">1 249 ₴</span>
+          <h3 class="product-card__title">Набір контейнерів для зберігання</h3>
+        </div>
+      </article>
+      <article class="product-card">
+        <div class="product-card__media"><img src="https://picsum.photos/seed/p2/400/400" alt="" loading="lazy"></div>
+        <div class="product-card__body">
+          <span class="product-card__price">890 ₴</span>
+          <h3 class="product-card__title">LED-лампа для робочого столу</h3>
+        </div>
+      </article>
+      <article class="product-card">
+        <div class="product-card__media"><img src="https://picsum.photos/seed/p3/400/400" alt="" loading="lazy"></div>
+        <div class="product-card__body">
+          <span class="product-card__price">2 150 ₴</span>
+          <h3 class="product-card__title">Складне крісло для відпочинку</h3>
+        </div>
+      </article>
+      <article class="product-card">
+        <div class="product-card__media"><img src="https://picsum.photos/seed/p4/400/400" alt="" loading="lazy"></div>
+        <div class="product-card__body">
+          <span class="product-card__price">475 ₴</span>
+          <h3 class="product-card__title">Органайзер для кухні</h3>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--alt">
+  <div class="container">
+    <p class="section__label">Навігація</p>
+    <h2 class="section__title" style="margin-bottom:2rem">Популярні категорії</h2>
+    <div class="category-bento">
+      <a href="#" class="category-bento__item">
+        <span class="category-bento__num">01</span>
+        <span class="category-bento__name">Для дому</span>
+        <span class="category-bento__count">124 товари</span>
+      </a>
+      <a href="#" class="category-bento__item">
+        <span class="category-bento__num">02</span>
+        <span class="category-bento__name">Офіс</span>
+        <span class="category-bento__count">67 товарів</span>
+      </a>
+      <a href="#" class="category-bento__item">
+        <span class="category-bento__num">03</span>
+        <span class="category-bento__name">Сад</span>
+        <span class="category-bento__count">43 товари</span>
+      </a>
+      <a href="#" class="category-bento__item">
+        <span class="category-bento__num">04</span>
+        <span class="category-bento__name">Відпочинок</span>
+        <span class="category-bento__count">89 товарів</span>
+      </a>
+      <a href="#" class="category-bento__item">
+        <span class="category-bento__num">05</span>
+        <span class="category-bento__name">Аксесуари</span>
+        <span class="category-bento__count">56 товарів</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <p class="section__label">Чому Oyra</p>
+    <h2 class="section__title" style="margin-bottom:2rem">Наші переваги</h2>
+    <div class="benefits-bento">
+      <article class="benefits-bento__item benefits-bento__featured">
+        <span class="benefits-bento__tag">Головна перевага</span>
+        <h3 class="benefits-bento__title">Краща ціна на ринку</h3>
+        <p class="benefits-bento__text">Працюємо напряму з виробниками — без зайвих націнок посередників.</p>
+      </article>
+      <article class="benefits-bento__item">
+        <span class="benefits-bento__stat">1–3</span>
+        <h3 class="benefits-bento__title">Дні доставки</h3>
+        <p class="benefits-bento__text">Нова Пошта та Укрпошта по всій Україні.</p>
+      </article>
+      <article class="benefits-bento__item">
+        <h3 class="benefits-bento__title">Знижки та промокоди</h3>
+        <p class="benefits-bento__text">10% за підписку на розсилку. Повернення протягом 14 днів.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--alt">
+  <div class="container about-editorial">
+    <blockquote class="about-editorial__aside">«Сучасний магазин для щоденного комфорту»</blockquote>
+    <div class="about-editorial__body">
+      <p class="section__label">Про Oyra</p>
+      <h2 class="section__title" style="margin-bottom:1rem">Oyra — сучасний інтернет-магазин</h2>
+      <p>Широкий асортимент товарів для дому, офісу, саду та відпочинку. Ми докладаємо зусиль, щоб ваші покупки були зручними та безпечними.</p>
+      <p style="margin-top:1.25rem"><a href="#" class="btn btn--ghost" style="margin-top:0.5rem">Відео-огляди на YouTube</a></p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section__header">
+      <div>
+        <p class="section__label">Журнал</p>
+        <h2 class="section__title">Блог</h2>
+      </div>
+      <a href="#" class="btn btn--ghost">Весь блог</a>
+    </div>
+    <div class="blog-strip">
+      <article class="blog-card">
+        <div class="blog-card__media"><img src="https://picsum.photos/seed/blog1/800/500" alt="" loading="lazy"></div>
+        <div class="blog-card__body">
+          <time class="blog-card__date">12 березня 2026</time>
+          <h3 class="blog-card__title">Як обрати органайзер для кухні</h3>
+        </div>
+      </article>
+      <article class="blog-card">
+        <div class="blog-card__media"><img src="https://picsum.photos/seed/blog2/600/400" alt="" loading="lazy"></div>
+        <div class="blog-card__body">
+          <time class="blog-card__date">3 березня 2026</time>
+          <h3 class="blog-card__title">5 ідей для робочого кутка</h3>
+        </div>
+      </article>
+      <article class="blog-card">
+        <div class="blog-card__media"><img src="https://picsum.photos/seed/blog3/600/400" alt="" loading="lazy"></div>
+        <div class="blog-card__body">
+          <time class="blog-card__date">24 лютого 2026</time>
+          <h3 class="blog-card__title">Готуємо сад до сезону</h3>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

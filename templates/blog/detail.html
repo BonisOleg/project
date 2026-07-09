@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ post.title }} — Oyra{% endblock %}
+
+{% block content %}
+<article class="container" style="padding:var(--sp-8) 0;max-width:720px">
+  <time class="product-card__date">{{ post.published_at|date:"d E Y" }}</time>
+  <h1 class="section__title" style="margin-top:var(--sp-2)">{{ post.title }}</h1>
+  {% if post.image %}<img src="{{ post.image.url }}" alt="{{ post.title }}" style="margin:var(--sp-6) 0;border-radius:var(--r-lg);width:100%">{% endif %}
+  <div style="line-height:1.75">{{ post.content|linebreaks }}</div>
+</article>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static ui_tags %}
+
+{% block body_class %}page-checkout{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/checkout.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="checkout-page">
+  <div class="checkout-card">
+    {% include 'orders/_checkout_steps.html' with step=step %}
+    <h1 class="checkout-page__title">{{ page_title }}</h1>
+
+    <div class="checkout-items">
+      {% for item in order.items.all %}
+      <div class="checkout-item">
+        <span class="checkout-item__name">{{ item.product_name }} × {{ item.quantity }}</span>
+        <span class="checkout-item__price">{{ item.line_total|format_price }}</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="checkout-actions">
+      <a href="{% url 'cart:detail' %}" class="btn btn--secondary">Назад до кошика</a>
+      <a href="{% url 'orders:checkout_step' step=2 %}" class="btn btn--primary">Далі</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,108 @@
+:root {
+  --vh: 100dvh;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  /* OYRA palette (TZ) */
+  --blue: #2453E0;
+  --blue-dark: #1939A8;
+  --orange: #FF6A3D;
+  --orange-dark: #E5552B;
+  --yellow: #FFC93C;
+  --green: #2BBD7E;
+  --raspberry: #FF3B5C;
+  --bg: #FAF7F2;
+  --card: #FFFFFF;
+  --navy: #14182B;
+  --text: #1E2233;
+  --text-soft: #6B7280;
+
+  /* Semantic */
+  --c-bg: var(--bg);
+  --c-bg-alt: #F2EFE9;
+  --c-surface: var(--card);
+  --c-surface-dark: var(--navy);
+  --c-text: var(--text);
+  --c-text-secondary: var(--text-soft);
+  --c-text-muted: #9CA3AF;
+  --c-text-inverse: #CFD2E0;
+  --c-border: #E8E5DF;
+  --c-border-strong: #D1D5DB;
+
+  --c-brand: var(--blue);
+  --c-brand-dark: var(--blue-dark);
+  --c-brand-bg: rgba(36, 83, 224, 0.12);
+
+  --c-action: var(--orange);
+  --c-action-dark: var(--orange-dark);
+
+  /* Aliases for existing selectors */
+  --c-accent: var(--blue);
+  --c-accent-light: var(--yellow);
+  --c-accent-dark: var(--blue-dark);
+  --c-accent-bg: var(--c-brand-bg);
+
+  --c-danger: var(--raspberry);
+  --c-success: var(--green);
+  --c-warning: var(--yellow);
+
+  --ff-base: 'DM Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --ff-display: 'Cormorant Garamond', Georgia, serif;
+
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.375rem;
+  --fs-h3: clamp(1.25rem, 2.5vw, 1.5rem);
+  --fs-h2: clamp(1.5rem, 3vw, 2rem);
+  --fs-h1: clamp(2rem, 5vw, 3.25rem);
+
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-8: 3rem;
+  --sp-10: 4rem;
+  --sp-12: 5rem;
+
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-pill: 9999px;
+
+  --shadow-sm: 0 2px 8px rgba(20, 24, 43, 0.06);
+  --shadow-md: 0 8px 24px rgba(20, 24, 43, 0.1);
+  --shadow-lg: 0 20px 48px rgba(20, 24, 43, 0.14);
+
+  --t-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-base: 280ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-slow: 480ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  --container-max: 87.5rem;
+  --container-pad: var(--sp-4);
+  --header-h: 60px;
+  --bottom-nav-h: 0px;
+
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-drawer: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --container-pad: var(--sp-6);
+    --header-h: 72px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root { --container-pad: var(--sp-8); }
+}

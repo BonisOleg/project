@@ -1,0 +1,19 @@
+<div class="product-grid {% if view_mode == 'list' %}product-grid--list{% endif %}">
+  {% for product in products %}
+    {% include 'partials/product_card.html' %}
+  {% empty %}
+    <p>Товарів не знайдено.</p>
+  {% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav class="pagination" style="margin-top:var(--sp-6);display:flex;gap:var(--sp-2);flex-wrap:wrap">
+  {% if page_obj.has_previous %}
+  <a class="btn btn--secondary btn--sm" href="?page={{ page_obj.previous_page_number }}">←</a>
+  {% endif %}
+  <span style="padding:var(--sp-2)">Сторінка {{ page_obj.number }} з {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a class="btn btn--secondary btn--sm" href="?page={{ page_obj.next_page_number }}">→</a>
+  {% endif %}
+</nav>
+{% endif %}
