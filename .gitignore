@@ -4,6 +4,8 @@ __pycache__/
 *.sqlite3
 db.sqlite3
 .env
+.env.docker
+.venv-test
 media/
 staticfiles/
 .DS_Store
