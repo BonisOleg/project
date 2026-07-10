@@ -35,6 +35,7 @@ PY
 echo "==> Django check + migrate + collectstatic"
 python manage.py check --deploy
 python manage.py migrate --noinput
+python manage.py seed_hero_slides
 python manage.py collectstatic --noinput
 
 _static_count=$(find "${STATIC_ROOT:-/app/staticfiles}" -type f 2>/dev/null | wc -l | tr -d ' ')

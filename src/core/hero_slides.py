@@ -1,3 +1,6 @@
+from django.contrib.staticfiles.finders import find
+from django.core.files import File
+from django.db import transaction
 from django.templatetags.static import static
 from django.urls import reverse
 
@@ -11,7 +14,32 @@ _FALLBACK_ALTS = (
 )
 
 
+def ensure_default_hero_slides() -> int:
+    """Якщо в БД немає слайдів — створити з поточних static fallback-банерів."""
+    if HeroSlide.objects.exists():
+        return 0
+
+    created = 0
+    with transaction.atomic():
+        if HeroSlide.objects.exists():
+            return 0
+        for index, filename in enumerate(_FALLBACK_FILES):
+            path = find(f'images/hero/{filename}')
+            if not path:
+                continue
+            slide = HeroSlide(
+                alt_text=_FALLBACK_ALTS[index],
+                sort_order=index,
+                is_active=True,
+            )
+            with open(path, 'rb') as fh:
+                slide.image.save(filename, File(fh), save=True)
+            created += 1
+    return created
+
+
 def get_hero_slides():
+    ensure_default_hero_slides()
     catalog_url = reverse('catalog:list')
     slides = []
 

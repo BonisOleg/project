@@ -51,15 +51,15 @@
 {% endblock %}
 
 {% block content %}
-    <div id="content-main">
+    <div id="content-main" x-data="{ filterOpen: false }">
         {% if cl.formset and cl.formset.errors %}
             {% include "unfold/helpers/messages/errornote.html" with errors=cl.formset.errors %}
             {{ cl.formset.non_form_errors }}
         {% endif %}
 
-        <div class="flex -mx-4 module{% if cl.has_filters %} filtered{% endif %}" id="changelist">
+        <div class="flex -mx-4 module{% if cl.has_filters %} filtered{% endif %}" id="changelist" x-data="{ changeListWidth: 0 }">
             <div class="changelist-form-container flex flex-row flex-grow gap-6 min-w-0 px-4">
-                <div class="flex-grow min-w-0 lg:pb-16">
+                <div class="flex-grow min-w-0 lg:pb-16" x-resize="changeListWidth = $width">
                     {% block date_hierarchy %}
                         {% if cl.date_hierarchy %}
                             {% date_hierarchy cl %}
@@ -92,6 +92,10 @@
                         {% block result_list %}
                             {% include "unfold/helpers/change_list_actions.html" %}
                             {% unfold_result_list cl %}
+
+                            {% block pagination %}
+                                {% pagination cl %}
+                            {% endblock %}
                         {% endblock %}
                     </form>
 
@@ -102,10 +106,4 @@
             </div>
         </div>
     </div>
-{% endblock %}
-
-{% block footer %}
-    {% block pagination %}
-        {% include "unfold/helpers/pagination.html" %}
-    {% endblock %}
 {% endblock %}

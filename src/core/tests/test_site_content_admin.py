@@ -35,6 +35,10 @@ class SiteContentAdminTests(TestCase):
         self.assertContains(response, 'hero_slides-TOTAL_FORMS')
         self.assertContains(response, 'Додати слайд')
         self.assertNotContains(response, 'hero_image')
+        self.assertEqual(HeroSlide.objects.count(), 3)
+        self.assertContains(response, 'Батут дитячий для двору')
+        self.assertContains(response, 'Крісло для кухні Bonro B-173 біле')
+        self.assertContains(response, 'Стелаж металевий 180×90×40 чорний')
 
     def test_hero_title_input_has_no_bg_white(self):
         url = reverse('admin:core_homeherosettings_change', args=[1])

@@ -91,6 +91,10 @@ HeroSlideFormSet = modelformset_factory(
 
 
 def build_hero_slide_formset(data=None, files=None) -> HeroSlideFormSet:
+    if data is None and files is None:
+        from src.core.hero_slides import ensure_default_hero_slides
+
+        ensure_default_hero_slides()
     queryset = HeroSlide.objects.all()
     if data is None and files is None:
         return HeroSlideFormSet(queryset=queryset, prefix='hero_slides')

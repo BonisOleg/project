@@ -14,19 +14,9 @@
   overflow-wrap: anywhere;
 }
 
-/* Логотип Oyra в шапці сайдбару — лише лого, по центру */
+/* Логотип Oyra в шапці сайдбару — один раз, без підпису */
 .border-b.flex.items-center.h-\[65px\] > div.grow {
   justify-content: center;
-}
-
-.border-b img.h-8[src*="logo-oyra"],
-.admin-sidebar-logo img.h-8 {
-  display: block;
-  width: auto;
-  height: 2rem;
-  max-width: 7.5rem;
-  object-fit: contain;
-  margin-inline: auto;
 }
 
 .admin-sidebar-logo {
@@ -34,6 +24,14 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+/* Лише розмір — без display:block, інакше light+dark показуються разом */
+.admin-sidebar-logo img[src*="logo-oyra"] {
+  width: auto;
+  height: 2rem;
+  max-width: 7.5rem;
+  object-fit: contain;
 }
 
 /* ====================================================
