@@ -1,0 +1,25 @@
+<article class="blog-card">
+  <a href="{{ post.get_absolute_url }}" class="blog-card__media" tabindex="-1" aria-hidden="true">
+    {% if post.image %}
+    <img src="{{ post.image.url }}" alt="" loading="lazy" decoding="async">
+    {% else %}
+    <span class="blog-card__placeholder" aria-hidden="true"></span>
+    {% endif %}
+  </a>
+  <div class="blog-card__body">
+    <time class="blog-card__date" datetime="{{ post.published_at|date:'Y-m-d' }}">{{ post.published_at|date:"d E Y" }}</time>
+    {% if heading == 'h3' %}
+    <h3 class="blog-card__title">
+      <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+    </h3>
+    {% else %}
+    <h2 class="blog-card__title">
+      <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+    </h2>
+    {% endif %}
+    {% if show_excerpt and post.excerpt %}
+    <p class="blog-card__excerpt">{{ post.excerpt|truncatewords:18 }}</p>
+    {% endif %}
+    <a href="{{ post.get_absolute_url }}" class="btn btn--secondary btn--sm blog-card__cta">Читати</a>
+  </div>
+</article>

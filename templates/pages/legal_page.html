@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page.title }} — Oyra{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/legal_page.css' %}?v=20260710a">
+{% endblock %}
+
+{% block content %}
+<article class="legal-page">
+  <header class="legal-page__hero">
+    <div class="legal-page__hero-orb legal-page__hero-orb--1" aria-hidden="true"></div>
+    <div class="legal-page__hero-orb legal-page__hero-orb--2" aria-hidden="true"></div>
+    <div class="container legal-page__hero-inner">
+      <h1 class="legal-page__title">{{ page.title }}</h1>
+      {% if page.subtitle %}
+      <p class="legal-page__subtitle">{{ page.subtitle }}</p>
+      {% endif %}
+      {% if page.updated %}
+      <p class="legal-page__updated">Оновлено: {{ page.updated }}</p>
+      {% endif %}
+    </div>
+  </header>
+
+  <div class="container legal-page__main">
+    {% if page.highlights %}
+    <div class="legal-page__highlights">
+      {% for item in page.highlights %}
+      <article class="legal-page__highlight reveal">
+        <span class="legal-page__highlight-step">{{ forloop.counter|stringformat:"02d" }}</span>
+        <h2 class="legal-page__highlight-title">{{ item.title }}</h2>
+        <p class="legal-page__highlight-text">{{ item.text }}</p>
+      </article>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="legal-page__sections">
+      {% for section in page.sections %}
+      <section class="legal-page__section reveal">
+        <h2 class="legal-page__section-title">{{ section.title }}</h2>
+        {% if section.paragraphs %}
+        {% for paragraph in section.paragraphs %}
+        <p class="legal-page__section-text">{{ paragraph }}</p>
+        {% endfor %}
+        {% endif %}
+        {% if section.items %}
+        <ul class="legal-page__list">
+          {% for item in section.items %}
+          <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </section>
+      {% endfor %}
+    </div>
+
+    {% if related_pages %}
+    <nav class="legal-page__nav reveal" aria-label="Інші розділи">
+      <h2 class="legal-page__nav-title">Інші розділи</h2>
+      <ul class="legal-page__nav-list">
+        {% for link in related_pages %}
+        <li>
+          <a class="legal-page__nav-link" href="{{ link.url }}">{{ link.title }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </nav>
+    {% endif %}
+  </div>
+</article>
+{% endblock %}

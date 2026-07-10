@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from src.core.breadcrumbs import make_breadcrumbs
 
+from .legal_pages import get_legal_page, get_related_legal_pages
 from .models import DropshippingApplication, FAQItem, NewsletterSubscription, StaticPage
 
 
@@ -32,15 +33,21 @@ def _page_crumbs(page):
 
 
 def static_page(request, slug):
+    legal = get_legal_page(slug)
+    if legal:
+        return render(request, 'pages/legal_page.html', {
+            'page': legal,
+            'related_pages': get_related_legal_pages(slug),
+        })
+
     page = get_object_or_404(StaticPage, slug=slug, is_published=True)
-    template = 'pages/static_page.html'
     if slug == StaticPage.SLUG_DROPSHIPPING:
         return dropshipping(request, page)
     if slug == StaticPage.SLUG_FAQ:
         return faq_page(request, page)
     if slug == StaticPage.SLUG_INSTRUCTIONS:
         return instructions(request, page)
-    return render(request, template, {
+    return render(request, 'pages/static_page.html', {
         'page': page,
         'breadcrumbs': _page_crumbs(page),
     })

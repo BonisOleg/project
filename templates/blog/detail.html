@@ -10,9 +10,22 @@
 {% block content %}
 <article class="container blog-detail">
   {% include 'partials/breadcrumbs.html' %}
-  <time class="product-card__date">{{ post.published_at|date:"d E Y" }}</time>
-  <h1 class="section__title" style="margin-top:var(--sp-2)">{{ post.title }}</h1>
-  {% if post.image %}<img src="{{ post.image.url }}" alt="{{ post.title }}" style="margin:var(--sp-6) 0;border-radius:var(--r-lg);width:100%">{% endif %}
-  <div style="line-height:1.75">{{ post.content|linebreaks }}</div>
+
+  <header class="page-header page-header--compact">
+    <time class="blog-detail__date" datetime="{{ post.published_at|date:'Y-m-d' }}">{{ post.published_at|date:"d E Y" }}</time>
+    <h1 class="page-title">{{ post.title }}</h1>
+  </header>
+
+  {% if post.image %}
+  <figure class="blog-detail__media">
+    <img src="{{ post.image.url }}" alt="{{ post.title }}" loading="eager" decoding="async">
+  </figure>
+  {% endif %}
+
+  <div class="blog-detail__body">{{ post.content|linebreaks }}</div>
+
+  <footer class="blog-detail__footer">
+    <a href="{% url 'blog:list' %}" class="btn btn--secondary btn--sm">Усі новини</a>
+  </footer>
 </article>
 {% endblock %}

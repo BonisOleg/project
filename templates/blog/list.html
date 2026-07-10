@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static ui_tags %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/blog.css' %}">
@@ -8,36 +8,14 @@
 {% block content %}
 <div class="container blog-page">
   {% include 'partials/breadcrumbs.html' %}
-  <header class="blog-page__header reveal">
+  <header class="page-header reveal">
     <p class="blog-page__eyebrow">Oyra Journal</p>
-    <h1 class="blog-page__title">{{ page_title }}</h1>
+    <h1 class="page-title">{{ page_title }}</h1>
     <p class="blog-page__lead">Огляди, поради та новини від команди Oyra.</p>
   </header>
 
-  <div class="blog-grid reveal">
-    {% for post in page_obj %}
-    <article class="blog-card">
-      <a href="{{ post.get_absolute_url }}" class="blog-card__media" tabindex="-1" aria-hidden="true">
-        {% if post.image %}
-        <img src="{{ post.image.url }}" alt="" loading="lazy">
-        {% else %}
-        <span class="blog-card__placeholder" aria-hidden="true"></span>
-        {% endif %}
-      </a>
-      <div class="blog-card__body">
-        <time class="blog-card__date" datetime="{{ post.published_at|date:'Y-m-d' }}">{{ post.published_at|date:"d E Y" }}</time>
-        <h2 class="blog-card__title">
-          <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
-        </h2>
-        {% if post.excerpt %}
-        <p class="blog-card__excerpt">{{ post.excerpt|truncatewords:24 }}</p>
-        {% endif %}
-        <a href="{{ post.get_absolute_url }}" class="blog-card__more">Читати статтю</a>
-      </div>
-    </article>
-    {% empty %}
-    <p class="blog-page__empty">Статей поки немає. Загляньте пізніше.</p>
-    {% endfor %}
+  <div class="reveal">
+    {% blog_grid_balanced page_obj show_excerpt=True heading='h2' %}
   </div>
 </div>
 {% endblock %}

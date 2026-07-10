@@ -1,0 +1,9 @@
+<div class="blog-grid blog-grid--balanced blog-grid--cols-{{ grid_cols }}">
+  {% for post in posts %}
+  <div class="blog-grid__item">
+    {% include 'partials/blog_card.html' with post=post show_excerpt=show_excerpt heading=heading %}
+  </div>
+  {% empty %}
+  <p class="blog-page__empty">Статей поки немає. Загляньте пізніше.</p>
+  {% endfor %}
+</div>

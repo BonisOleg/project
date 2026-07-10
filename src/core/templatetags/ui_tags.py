@@ -50,6 +50,17 @@ def product_grid_balanced(products=None, list_mode=False):
     }
 
 
+@register.inclusion_tag('partials/blog_grid_balanced.html')
+def blog_grid_balanced(posts=None, show_excerpt=False, heading='h2'):
+    items = list(posts) if posts is not None else []
+    return {
+        'posts': items,
+        'grid_cols': ideal_cols(len(items), 3),
+        'show_excerpt': show_excerpt,
+        'heading': heading if heading in ('h2', 'h3') else 'h2',
+    }
+
+
 @register.simple_tag(takes_context=True)
 def product_wished(context, product, wished=None):
     if wished not in (None, ''):
