@@ -6,6 +6,7 @@ import { initProductTabs } from './modules/product_tabs.js';
 import { initGallery } from './modules/gallery.js';
 import { initHeroCarousel } from './modules/hero_carousel.js?v=20260703f';
 import { initHomeTabs } from './modules/home_tabs.js';
+import { initProductScroll } from './modules/product_scroll.js';
 
 function onReady(callback) {
   if (document.readyState === 'loading') {
@@ -24,6 +25,7 @@ onReady(() => {
   initGallery();
   initHeroCarousel();
   initHomeTabs();
+  initProductScroll();
 });
 
 document.body.addEventListener('htmx:configRequest', (event) => {
@@ -32,5 +34,12 @@ document.body.addEventListener('htmx:configRequest', (event) => {
     || document.querySelector('[name=csrfmiddlewaretoken]');
   if (token) {
     event.detail.headers['X-CSRFToken'] = token.value;
+  }
+});
+
+document.body.addEventListener('htmx:afterSwap', (event) => {
+  const target = event.detail?.target;
+  if (target?.id === 'home-products-panel') {
+    initProductScroll(target);
   }
 });

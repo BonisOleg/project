@@ -196,6 +196,13 @@
   }
 }
 
+@media (max-width: 767px) {
+  .hero {
+    min-height: calc(var(--vh) * 0.22);
+    height: calc(var(--vh) * 0.22);
+  }
+}
+
 .tabs {
   display: flex;
   gap: var(--sp-2);

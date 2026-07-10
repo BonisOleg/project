@@ -1,3 +1,33 @@
+{% if mobile_scroll %}
+<div class="product-scroll" data-product-scroll data-scrollable="1">
+  <button type="button"
+          class="product-scroll__btn product-scroll__btn--prev"
+          aria-label="Попередні товари"
+          disabled>
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path d="M8.75 2.5 4.25 7l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+  <div class="product-scroll__viewport">
+    <div class="product-grid product-grid--balanced product-grid--cols-{{ grid_cols }} product-grid--scroll-mobile">
+      {% for product in products %}
+      <div class="product-grid__item">
+        {% include 'partials/product_card.html' with product=product list_mode=list_mode %}
+      </div>
+      {% empty %}
+      <p>Товари зʼявляться незабаром.</p>
+      {% endfor %}
+    </div>
+  </div>
+  <button type="button"
+          class="product-scroll__btn product-scroll__btn--next"
+          aria-label="Наступні товари">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path d="M5.25 2.5 9.75 7l-4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+</div>
+{% else %}
 <div class="product-grid product-grid--balanced product-grid--cols-{{ grid_cols }}">
   {% for product in products %}
   <div class="product-grid__item">
@@ -7,3 +37,4 @@
   <p>Товари зʼявляться незабаром.</p>
   {% endfor %}
 </div>
+{% endif %}

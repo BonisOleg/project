@@ -1,0 +1,193 @@
+/* Горизонтальний скрол сітки товарів (головна): мобілка >2, десктоп при overflow */
+
+.product-scroll {
+  position: relative;
+}
+
+.product-scroll__btn {
+  display: none;
+  place-items: center;
+  position: absolute;
+  top: 26%;
+  z-index: 3;
+  padding: 0;
+  border: 1px solid rgba(20, 24, 43, 0.08);
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--c-text-secondary);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition:
+    opacity var(--t-fast),
+    background var(--t-fast),
+    color var(--t-fast),
+    transform var(--t-fast);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.product-scroll__btn svg {
+  display: block;
+  pointer-events: none;
+}
+
+.product-scroll__btn--prev {
+  left: 2px;
+}
+
+.product-scroll__btn--next {
+  right: 2px;
+}
+
+.product-scroll__btn:hover {
+  background: #fff;
+  color: var(--c-brand);
+}
+
+.product-scroll__btn:active {
+  transform: scale(0.94);
+}
+
+.product-scroll__btn:disabled {
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.product-scroll__btn:focus-visible {
+  outline: 2px solid var(--c-brand);
+  outline-offset: 2px;
+}
+
+.product-scroll__viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  touch-action: pan-x;
+  container-type: inline-size;
+  container-name: product-scroll;
+}
+
+.product-scroll__viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.product-grid--scroll-mobile {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  width: max-content;
+  max-width: none;
+  gap: var(--sp-3);
+  padding-inline-end: var(--sp-6);
+}
+
+.product-grid--scroll-mobile > .product-grid__item {
+  min-width: 0;
+  scroll-snap-align: start;
+  box-sizing: border-box;
+}
+
+/* Немає overflow — картки розтягуються на всю ширину, стрілки ховаємо */
+.product-scroll:not([data-scrollable='1']) .product-grid--scroll-mobile {
+  width: 100%;
+  max-width: 100%;
+  padding-inline-end: 0;
+}
+
+.product-scroll:not([data-scrollable='1']) .product-grid--scroll-mobile > .product-grid__item {
+  flex: 1 1 0;
+  width: auto;
+}
+
+.product-scroll[data-scrollable='1'] .product-scroll__btn {
+  display: grid;
+}
+
+/* Мобілка: ~2 + peek */
+@media (max-width: 767px) {
+  .product-scroll__btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .product-scroll[data-scrollable='1'] .product-grid--scroll-mobile > .product-grid__item {
+    flex: 0 0 calc((100cqw - var(--sp-3)) / 2.2);
+    width: calc((100cqw - var(--sp-3)) / 2.2);
+  }
+
+  @supports not (width: 1cqw) {
+    .product-scroll[data-scrollable='1'] .product-grid--scroll-mobile > .product-grid__item {
+      flex: 0 0 calc((100vw - 2 * var(--container-pad) - var(--sp-3)) / 2.2);
+      width: calc((100vw - 2 * var(--container-pad) - var(--sp-3)) / 2.2);
+    }
+  }
+}
+
+/* Планшет: ~3 + peek */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .product-scroll__btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .product-scroll__btn--prev {
+    left: 6px;
+  }
+
+  .product-scroll__btn--next {
+    right: 6px;
+  }
+
+  .product-grid--scroll-mobile {
+    gap: var(--sp-5);
+    padding-inline-end: 0;
+  }
+
+  .product-scroll[data-scrollable='1'] .product-grid--scroll-mobile > .product-grid__item {
+    flex: 0 0 calc((100cqw - 2 * var(--sp-5)) / 3.15);
+    width: calc((100cqw - 2 * var(--sp-5)) / 3.15);
+  }
+
+  @supports not (width: 1cqw) {
+    .product-scroll[data-scrollable='1'] .product-grid--scroll-mobile > .product-grid__item {
+      flex: 0 0 calc((100vw - 2 * var(--container-pad) - 2 * var(--sp-5)) / 3.15);
+      width: calc((100vw - 2 * var(--container-pad) - 2 * var(--sp-5)) / 3.15);
+    }
+  }
+}
+
+/* Десктоп: ~5 + легкий peek наступної */
+@media (min-width: 1024px) {
+  .product-scroll__btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .product-scroll__btn--prev {
+    left: 8px;
+  }
+
+  .product-scroll__btn--next {
+    right: 8px;
+  }
+
+  .product-grid--scroll-mobile {
+    gap: var(--sp-5);
+    padding-inline-end: 0;
+  }
+
+  .product-scroll[data-scrollable='1'] .product-grid--scroll-mobile > .product-grid__item {
+    flex: 0 0 calc((100cqw - 4 * var(--sp-5)) / 5.15);
+    width: calc((100cqw - 4 * var(--sp-5)) / 5.15);
+  }
+
+  @supports not (width: 1cqw) {
+    .product-scroll[data-scrollable='1'] .product-grid--scroll-mobile > .product-grid__item {
+      flex: 0 0 calc((100vw - 2 * var(--container-pad) - 4 * var(--sp-5)) / 5.15);
+      width: calc((100vw - 2 * var(--container-pad) - 4 * var(--sp-5)) / 5.15);
+    }
+  }
+}

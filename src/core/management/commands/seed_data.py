@@ -1,5 +1,9 @@
+from datetime import timedelta
 from decimal import Decimal
+from pathlib import Path
 
+from django.conf import settings
+from django.core.files.base import ContentFile
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -71,6 +75,34 @@ SAMPLE_PRODUCTS = [
     ('Крісло обіднє Bonro B-016 комплект 4 шт', 'B016', 'kuxonni', 'Bonro', Decimal('3456.00'), False, True, False),
     ('Валіза пластикова 28"', 'VAL28', 'plastikovi', 'Oyra', Decimal('1890.00'), False, True, True),
 ]
+
+# slug, title, excerpt, content, hero filename, days_ago
+BLOG_POSTS = (
+    (
+        'ofisne-krislo-bonro',
+        'Огляд офісного крісла Bonro B-619',
+        'Комфорт для роботи та навчання.',
+        'Детальний огляд популярного офісного крісла Bonro B-619: ергономіка, матеріали та для кого воно підходить.',
+        'chair.jpg',
+        1,
+    ),
+    (
+        'yak-obraty-ofisne-krislo',
+        'Як обрати офісне крісло для довгої роботи',
+        'На що звернути увагу перед покупкою.',
+        'Пояснюємо, як підібрати висоту сидіння, підтримку попереку та матеріал оббивки, щоб працювати комфортно щодня.',
+        'lounger.jpg',
+        4,
+    ),
+    (
+        'organizaciya-robochogo-miscya',
+        'Організація робочого місця: стелаж і порядок',
+        'Практичні поради для дому та офісу.',
+        'Як розставити стелаж, звільнити стіл від зайвого і зробити робочу зону зручнішою без великих витрат.',
+        'shelf.jpg',
+        8,
+    ),
+)
 
 
 class Command(BaseCommand):
@@ -172,16 +204,31 @@ class Command(BaseCommand):
             },
         )
 
-        Post.objects.update_or_create(
-            slug='ofisne-krislo-bonro',
-            defaults={
-                'title': 'Огляд офісного крісла Bonro B-619',
-                'excerpt': 'Комфорт для роботи та навчання.',
-                'content': 'Детальний огляд популярного офісного крісла.',
-                'is_published': True,
-                'published_at': timezone.now(),
-            },
-        )
+        now = timezone.now()
+        hero_dir = Path(settings.BASE_DIR) / 'static' / 'images' / 'hero'
+        for slug, title, excerpt, content, image_name, days_ago in BLOG_POSTS:
+            post, _ = Post.objects.update_or_create(
+                slug=slug,
+                defaults={
+                    'title': title,
+                    'excerpt': excerpt,
+                    'content': content,
+                    'is_published': True,
+                    'published_at': now - timedelta(days=days_ago),
+                },
+            )
+            source = hero_dir / image_name
+            if not source.exists():
+                self.stderr.write(self.style.ERROR(f'Missing blog image: {source}'))
+                continue
+            if post.image:
+                post.image.delete(save=False)
+            post.image.save(
+                f'{slug}-{image_name}',
+                ContentFile(source.read_bytes()),
+                save=True,
+            )
+            self.stdout.write(self.style.SUCCESS(f'Blog post: {title} ← {image_name}'))
 
         if not User.objects.filter(email='admin@oyra.ua').exists():
             User.objects.create_superuser(
