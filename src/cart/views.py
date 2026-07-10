@@ -4,6 +4,8 @@ from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
+from src.core.breadcrumbs import make_breadcrumbs
+
 from .compare import CompareService
 from .services import CartService
 
@@ -18,6 +20,7 @@ def cart_detail(request):
         'promo': promo,
         'total': cart.total(promo),
         'page_title': 'Кошик',
+        'breadcrumbs': make_breadcrumbs(('Кошик', '')),
     })
 
 

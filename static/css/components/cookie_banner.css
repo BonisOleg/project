@@ -9,6 +9,11 @@
 }
 
 .cookie-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-toast);
   width: 100%;
   padding: 0 var(--sp-4);
   background: #0a0908;

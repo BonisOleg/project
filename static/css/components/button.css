@@ -38,13 +38,15 @@
 
 .btn--secondary {
   background: transparent;
-  border: 1px solid var(--c-border-strong);
+  border: 1.5px solid rgba(20, 24, 43, 0.32);
   color: var(--c-text);
+  box-shadow: 0 2px 10px rgba(20, 24, 43, 0.08);
 }
 
 .btn--secondary:hover {
   border-color: var(--c-brand);
   color: var(--c-brand-dark);
+  box-shadow: 0 4px 14px rgba(20, 24, 43, 0.12);
 }
 
 .btn--ghost {
@@ -57,6 +59,19 @@
   min-height: 40px;
   padding: 0 var(--sp-4);
   font-size: var(--fs-xs);
+}
+
+.btn--icon {
+  width: 40px;
+  min-width: 40px;
+  padding: 0;
+}
+
+.btn--icon svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  pointer-events: none;
 }
 
 .btn--block { width: 100%; }
@@ -81,9 +96,24 @@
   padding: var(--sp-3) var(--sp-4);
   border: 1px solid var(--c-border);
   border-radius: var(--r-md);
-  background: var(--c-surface);
+  background-color: var(--c-surface);
   font-size: 16px;
   transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+
+select.field__input {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: calc(var(--sp-4) + 1rem + var(--sp-3));
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--sp-4) center;
+  background-size: 1rem 1rem;
+  cursor: pointer;
+}
+
+select.field__input::-ms-expand {
+  display: none;
 }
 
 .field__input:focus {

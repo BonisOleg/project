@@ -1,13 +1,15 @@
 from decimal import Decimal
 
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from src.accounts.models import User
 from src.blog.models import Post
 from src.catalog.models import Brand, Category, Product, ProductAttribute
-from src.core.models import SiteSettings
+from src.core.models import SiteSettings, SocialLink
 from src.pages.models import FAQItem, StaticPage
+from src.pages.static_content import FAQ_ITEMS, STATIC_PAGES
 from src.promotions.models import PromoCode
 from src.reviews.models import Review
 
@@ -59,22 +61,6 @@ CATEGORIES = [
     ]),
 ]
 
-STATIC_PAGES = [
-    ('delivery', 'Доставка', 'Доставка Новою Поштою та Укрпоштою протягом 1–3 днів.'),
-    ('payment', 'Оплата', 'Оплата через LiqPay: Visa, Mastercard, Apple Pay, Google Pay.'),
-    ('returns', 'Повернення та обмін', 'Повернення товару протягом 14 днів.'),
-    ('about', 'Про нас', 'Oyra — сучасний інтернет-магазин корисних товарів.'),
-    ('security', 'Політика безпеки', 'Ми захищаємо ваші дані та платежі.'),
-    ('offer', 'Публічний договір', 'Умови купівлі-продажу через сайт Oyra.'),
-    ('dropshipping', 'Дропшипінг', 'Співпраця для партнерів без власного складу.'),
-    ('schedule', 'Графік роботи', 'Пн–Пт: 9:00–18:00. Сб–Нд: вихідний.'),
-    ('instructions', 'Інструкції товарів', 'Архів інструкцій з експлуатації.'),
-    ('privacy', 'Політика конфіденційності', 'Як ми обробляємо персональні дані.'),
-    ('terms', 'Умови використання', 'Правила користування сайтом.'),
-    ('cookies', 'Політика cookies', 'Як сайт використовує cookies.'),
-    ('faq', 'FAQ', 'Часті питання.'),
-]
-
 SAMPLE_PRODUCTS = [
     ('Стелаж металевий 180×90×40', 'G9040', 'stellazhi', 'GoodTool', Decimal('1082.00'), True, False, False),
     ('Стелаж металевий 180×90×40 чорний', 'P9040', 'stellazhi', 'GoodTool', Decimal('1234.00'), True, False, False),
@@ -93,6 +79,18 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         SiteSettings.get_solo()
         self.stdout.write('Site settings OK')
+
+        defaults = (
+            (SocialLink.Network.TELEGRAM, 10),
+            (SocialLink.Network.FACEBOOK, 20),
+            (SocialLink.Network.INSTAGRAM, 30),
+        )
+        for network, order in defaults:
+            SocialLink.objects.get_or_create(
+                network=network,
+                defaults={'sort_order': order, 'is_active': True, 'url': ''},
+            )
+        self.stdout.write('Social links OK')
 
         sort = 0
         cat_map = {}
@@ -155,20 +153,15 @@ class Command(BaseCommand):
                 slug=slug, defaults={'title': title, 'content': content, 'is_published': True},
             )
 
-        FAQItem.objects.get_or_create(
-            question='Чи потрібна реєстрація для покупки?',
-            defaults={
-                'answer': 'Ні, можна оформити замовлення як гість.',
-                'sort_order': 1, 'is_published': True,
-            },
-        )
-        FAQItem.objects.get_or_create(
-            question='Як оплатити через LiqPay?',
-            defaults={
-                'answer': 'На останньому кроці checkout натисніть «Оплатити через LiqPay».',
-                'sort_order': 2, 'is_published': True,
-            },
-        )
+        for question, answer, order in FAQ_ITEMS:
+            FAQItem.objects.update_or_create(
+                question=question,
+                defaults={
+                    'answer': answer,
+                    'sort_order': order,
+                    'is_published': True,
+                },
+            )
 
         PromoCode.objects.update_or_create(
             code='OYRA15',
@@ -198,4 +191,5 @@ class Command(BaseCommand):
             )
             self.stdout.write(self.style.WARNING('Admin: admin@oyra.ua / admin12345'))
 
+        call_command('seed_hero_product_images')
         self.stdout.write(self.style.SUCCESS('Seed completed'))

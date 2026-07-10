@@ -9,6 +9,7 @@
 
 {% block content %}
 <section class="checkout-page">
+  {% include 'partials/breadcrumbs.html' %}
   <div class="checkout-card">
     {% include 'orders/_checkout_steps.html' with step=step %}
     <h1 class="checkout-page__title">{{ page_title }}</h1>

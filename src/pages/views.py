@@ -2,6 +2,8 @@ from django import forms
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 
+from src.core.breadcrumbs import make_breadcrumbs
+
 from .models import DropshippingApplication, FAQItem, NewsletterSubscription, StaticPage
 
 
@@ -25,6 +27,10 @@ class DropshippingForm(forms.ModelForm):
         }
 
 
+def _page_crumbs(page):
+    return make_breadcrumbs((page.title, ''))
+
+
 def static_page(request, slug):
     page = get_object_or_404(StaticPage, slug=slug, is_published=True)
     template = 'pages/static_page.html'
@@ -34,14 +40,21 @@ def static_page(request, slug):
         return faq_page(request, page)
     if slug == StaticPage.SLUG_INSTRUCTIONS:
         return instructions(request, page)
-    return render(request, template, {'page': page})
+    return render(request, template, {
+        'page': page,
+        'breadcrumbs': _page_crumbs(page),
+    })
 
 
 def faq_page(request, page=None):
     if not page:
         page = get_object_or_404(StaticPage, slug=StaticPage.SLUG_FAQ)
     items = FAQItem.objects.filter(is_published=True)
-    return render(request, 'pages/faq.html', {'page': page, 'faq_items': items})
+    return render(request, 'pages/faq.html', {
+        'page': page,
+        'faq_items': items,
+        'breadcrumbs': _page_crumbs(page),
+    })
 
 
 def instructions(request, page):
@@ -50,7 +63,12 @@ def instructions(request, page):
     q = request.GET.get('q', '').strip()
     if q:
         items = items.filter(title__icontains=q) | items.filter(sku__icontains=q)
-    return render(request, 'pages/instructions.html', {'page': page, 'items': items, 'q': q})
+    return render(request, 'pages/instructions.html', {
+        'page': page,
+        'items': items,
+        'q': q,
+        'breadcrumbs': _page_crumbs(page),
+    })
 
 
 def dropshipping(request, page):
@@ -59,7 +77,11 @@ def dropshipping(request, page):
         form.save()
         messages.success(request, 'Заявку надіслано. Ми звʼяжемось з вами.')
         return redirect('pages:static', slug=page.slug)
-    return render(request, 'pages/dropshipping.html', {'page': page, 'form': form})
+    return render(request, 'pages/dropshipping.html', {
+        'page': page,
+        'form': form,
+        'breadcrumbs': _page_crumbs(page),
+    })
 
 
 def newsletter_subscribe(request):

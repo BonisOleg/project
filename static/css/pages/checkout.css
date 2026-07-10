@@ -21,6 +21,10 @@
   padding: var(--sp-6) var(--container-pad) calc(var(--sp-8) + var(--safe-bottom));
 }
 
+.checkout-page > .breadcrumbs {
+  padding-top: 0;
+}
+
 .checkout-card {
   display: flex;
   flex-direction: column;

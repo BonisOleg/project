@@ -1,11 +1,18 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/cabinet.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="container" style="padding:var(--sp-8) 0 calc(var(--sp-8) + var(--bottom-nav-h))">
-  <header style="margin-bottom:var(--sp-6)">
-    <h1 class="section__title">Обране</h1>
-    <p style="margin-top:var(--sp-3);font-size:var(--fs-sm);color:var(--c-text-secondary)">
-      Товари зберігаються у браузері. <a href="{% url 'accounts:login' %}?next={% url 'accounts:wishlist' %}">Увійдіть</a>, щоб синхронізувати з акаунтом.
+<div class="container cabinet-page">
+  {% include 'partials/breadcrumbs.html' %}
+  <header class="cabinet-page__header">
+    <h1 class="cabinet-page__title">Обране</h1>
+    <p class="cabinet-page__note">
+      Товари зберігаються у браузері.
+      <a href="{% url 'accounts:login' %}?next={% url 'accounts:wishlist' %}">Увійдіть</a>, щоб синхронізувати з акаунтом.
     </p>
   </header>
 
@@ -13,9 +20,15 @@
     {% for product in products %}
       {% include 'partials/product_card.html' with list_mode=True %}
     {% empty %}
-    <div style="grid-column:1/-1;padding:var(--sp-8);text-align:center;border:1px dashed var(--c-border);border-radius:var(--r-lg)">
-      <p style="color:var(--c-text-secondary);margin-bottom:var(--sp-4)">У обраному поки нічого немає.</p>
-      <a href="{% url 'catalog:list' %}" class="btn btn--primary">Переглянути каталог</a>
+    <div class="cabinet-empty">
+      <div class="cabinet-empty__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.8 5.6a4.5 4.5 0 0 0-6.4 0L12 8l-2.4-2.4a4.5 4.5 0 0 0-6.4 6.4l2.4 2.4L12 21l6.4-6.4 2.4-2.4a4.5 4.5 0 0 0 0-6.4z"/>
+        </svg>
+      </div>
+      <p class="cabinet-empty__title">Обране порожнє</p>
+      <p class="cabinet-empty__text">У обраному поки нічого немає.</p>
+      <a href="{% url 'catalog:list' %}" class="btn btn--primary btn--sm">Переглянути каталог</a>
     </div>
     {% endfor %}
   </div>

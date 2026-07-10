@@ -119,3 +119,35 @@ class SiteHeaderSettings(SiteSettings):
         proxy = True
         verbose_name = 'Шапка — Меню'
         verbose_name_plural = 'Шапка — Меню'
+
+
+class SocialLink(models.Model):
+    class Network(models.TextChoices):
+        TELEGRAM = 'telegram', 'Telegram'
+        FACEBOOK = 'facebook', 'Facebook'
+        INSTAGRAM = 'instagram', 'Instagram'
+        TIKTOK = 'tiktok', 'TikTok'
+        VIBER = 'viber', 'Viber'
+        WHATSAPP = 'whatsapp', 'WhatsApp'
+        YOUTUBE = 'youtube', 'YouTube'
+
+    network = models.CharField(
+        'Мережа',
+        max_length=20,
+        choices=Network.choices,
+    )
+    url = models.URLField('Посилання', blank=True)
+    sort_order = models.PositiveSmallIntegerField('Порядок', default=0)
+    is_active = models.BooleanField('Активне', default=True)
+
+    class Meta:
+        ordering = ['sort_order', 'id']
+        verbose_name = 'Соцмережа'
+        verbose_name_plural = 'Соцмережі'
+
+    def __str__(self):
+        return self.get_network_display()
+
+    @property
+    def label(self):
+        return self.get_network_display()

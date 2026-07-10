@@ -1,0 +1,7 @@
+{% if breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Навігація">
+  {% for crumb in breadcrumbs %}
+    {% if crumb.url %}<a href="{{ crumb.url }}">{{ crumb.title }}</a> / {% else %}<span>{{ crumb.title }}</span>{% endif %}
+  {% endfor %}
+</nav>
+{% endif %}

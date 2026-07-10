@@ -3,7 +3,7 @@ from django.db.models import Prefetch
 
 from src.catalog.models import Category
 
-from .models import SiteBlock, SiteSettings
+from .models import SiteBlock, SiteSettings, SocialLink
 
 SITE_BLOCKS_CACHE_KEY = 'oyra_site_blocks_v1'
 SITE_BLOCKS_CACHE_TTL = 60
@@ -21,6 +21,8 @@ def _load_site_blocks() -> dict[str, SiteBlock]:
 
 def site_context(request):
     settings_obj = SiteSettings.get_solo()
+    social_links = list(SocialLink.objects.filter(is_active=True))
+    youtube_link = next((item for item in social_links if item.network == 'youtube' and item.url), None)
     categories_menu = Category.objects.filter(
         parent=None, is_active=True,
     ).prefetch_related(
@@ -30,4 +32,8 @@ def site_context(request):
         'site_settings': settings_obj,
         'site_blocks': _load_site_blocks(),
         'categories_menu': categories_menu,
+        'social_links': social_links,
+        'youtube_social_url': (
+            youtube_link.url if youtube_link else settings_obj.youtube_url
+        ),
     }

@@ -38,11 +38,17 @@ def home(request):
 
 
 def handler404(request, exception):
-    return render(request, 'pages/404.html', status=404)
+    from src.core.breadcrumbs import make_breadcrumbs
+    return render(request, 'pages/404.html', {
+        'breadcrumbs': make_breadcrumbs(('Сторінку не знайдено', '')),
+    }, status=404)
 
 
 def handler500(request):
-    return render(request, 'pages/500.html', status=500)
+    from src.core.breadcrumbs import make_breadcrumbs
+    return render(request, 'pages/500.html', {
+        'breadcrumbs': make_breadcrumbs(('Помилка сервера', '')),
+    }, status=500)
 
 
 @csrf_exempt

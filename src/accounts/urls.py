@@ -1,4 +1,3 @@
-from django.contrib.auth import views as auth_views
 from django.urls import path
 
 from . import views
@@ -18,7 +17,7 @@ urlpatterns = [
     path('password-reset/', views.OyraPasswordResetView.as_view(), name='password_reset'),
     path(
         'password-reset/done/',
-        auth_views.PasswordResetDoneView.as_view(template_name='accounts/password_reset_done.html'),
+        views.OyraPasswordResetDoneView.as_view(),
         name='password_reset_done',
     ),
 ]

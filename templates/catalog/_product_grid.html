@@ -7,13 +7,17 @@
 </div>
 
 {% if page_obj.has_other_pages %}
-<nav class="pagination" style="margin-top:var(--sp-6);display:flex;gap:var(--sp-2);flex-wrap:wrap">
+<nav class="pagination" style="margin-top:var(--sp-6);display:flex;gap:var(--sp-2);flex-wrap:wrap;align-items:center">
   {% if page_obj.has_previous %}
-  <a class="btn btn--secondary btn--sm" href="?page={{ page_obj.previous_page_number }}">←</a>
+  <a class="btn btn--secondary btn--sm btn--icon" href="?page={{ page_obj.previous_page_number }}" aria-label="Попередня сторінка">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+  </a>
   {% endif %}
   <span style="padding:var(--sp-2)">Сторінка {{ page_obj.number }} з {{ page_obj.paginator.num_pages }}</span>
   {% if page_obj.has_next %}
-  <a class="btn btn--secondary btn--sm" href="?page={{ page_obj.next_page_number }}">→</a>
+  <a class="btn btn--secondary btn--sm btn--icon" href="?page={{ page_obj.next_page_number }}" aria-label="Наступна сторінка">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+  </a>
   {% endif %}
 </nav>
 {% endif %}

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from decouple import config
+from django.templatetags.static import static
 from django.urls import reverse_lazy
 
 from src.core.site_content_registry import build_content_sidebar_items
@@ -125,6 +126,30 @@ UNFOLD = {
     'SITE_TITLE': 'Oyra Admin',
     'SITE_HEADER': 'Oyra — Адмінпанель',
     'SITE_SYMBOL': 'storefront',
+    'SITE_ICON': {
+        'light': lambda request: static('images/favicon/favicon-32.png'),
+        'dark': lambda request: static('images/favicon/favicon-32.png'),
+    },
+    'SITE_FAVICONS': [
+        {
+            'rel': 'icon',
+            'sizes': 'any',
+            'type': 'image/x-icon',
+            'href': lambda request: static('images/favicon/favicon.ico'),
+        },
+        {
+            'rel': 'icon',
+            'sizes': '32x32',
+            'type': 'image/png',
+            'href': lambda request: static('images/favicon/favicon-32.png'),
+        },
+        {
+            'rel': 'apple-touch-icon',
+            'sizes': '180x180',
+            'type': 'image/png',
+            'href': lambda request: static('images/favicon/apple-touch-icon.png'),
+        },
+    ],
     'SIDEBAR': {
         'show_search': True,
         'command_search': True,
@@ -138,6 +163,11 @@ UNFOLD = {
                         'title': 'Сайт',
                         'icon': 'settings',
                         'link': reverse_lazy('admin:core_sitesettings_changelist'),
+                    },
+                    {
+                        'title': 'Соцмережі',
+                        'icon': 'share',
+                        'link': reverse_lazy('admin:core_sociallink_changelist'),
                     },
                 ],
             },

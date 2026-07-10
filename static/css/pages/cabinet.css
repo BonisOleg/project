@@ -19,6 +19,23 @@
   margin-bottom: var(--sp-2);
 }
 
+.cabinet-page__note {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--c-text-secondary);
+  line-height: 1.55;
+  max-width: 36rem;
+}
+
+.cabinet-page__note a {
+  color: var(--c-brand);
+  font-weight: 500;
+}
+
+.cabinet-page__note a:hover {
+  color: var(--c-brand-dark);
+}
+
 .cabinet-page__eyebrow {
   font-size: var(--fs-xs);
   font-weight: 600;
@@ -84,8 +101,17 @@
   background: var(--c-accent-bg);
 }
 
+.cabinet-nav__logout {
+  display: contents;
+}
+
 .cabinet-nav__link--logout {
+  font: inherit;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
   color: var(--c-text-muted);
+  text-align: inherit;
 }
 
 .cabinet-nav__link--logout:hover {
@@ -158,18 +184,53 @@
 }
 
 .cabinet-empty {
-  display: grid;
-  gap: var(--sp-4);
-  padding: var(--sp-8) var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  max-width: 22rem;
+  margin: 0 auto;
+  padding: var(--sp-6) var(--sp-4);
   text-align: center;
-  border: 1px dashed var(--c-border);
-  border-radius: var(--r-md);
-  background: var(--c-bg);
+}
+
+.cabinet-empty__icon {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: var(--c-brand-bg);
+  color: var(--c-brand);
+}
+
+.cabinet-empty__icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.cabinet-empty__title {
+  font-family: var(--ff-display);
+  font-size: var(--fs-xl);
+  line-height: 1.25;
+  color: var(--c-text);
 }
 
 .cabinet-empty__text {
   color: var(--c-text-secondary);
-  line-height: 1.6;
+  line-height: 1.55;
+  font-size: var(--fs-sm);
+}
+
+.cabinet-empty .btn {
+  width: auto;
+  margin-top: var(--sp-2);
+  min-height: 44px;
+  padding: 0 var(--sp-5);
+}
+
+.product-grid > .cabinet-empty {
+  grid-column: 1 / -1;
 }
 
 .cabinet-form {
@@ -179,10 +240,30 @@
 
 @media (max-width: 899px) {
   .cabinet-page {
-    padding: var(--sp-5) 0 calc(var(--sp-8) + var(--bottom-nav-h));
+    padding: var(--sp-5) 0 var(--sp-8);
   }
 
   .cabinet-panel {
     padding: var(--sp-4);
+  }
+
+  .cabinet-panel__title {
+    margin-bottom: var(--sp-4);
+    padding-bottom: var(--sp-3);
+  }
+
+  .cabinet-empty {
+    padding: var(--sp-5) var(--sp-3);
+    max-width: 18rem;
+  }
+
+  .cabinet-empty__icon {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .cabinet-empty__icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
   }
 }

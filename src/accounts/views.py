@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordResetDoneView, PasswordResetView
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -9,6 +9,7 @@ from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
 from src.catalog.models import Product
+from src.core.breadcrumbs import make_breadcrumbs
 
 from .forms import AddressForm, LoginForm, PasswordResetForm, ProfileForm, RegisterForm
 from .models import DeliveryAddress
@@ -19,6 +20,11 @@ class OyraLoginView(LoginView):
     template_name = 'accounts/login.html'
     authentication_form = LoginForm
     redirect_authenticated_user = True
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['breadcrumbs'] = make_breadcrumbs(('Вхід', ''))
+        return ctx
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -36,6 +42,26 @@ class OyraPasswordResetView(PasswordResetView):
     email_template_name = 'accounts/password_reset_email.html'
     success_url = reverse_lazy('accounts:password_reset_done')
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['breadcrumbs'] = make_breadcrumbs(
+            ('Вхід', '/accounts/login/'),
+            ('Відновлення пароля', ''),
+        )
+        return ctx
+
+
+class OyraPasswordResetDoneView(PasswordResetDoneView):
+    template_name = 'accounts/password_reset_done.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['breadcrumbs'] = make_breadcrumbs(
+            ('Вхід', '/accounts/login/'),
+            ('Відновлення пароля', ''),
+        )
+        return ctx
+
 
 def register(request):
     if request.user.is_authenticated:
@@ -50,7 +76,10 @@ def register(request):
             WishlistService(request).merge_session_to_user()
             messages.success(request, 'Реєстрація успішна')
             return redirect('accounts:cabinet')
-    return render(request, 'accounts/register.html', {'form': form})
+    return render(request, 'accounts/register.html', {
+        'form': form,
+        'breadcrumbs': make_breadcrumbs(('Реєстрація', '')),
+    })
 
 
 @login_required
@@ -58,6 +87,7 @@ def cabinet(request):
     return render(request, 'accounts/cabinet.html', {
         'orders': request.user.orders.all()[:10],
         'cabinet_section': 'orders',
+        'breadcrumbs': make_breadcrumbs(('Кабінет', '')),
     })
 
 
@@ -71,6 +101,10 @@ def profile(request):
     return render(request, 'accounts/profile.html', {
         'form': form,
         'cabinet_section': 'profile',
+        'breadcrumbs': make_breadcrumbs(
+            ('Кабінет', '/accounts/cabinet/'),
+            ('Профіль', ''),
+        ),
     })
 
 
@@ -121,11 +155,17 @@ def wishlist_remove(request, product_id):
 
 def wishlist_page(request):
     products = WishlistService(request).get_products()
+    crumbs = make_breadcrumbs(
+        ('Кабінет', '/accounts/cabinet/'),
+        ('Обране', ''),
+    ) if request.user.is_authenticated else make_breadcrumbs(('Обране', ''))
     if request.user.is_authenticated:
         return render(request, 'accounts/wishlist.html', {
             'products': products,
             'cabinet_section': 'wishlist',
+            'breadcrumbs': crumbs,
         })
     return render(request, 'accounts/wishlist_guest.html', {
         'products': products,
+        'breadcrumbs': crumbs,
     })

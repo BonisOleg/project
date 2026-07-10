@@ -25,7 +25,7 @@
     box-shadow: 0 -4px 24px rgba(20, 24, 43, 0.06);
   }
 
-  body.has-bottom-nav {
+  body.has-bottom-nav #main {
     padding-bottom: calc(var(--bottom-nav-h) + var(--safe-bottom));
   }
 

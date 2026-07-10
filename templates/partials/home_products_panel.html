@@ -1,4 +1,4 @@
-{% load oyra_content %}
+{% load oyra_content ui_tags %}
 <div class="section__header">
   <h2 class="section__title">{% block_plain 'home' 'products_section_title' %}</h2>
   <div class="tabs" role="tablist">
@@ -22,10 +22,4 @@
        hx-push-url="true">Топ переглядів</a>
   </div>
 </div>
-<div class="product-grid">
-  {% for product in tab_products %}
-    {% include 'partials/product_card.html' %}
-  {% empty %}
-    <p>Товари зʼявляться незабаром.</p>
-  {% endfor %}
-</div>
+{% product_grid_balanced tab_products %}

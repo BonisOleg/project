@@ -1,8 +1,16 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/content.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="container" style="padding:var(--sp-10) 0;text-align:center">
-  <h1 class="section__title">Помилка сервера</h1>
-  <a href="{% url 'core:home' %}" class="btn btn--primary" style="margin-top:var(--sp-6)">На головну</a>
+<div class="content-page content-page--center">
+  {% include 'partials/breadcrumbs.html' %}
+  <h1 class="content-page__title">500 — Помилка сервера</h1>
+  <div class="content-page__actions">
+    <a href="{% url 'core:home' %}" class="btn btn--primary">На головну</a>
+  </div>
 </div>
 {% endblock %}

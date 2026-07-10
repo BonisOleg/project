@@ -7,21 +7,27 @@ from django.core.management.base import BaseCommand
 
 from src.catalog.models import Product, ProductImage
 
-HERO_SLIDES = (
+# SKU → файл у static/images/hero/
+PRODUCT_IMAGES = (
     ('BAT374', 'trampoline.jpg'),
     ('B173', 'chair.jpg'),
+    ('B619', 'chair.jpg'),
+    ('B016', 'chair.jpg'),
     ('P9040', 'shelf.jpg'),
+    ('G9040', 'shelf.jpg'),
+    ('SP2002', 'slide-2.jpg'),
+    ('VAL28', 'slide-4.jpg'),
 )
 
 
 class Command(BaseCommand):
-    help = 'Attach hero carousel images to catalog products (3 slides)'
+    help = 'Attach seed images to catalog products'
 
     def handle(self, *args, **options):
         hero_dir = Path(settings.BASE_DIR) / 'static' / 'images' / 'hero'
-        hero_dir.mkdir(parents=True, exist_ok=True)
+        attached = 0
 
-        for sku, filename in HERO_SLIDES:
+        for sku, filename in PRODUCT_IMAGES:
             source = hero_dir / filename
             if not source.exists():
                 self.stderr.write(self.style.ERROR(f'Missing image: {source}'))
@@ -33,16 +39,15 @@ class Command(BaseCommand):
                 continue
 
             image_bytes = source.read_bytes()
-            buffer = BytesIO(image_bytes)
-
             ProductImage.objects.filter(product=product).delete()
             ProductImage.objects.create(
                 product=product,
-                image=ContentFile(buffer.read(), name=f'{sku.lower()}-hero.jpg'),
+                image=ContentFile(BytesIO(image_bytes).read(), name=f'{sku.lower()}-hero.jpg'),
                 alt_text=product.name,
                 sort_order=0,
                 is_main=True,
             )
-            self.stdout.write(self.style.SUCCESS(f'Attached: {product.name}'))
+            attached += 1
+            self.stdout.write(self.style.SUCCESS(f'Attached: {product.name} ← {filename}'))
 
-        self.stdout.write(self.style.SUCCESS('Hero gallery: 3 images ready'))
+        self.stdout.write(self.style.SUCCESS(f'Product images ready: {attached}'))

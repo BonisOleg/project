@@ -7,6 +7,7 @@
 
 {% block content %}
 <div class="container cabinet-page">
+  {% include 'partials/breadcrumbs.html' %}
   <header class="cabinet-page__header">
     <p class="cabinet-page__eyebrow">Особистий кабінет</p>
     <h1 class="cabinet-page__title">Вітаємо{% if user.first_name %}, {{ user.first_name }}{% endif %}</h1>
@@ -30,8 +31,15 @@
       </article>
       {% empty %}
       <div class="cabinet-empty">
-        <p class="cabinet-empty__text">Замовлень поки немає. Перегляньте каталог і зробіть першу покупку.</p>
-        <a href="{% url 'catalog:list' %}" class="btn btn--primary">До каталогу</a>
+        <div class="cabinet-empty__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 7h12l-1 12H7L6 7z"/>
+            <path d="M9 7V5a3 3 0 0 1 6 0v2"/>
+          </svg>
+        </div>
+        <p class="cabinet-empty__title">Замовлень поки немає</p>
+        <p class="cabinet-empty__text">Перегляньте каталог і зробіть першу покупку.</p>
+        <a href="{% url 'catalog:list' %}" class="btn btn--primary btn--sm">До каталогу</a>
       </div>
       {% endfor %}
     </section>

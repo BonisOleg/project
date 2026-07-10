@@ -29,10 +29,33 @@
       </div>
       <div>
         <div class="site-footer__heading">Ми в мережі</div>
-        <div class="site-footer__links">
-          {% if site_settings.facebook_url %}<a href="{{ site_settings.facebook_url }}" rel="noopener">Facebook</a>{% endif %}
-          {% if site_settings.youtube_url %}<a href="{{ site_settings.youtube_url }}" rel="noopener">YouTube</a>{% endif %}
-          {% if site_settings.instagram_url %}<a href="{{ site_settings.instagram_url }}" rel="noopener">Instagram</a>{% endif %}
+        <div class="site-footer__social" role="list">
+          {% for link in social_links %}
+          <div class="site-footer__social-item" role="listitem">
+            {% if link.url %}
+            <a
+              href="{{ link.url }}"
+              class="site-footer__social-btn"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="{{ link.label }}"
+              title="{{ link.label }}"
+            >
+              {% include 'partials/social_icon.html' with network=link.network %}
+            </a>
+            {% else %}
+            <span
+              class="site-footer__social-btn site-footer__social-btn--static"
+              aria-label="{{ link.label }}"
+              title="{{ link.label }}"
+            >
+              {% include 'partials/social_icon.html' with network=link.network %}
+            </span>
+            {% endif %}
+          </div>
+          {% empty %}
+          <p class="site-footer__social-empty">Незабаром</p>
+          {% endfor %}
         </div>
       </div>
     </div>
@@ -49,6 +72,15 @@
     </div>
 
     <div class="site-footer__bottom">
+      <span class="site-footer__credit">
+        Сайт від
+        <a
+          class="site-footer__credit-link"
+          href="https://www.prometeylabs.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >PrometeyLabs</a>
+      </span>
       © {% now "Y" %} Oyra
       <a href="{% url 'pages:static' slug='privacy' %}">Конфіденційність</a>
       <a href="{% url 'pages:static' slug='cookies' %}">Cookies</a>

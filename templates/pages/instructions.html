@@ -1,22 +1,41 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/pages/content.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="container" style="padding:var(--sp-8) 0">
-  <h1 class="section__title">{{ page.title }}</h1>
-  <form method="get" style="margin:var(--sp-5) 0;display:flex;gap:var(--sp-2)">
-    <input class="field__input" type="search" name="q" value="{{ q }}" placeholder="Пошук за назвою або артикулом">
-    <button class="btn btn--secondary" type="submit">Знайти</button>
+<div class="container content-page content-page--wide">
+  {% include 'partials/breadcrumbs.html' %}
+
+  <header class="page-header">
+    <h1 class="page-title">{{ page.title }}</h1>
+  </header>
+
+  {% if page.content %}
+  <div class="content-page__body content-page__body--lead">{{ page.content|linebreaks }}</div>
+  {% endif %}
+
+  <form method="get" class="instructions-search">
+    <input class="field__input" type="search" name="q" value="{{ q }}" placeholder="Пошук за назвою або артикулом" enterkeyhint="search">
+    <button class="btn btn--secondary btn--sm" type="submit">Знайти</button>
   </form>
-  <ul style="display:grid;gap:var(--sp-3)">
+
+  <ul class="instructions-list">
     {% for item in items %}
-    <li style="padding:var(--sp-4);background:var(--c-surface);border-radius:var(--r-md);border:1px solid var(--c-border)">
+    <li class="instructions-item">
       <strong>{{ item.title }}</strong>
-      {% if item.sku %}<span style="color:var(--c-text-muted);margin-left:var(--sp-2)">{{ item.sku }}</span>{% endif %}
-      {% if item.file %}<a href="{{ item.file.url }}" style="margin-left:var(--sp-3)">PDF</a>{% endif %}
-      {% if item.external_url %}<a href="{{ item.external_url }}" rel="noopener">Завантажити</a>{% endif %}
+      {% if item.sku %}<span class="instructions-item__sku">{{ item.sku }}</span>{% endif %}
+      {% if item.file %}<a class="instructions-item__link" href="{{ item.file.url }}">PDF</a>{% endif %}
+      {% if item.external_url %}<a class="instructions-item__link" href="{{ item.external_url }}" rel="noopener">Завантажити</a>{% endif %}
     </li>
     {% empty %}
-    <li>Інструкції скоро зʼявляться.</li>
+    <li class="content-page__empty">
+      <p class="content-page__empty-title">Інструкцій поки немає</p>
+      <p class="content-page__empty-text">Файли зʼявляться незабаром. Потрібна інструкція зараз — напишіть нам артикул товару.</p>
+      <a href="{% url 'catalog:list' %}" class="btn btn--primary btn--sm">До каталогу</a>
+    </li>
     {% endfor %}
   </ul>
 </div>

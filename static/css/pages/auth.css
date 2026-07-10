@@ -1,9 +1,19 @@
 .auth-page {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
   min-height: calc(var(--vh) - var(--header-h) - 8rem);
   padding: var(--sp-6) var(--container-pad) calc(var(--sp-10) + var(--safe-bottom));
+}
+
+.auth-page > .breadcrumbs {
+  width: 100%;
+  max-width: 30rem;
+  padding-top: 0;
+  padding-bottom: var(--sp-3);
+  justify-content: center;
+  text-align: center;
 }
 
 .page-auth {

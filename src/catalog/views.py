@@ -4,6 +4,8 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 
+from src.core.breadcrumbs import make_breadcrumbs
+
 from .filters import ProductFilter
 from .models import Brand, Category, Product
 
@@ -30,7 +32,7 @@ def _product_list_context(request, base_qs, page_title, breadcrumbs, category=No
 
 def catalog_list(request):
     qs = Product.objects.active().with_category()
-    breadcrumbs = [{'title': 'Головна', 'url': '/'}, {'title': 'Каталог', 'url': ''}]
+    breadcrumbs = make_breadcrumbs(('Каталог', ''))
     return _product_list_context(request, qs, 'Усі товари', breadcrumbs)
 
 
@@ -38,12 +40,12 @@ def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug, is_active=True)
     ids = category.get_descendant_ids()
     qs = Product.objects.active().with_category().filter(category_id__in=ids)
-    crumbs = [{'title': 'Головна', 'url': '/'}, {'title': 'Каталог', 'url': '/catalog/'}]
+    parts = [('Каталог', '/catalog/')]
     if category.parent:
-        crumbs.append({'title': category.parent.name, 'url': category.parent.get_absolute_url()})
-    crumbs.append({'title': category.name, 'url': ''})
+        parts.append((category.parent.name, category.parent.get_absolute_url()))
+    parts.append((category.name, ''))
     return _product_list_context(
-        request, qs, category.meta_title or category.name, crumbs, category,
+        request, qs, category.meta_title or category.name, make_breadcrumbs(*parts), category,
     )
 
 
@@ -55,15 +57,16 @@ def product_detail(request, slug):
     similar = Product.objects.active().filter(
         category=product.category,
     ).exclude(pk=product.pk)[:4]
+    parts = [('Каталог', '/catalog/')]
+    category = product.category
+    if category.parent:
+        parts.append((category.parent.name, category.parent.get_absolute_url()))
+    parts.append((category.name, category.get_absolute_url()))
+    parts.append((product.name, ''))
     return render(request, 'catalog/product_detail.html', {
         'product': product,
         'similar_products': similar,
-        'breadcrumbs': [
-            {'title': 'Головна', 'url': '/'},
-            {'title': 'Каталог', 'url': '/catalog/'},
-            {'title': product.category.name, 'url': product.category.get_absolute_url()},
-            {'title': product.name, 'url': ''},
-        ],
+        'breadcrumbs': make_breadcrumbs(*parts),
     })
 
 
@@ -72,7 +75,8 @@ def search(request):
     qs = Product.objects.active().with_category()
     if q:
         qs = qs.filter(Q(name__icontains=q) | Q(sku__icontains=q))
-    breadcrumbs = [{'title': 'Головна', 'url': '/'}, {'title': f'Пошук: {q}', 'url': ''}]
+    label = f'Пошук: {q}' if q else 'Пошук'
+    breadcrumbs = make_breadcrumbs(('Каталог', '/catalog/'), (label, ''))
     return _product_list_context(request, qs, f'Результати пошуку: {q}', breadcrumbs)
 
 
@@ -89,7 +93,7 @@ def search_suggest(request):
 
 def sale_list(request):
     qs = Product.objects.active().with_category().on_sale()
-    breadcrumbs = [{'title': 'Головна', 'url': '/'}, {'title': 'Акції', 'url': ''}]
+    breadcrumbs = make_breadcrumbs(('Каталог', '/catalog/'), ('Акції', ''))
     return _product_list_context(request, qs, 'Акції', breadcrumbs)
 
 
@@ -99,11 +103,12 @@ def compare_page(request):
     products = svc.get_products()
     attr_names = []
     for p in products:
-        for a in p.attributes.filter(show_in_compare=True):
-            if a.name not in attr_names:
+        for a in p.attributes.all():
+            if a.show_in_compare and a.name not in attr_names:
                 attr_names.append(a.name)
     return render(request, 'catalog/compare.html', {
         'products': products,
         'attr_names': attr_names,
         'page_title': 'Порівняння товарів',
+        'breadcrumbs': make_breadcrumbs(('Каталог', '/catalog/'), ('Порівняння', '')),
     })

@@ -233,28 +233,63 @@
   transform: translateY(-2px);
 }
 
-.category-pill__dot {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  margin: 0 auto;
-}
-
-.category-pill__dot--blue { background: var(--blue); }
-.category-pill__dot--orange { background: var(--orange); }
-.category-pill__dot--yellow { background: var(--yellow); }
-.category-pill__dot--green { background: var(--green); }
-.category-pill__dot--raspberry { background: var(--raspberry); }
-
 .category-pill__icon {
   width: 48px;
   height: 48px;
   margin: 0 auto;
   border-radius: var(--r-md);
-  background: var(--c-brand-bg);
   display: grid;
   place-items: center;
-  font-size: 1.5rem;
+  color: var(--c-brand);
+  background: var(--c-brand-bg);
+  transition: transform var(--t-fast), background-color var(--t-fast);
+}
+
+.category-pill:hover .category-pill__icon {
+  transform: translateY(-1px);
+}
+
+.category-pill__svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.category-pill__icon--blue {
+  color: var(--blue);
+  background: rgba(36, 83, 224, 0.12);
+}
+
+.category-pill__icon--orange {
+  color: var(--orange);
+  background: rgba(255, 106, 61, 0.12);
+}
+
+.category-pill__icon--yellow {
+  color: #C99200;
+  background: rgba(255, 201, 60, 0.2);
+}
+
+.category-pill__icon--green {
+  color: var(--green);
+  background: rgba(43, 189, 126, 0.12);
+}
+
+.category-pill__icon--raspberry {
+  color: var(--raspberry);
+  background: rgba(255, 59, 92, 0.12);
+}
+
+@media (max-width: 599px) {
+  .category-pill__icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .category-pill__svg {
+    width: 22px;
+    height: 22px;
+  }
 }
 
 .benefits {
@@ -297,7 +332,33 @@
 
 .section__cta { margin-top: var(--sp-4); }
 
-.product-card__date {
-  font-size: var(--fs-xs);
-  color: var(--c-text-muted);
+.blog-grid--home {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .blog-grid--home {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .blog-grid--home {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.blog-grid--home .blog-card__title {
+  font-size: var(--fs-lg);
+}
+
+@media (max-width: 639px) {
+  .blog-grid--home .blog-card__body {
+    padding: var(--sp-4) var(--sp-4) var(--sp-5);
+    gap: var(--sp-2);
+  }
+
+  .blog-grid--home .blog-card__title {
+    font-size: var(--fs-md);
+  }
 }

@@ -9,12 +9,25 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from src.cart.services import CartService
+from src.core.breadcrumbs import make_breadcrumbs
 
 from .forms import CheckoutStep2Form, CheckoutStep3Form
 from .models import Order, OrderItem
 from .services.liqpay import LiqPayService
 
 User = get_user_model()
+
+
+def _checkout_crumbs(step):
+    cart = ('Кошик', '/cart/')
+    checkout = ('Оформлення', '/orders/checkout/')
+    if step <= 1:
+        return make_breadcrumbs(cart, ('Оформлення', ''))
+    if step == 2:
+        return make_breadcrumbs(cart, checkout, ('Контакти', ''))
+    if step == 3:
+        return make_breadcrumbs(cart, checkout, ('Доставка', ''))
+    return make_breadcrumbs(cart, checkout, ('Оплата', ''))
 
 
 def _get_checkout_order(request):
@@ -81,6 +94,7 @@ def checkout(request, step=1):
         return render(request, 'orders/checkout_step1.html', {
             'order': order, 'lines': cart.get_lines(), 'step': step,
             'page_title': 'Оформлення — крок 1',
+            'breadcrumbs': _checkout_crumbs(step),
         })
 
     if step == 2:
@@ -91,6 +105,7 @@ def checkout(request, step=1):
         return render(request, 'orders/checkout_step2.html', {
             'form': form, 'order': order, 'step': step,
             'page_title': 'Оформлення — контактні дані',
+            'breadcrumbs': _checkout_crumbs(step),
         })
 
     if step == 3:
@@ -101,6 +116,7 @@ def checkout(request, step=1):
         return render(request, 'orders/checkout_step3.html', {
             'form': form, 'order': order, 'step': step,
             'page_title': 'Оформлення — доставка',
+            'breadcrumbs': _checkout_crumbs(step),
         })
 
     liqpay = LiqPayService()
@@ -112,6 +128,7 @@ def checkout(request, step=1):
     return render(request, 'orders/checkout_step4.html', {
         'order': order, 'step': step, 'liqpay': checkout_data,
         'page_title': 'Оформлення — оплата',
+        'breadcrumbs': _checkout_crumbs(step),
     })
 
 
@@ -122,12 +139,18 @@ def thank_you(request, order_number):
         cart.clear()
         request.session.pop('checkout_order_id', None)
         request.session.pop('promo_code', None)
-    return render(request, 'orders/thank_you.html', {'order': order})
+    return render(request, 'orders/thank_you.html', {
+        'order': order,
+        'breadcrumbs': make_breadcrumbs(('Замовлення оформлено', '')),
+    })
 
 
 def payment_error(request, order_number):
     order = get_object_or_404(Order, order_number=order_number)
-    return render(request, 'orders/payment_error.html', {'order': order})
+    return render(request, 'orders/payment_error.html', {
+        'order': order,
+        'breadcrumbs': make_breadcrumbs(('Помилка оплати', '')),
+    })
 
 
 def retry_payment(request, order_number):

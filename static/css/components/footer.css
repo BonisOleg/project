@@ -1,5 +1,6 @@
 .site-footer {
-  margin-top: var(--sp-8);
+  flex-shrink: 0;
+  margin-top: auto;
   background: var(--c-surface-dark);
   color: var(--c-text-inverse);
   padding: var(--sp-6) 0 calc(var(--sp-5) + var(--safe-bottom));
@@ -57,20 +58,77 @@
 
 .site-footer__links {
   display: grid;
-  gap: var(--sp-1);
+  gap: var(--sp-2);
+  justify-items: start;
 }
 
 .site-footer__links a {
   font-size: var(--fs-sm);
+  line-height: 1.35;
   color: rgba(207, 210, 224, 0.72);
   transition: color var(--t-fast);
+  min-height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
 }
 
 .site-footer__links a:hover { color: var(--c-accent-light); }
 
+.site-footer__social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.site-footer__social-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  color: var(--c-accent-light);
+  background: rgba(255, 201, 60, 0.08);
+  border: 1px solid rgba(255, 201, 60, 0.28);
+  transition: color var(--t-fast), background var(--t-fast), border-color var(--t-fast), transform var(--t-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.site-footer__social-btn .social-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  display: block;
+}
+
+.site-footer__social-btn:hover {
+  color: var(--navy);
+  background: var(--c-accent-light);
+  border-color: var(--c-accent-light);
+}
+
+.site-footer__social-btn:active {
+  transform: scale(0.96);
+}
+
+.site-footer__social-btn--static {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.site-footer__social-btn--static:hover {
+  color: var(--c-accent-light);
+  background: rgba(255, 201, 60, 0.08);
+  border-color: rgba(255, 201, 60, 0.28);
+}
+
+.site-footer__social-empty {
+  font-size: var(--fs-sm);
+  color: rgba(207, 210, 224, 0.55);
+}
+
 .site-footer__contacts {
   display: grid;
-  gap: var(--sp-1);
+  gap: var(--sp-2);
   margin-top: var(--sp-3);
   font-size: var(--fs-sm);
   color: rgba(207, 210, 224, 0.72);
@@ -79,21 +137,21 @@
 .site-footer__contacts a:hover { color: var(--c-accent-light); }
 
 .newsletter {
-  display: grid;
-  gap: var(--sp-4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3) var(--sp-5);
   margin-top: var(--sp-5);
-  padding: var(--sp-4) var(--sp-5);
+  padding: var(--sp-4);
   border-radius: var(--r-md);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 201, 60, 0.22);
 }
 
-@media (min-width: 768px) {
-  .newsletter {
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: var(--sp-5);
-  }
+.newsletter__copy {
+  flex: 1 1 12rem;
+  min-width: 0;
 }
 
 .newsletter__title {
@@ -103,15 +161,27 @@
 }
 
 .newsletter__form {
-  display: grid;
-  gap: var(--sp-3);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  flex: 1 1 16rem;
+  max-width: 26rem;
   min-width: 0;
+  margin-left: auto;
 }
 
-@media (min-width: 480px) {
-  .newsletter__form {
-    grid-template-columns: 1fr auto;
-  }
+.newsletter__form .field__input {
+  flex: 1 1 10rem;
+  min-width: 0;
+  min-height: 44px;
+}
+
+.newsletter__form .btn {
+  flex: 0 0 auto;
+  border-radius: var(--r-md);
+  min-height: 44px;
+  padding: 0 var(--sp-4);
 }
 
 .site-footer__bottom {
@@ -128,14 +198,20 @@
 
 .site-footer__bottom a {
   color: rgba(207, 210, 224, 0.55);
-  transition: color var(--t-fast);
+  transition: color var(--t-fast), text-shadow var(--t-fast);
 }
 
 .site-footer__bottom a:hover { color: var(--c-accent-light); }
 
+.site-footer__credit-link:hover {
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.35),
+    0 0 16px rgba(255, 255, 255, 0.18);
+}
+
 @media (max-width: 767px) {
   .site-footer {
-    margin-top: var(--sp-6);
     padding: var(--sp-5) 0 calc(var(--sp-4) + var(--bottom-nav-h) + var(--safe-bottom));
   }
 
@@ -143,8 +219,14 @@
     padding-left: calc(var(--sp-4) + 3px);
   }
 
-  .site-footer__grid > div:nth-child(n+2) {
+  .site-footer__grid > div:nth-child(2),
+  .site-footer__grid > div:nth-child(3) {
     display: none;
+  }
+
+  .site-footer__social-btn {
+    width: 2.5rem;
+    height: 2.5rem;
   }
 
   .site-footer__title {

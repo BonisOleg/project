@@ -7,37 +7,107 @@
 
 {% block content %}
 <div class="container compare-page">
-  <h1 class="compare-page__title">{{ page_title }}</h1>
+  {% include 'partials/breadcrumbs.html' %}
+
+  <header class="page-header">
+    <h1 class="page-title">{{ page_title }}</h1>
+  </header>
+
   {% if products %}
   <div class="compare-page__table-wrap">
     <table class="compare-table">
       <thead>
         <tr>
-          <th></th>
+          <th class="compare-table__feature" scope="col">Характеристика</th>
           {% for product in products %}
-          <th>
-            <form action="{% url 'cart:compare_remove' product.pk %}" method="post">{% csrf_token %}
-              <button type="submit" class="btn btn--sm btn--secondary">✕</button>
-            </form>
-            <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+          <th class="compare-table__col" scope="col">
+            <div class="compare-table__product">
+              <form
+                class="compare-table__remove"
+                action="{% url 'cart:compare_remove' product.pk %}"
+                method="post"
+              >
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  class="btn btn--secondary btn--sm btn--icon"
+                  aria-label="Прибрати з порівняння"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              </form>
+              <a href="{{ product.get_absolute_url }}" class="compare-table__media">
+                {% if product.main_image %}
+                <img
+                  src="{{ product.main_image.image.url }}"
+                  alt="{{ product.main_image.alt_text|default:product.name }}"
+                  width="160"
+                  height="160"
+                  loading="lazy"
+                  decoding="async"
+                >
+                {% else %}
+                <span class="compare-table__placeholder" aria-hidden="true"></span>
+                {% endif %}
+              </a>
+              <a href="{{ product.get_absolute_url }}" class="compare-table__name">{{ product.name }}</a>
+            </div>
           </th>
           {% endfor %}
         </tr>
       </thead>
       <tbody>
-        <tr><td>Ціна</td>{% for p in products %}<td>{{ p.price|format_price }}</td>{% endfor %}</tr>
-        <tr><td>Рейтинг</td>{% for p in products %}<td>{% if p.avg_rating %}★ {{ p.avg_rating|floatformat:1 }}{% else %}—{% endif %}</td>{% endfor %}</tr>
+        <tr>
+          <th scope="row">Ціна</th>
+          {% for p in products %}
+          <td class="compare-table__price">{{ p.price|format_price }}</td>
+          {% endfor %}
+        </tr>
+        <tr>
+          <th scope="row">Рейтинг</th>
+          {% for p in products %}
+          <td>{% if p.avg_rating %}★ {{ p.avg_rating|floatformat:1 }}{% else %}—{% endif %}</td>
+          {% endfor %}
+        </tr>
         {% for name in attr_names %}
-        <tr><td>{{ name }}</td>{% for p in products %}<td>{% for a in p.attributes.all %}{% if a.name == name %}{{ a.value }}{% endif %}{% empty %}—{% endfor %}</td>{% endfor %}</tr>
+        <tr>
+          <th scope="row">{{ name }}</th>
+          {% for p in products %}
+          <td>
+            {% for a in p.attributes.all %}{% if a.name == name %}{{ a.value }}{% endif %}{% endfor %}
+          </td>
+          {% endfor %}
+        </tr>
         {% endfor %}
-        <tr><td></td>{% for p in products %}<td><form action="{% url 'cart:add' p.pk %}" method="post">{% csrf_token %}<button class="btn btn--primary btn--sm">Купити</button></form></td>{% endfor %}</tr>
+        <tr class="compare-table__actions">
+          <th scope="row"></th>
+          {% for p in products %}
+          <td>
+            <form action="{% url 'cart:add' p.pk %}" method="post">
+              {% csrf_token %}
+              <button type="submit" class="btn btn--primary btn--sm">Купити</button>
+            </form>
+          </td>
+          {% endfor %}
+        </tr>
       </tbody>
     </table>
   </div>
   {% else %}
   <div class="compare-page__empty">
+    <div class="compare-page__empty-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 3l5 5-5 5"/>
+        <path d="M21 8H9a4 4 0 0 0-4 4v1"/>
+        <path d="M8 21l-5-5 5-5"/>
+        <path d="M3 16h12a4 4 0 0 0 4-4v-1"/>
+      </svg>
+    </div>
+    <p class="compare-page__empty-title">Список порожній</p>
     <p class="compare-page__empty-text">Додайте до 4 товарів для порівняння з каталогу.</p>
-    <a href="{% url 'catalog:list' %}" class="btn btn--primary">До каталогу</a>
+    <a href="{% url 'catalog:list' %}" class="btn btn--primary btn--sm">До каталогу</a>
   </div>
   {% endif %}
 </div>

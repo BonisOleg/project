@@ -38,7 +38,13 @@ class CompareService:
         from src.catalog.models import Product
         if not self.ids:
             return []
-        products = {p.pk: p for p in Product.objects.active().filter(pk__in=self.ids).annotate_rating()}
+        products = {
+            p.pk: p
+            for p in Product.objects.active()
+            .filter(pk__in=self.ids)
+            .annotate_rating()
+            .prefetch_related('images', 'attributes')
+        }
         return [products[pid] for pid in self.ids if pid in products]
 
     @property

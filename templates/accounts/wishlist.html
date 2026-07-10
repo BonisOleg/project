@@ -7,6 +7,7 @@
 
 {% block content %}
 <div class="container cabinet-page">
+  {% include 'partials/breadcrumbs.html' %}
   <header class="cabinet-page__header">
     <p class="cabinet-page__eyebrow">Особистий кабінет</p>
     <h1 class="cabinet-page__title">Обране</h1>
@@ -22,8 +23,14 @@
           {% include 'partials/product_card.html' with list_mode=True %}
         {% empty %}
         <div class="cabinet-empty">
+          <div class="cabinet-empty__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.8 5.6a4.5 4.5 0 0 0-6.4 0L12 8l-2.4-2.4a4.5 4.5 0 0 0-6.4 6.4l2.4 2.4L12 21l6.4-6.4 2.4-2.4a4.5 4.5 0 0 0 0-6.4z"/>
+            </svg>
+          </div>
+          <p class="cabinet-empty__title">Обране порожнє</p>
           <p class="cabinet-empty__text">У вас в обраному нічого немає.</p>
-          <a href="{% url 'catalog:list' %}" class="btn btn--primary">Переглянути каталог</a>
+          <a href="{% url 'catalog:list' %}" class="btn btn--primary btn--sm">Переглянути каталог</a>
         </div>
         {% endfor %}
       </div>
