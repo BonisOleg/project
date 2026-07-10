@@ -15,8 +15,8 @@ PRODUCT_IMAGES = (
     ('B016', 'chair.jpg'),
     ('P9040', 'shelf.jpg'),
     ('G9040', 'shelf.jpg'),
-    ('SP2002', 'slide-2.jpg'),
-    ('VAL28', 'slide-4.jpg'),
+    ('SP2002', 'lounger.jpg'),
+    ('VAL28', 'suitcase.jpg'),
 )
 
 

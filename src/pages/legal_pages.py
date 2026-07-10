@@ -1,4 +1,4 @@
-"""Структурований контент інфо/legal-сторінок (патерн ShopUA / vault 600a9)."""
+"""Структурований контент інфо/legal-сторінок."""
 
 from django.urls import reverse
 
@@ -24,9 +24,6 @@ LEGAL_NAV_ORDER = (
     'about',
     'offer',
     'schedule',
-    'privacy',
-    'cookies',
-    'security',
 )
 
 

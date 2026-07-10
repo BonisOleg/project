@@ -38,6 +38,7 @@ def static_page(request, slug):
         return render(request, 'pages/legal_page.html', {
             'page': legal,
             'related_pages': get_related_legal_pages(slug),
+            'breadcrumbs': make_breadcrumbs((legal['title'], '')),
         })
 
     page = get_object_or_404(StaticPage, slug=slug, is_published=True)

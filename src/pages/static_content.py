@@ -1,6 +1,6 @@
 """Повний контент інфо-сторінок для seed / демо.
 
-Legal/info сторінки з hero + highlights — у legal_pages.py.
+Legal/info сторінки (структурований контент) — у legal_pages.py.
 Тут лишаються сторінки зі спец-шаблонами та plain StaticPage.
 """
 
