@@ -7,8 +7,9 @@
 }
 
 .wishlist-form--detail {
-  display: inline-block;
+  display: inline-flex;
   margin: 0;
+  flex-shrink: 0;
 }
 
 .wishlist-btn--card {
@@ -37,11 +38,12 @@
 }
 
 .wishlist-btn--detail {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  text-transform: none;
-  letter-spacing: 0.02em;
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .wishlist-btn--detail.is-active {

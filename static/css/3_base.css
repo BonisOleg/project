@@ -3,6 +3,9 @@ html {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  scroll-padding-top: calc(var(--header-h) + var(--safe-top));
+  /* clip: не ламає position:fixed у iOS Safari (на відміну від hidden) */
+  overflow-x: clip;
 }
 
 body {
@@ -15,6 +18,9 @@ body {
   color: var(--c-text);
   background: var(--c-bg);
   min-height: 0;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
 }
 

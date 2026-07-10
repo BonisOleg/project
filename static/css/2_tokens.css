@@ -86,7 +86,8 @@
 
   --container-max: 87.5rem;
   --container-pad: var(--sp-4);
-  --header-h: 60px;
+  /* Мобільний хедер: 2 ряди (brand + search) без safe-top */
+  --header-h: 7.75rem;
   --bottom-nav-h: 0px;
 
   --z-dropdown: 100;
@@ -99,10 +100,15 @@
 @media (min-width: 768px) {
   :root {
     --container-pad: var(--sp-6);
-    --header-h: 72px;
+    /* Планшет: також 2 ряди до 1023px */
+    --header-h: 8rem;
   }
 }
 
 @media (min-width: 1024px) {
-  :root { --container-pad: var(--sp-8); }
+  :root {
+    --container-pad: var(--sp-8);
+    /* Десктоп: один ряд */
+    --header-h: 4.5rem;
+  }
 }

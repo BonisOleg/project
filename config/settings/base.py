@@ -133,6 +133,11 @@ UNFOLD = {
     'SITE_FAVICONS': [
         {
             'rel': 'icon',
+            'type': 'image/svg+xml',
+            'href': lambda request: static('images/favicon/favicon.svg'),
+        },
+        {
+            'rel': 'icon',
             'sizes': 'any',
             'type': 'image/x-icon',
             'href': lambda request: static('images/favicon/favicon.ico'),

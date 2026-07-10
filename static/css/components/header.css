@@ -4,6 +4,9 @@
   top: 0;
   z-index: var(--z-sticky);
   flex-shrink: 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   padding-top: var(--safe-top);
   background: rgba(250, 247, 242, 0.94);
   backdrop-filter: blur(12px);

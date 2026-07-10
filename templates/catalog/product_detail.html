@@ -5,7 +5,8 @@
 {% block meta_description %}{{ product.meta_description|default:product.short_description }}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/catalog.css' %}?v=20260703f">
+<link rel="stylesheet" href="{% static 'css/pages/product_detail.css' %}?v=20260710e">
+<link rel="stylesheet" href="{% static 'css/pages/product_detail2.css' %}?v=20260710e">
 {% endblock %}
 
 {% block content %}
@@ -14,26 +15,42 @@
 
   <div class="product-detail__main">
     <div class="product-gallery">
-      <div class="product-gallery__main">
-        {% if product.main_image %}
-        <img id="gallery-main" src="{{ product.main_image.image.url }}" alt="{{ product.name }}" width="800" height="800" loading="eager" decoding="async">
-        {% else %}
-        <div class="product-gallery__placeholder" aria-hidden="true"></div>
-        {% endif %}
-      </div>
-      {% if product.images.count > 1 %}
-      <div class="product-gallery__thumbs">
+      {% if product.images.exists %}
+      <div class="product-gallery__thumbs" role="list">
         {% for img in product.images.all %}
-        <button type="button" class="product-gallery__thumb {% if forloop.first %}is-active{% endif %}" data-src="{{ img.image.url }}" aria-label="Мініатюра {{ forloop.counter }}">
-          <img src="{{ img.image.url }}" alt="" width="72" height="72" loading="lazy" decoding="async">
+        <button
+          type="button"
+          class="product-gallery__thumb {% if product.main_image and img.pk == product.main_image.pk %}is-active{% elif not product.main_image and forloop.first %}is-active{% endif %}"
+          data-src="{{ img.image.url }}"
+          aria-label="Мініатюра {{ forloop.counter }}"
+          role="listitem"
+        >
+          <img src="{{ img.image.url }}" alt="" width="64" height="64" loading="lazy" decoding="async">
         </button>
         {% endfor %}
       </div>
       {% endif %}
+
+      <div class="product-gallery__main">
+        {% if product.main_image %}
+        <img id="gallery-main" src="{{ product.main_image.image.url }}" alt="{{ product.name }}" width="640" height="640" loading="eager" decoding="async">
+        {% else %}
+        <div class="product-gallery__placeholder" aria-hidden="true"></div>
+        {% endif %}
+      </div>
     </div>
 
     <div class="product-info">
-      <p class="product-info__sku">Артикул: {{ product.sku }}</p>
+      <div class="product-info__meta">
+        <p class="product-info__sku">Артикул: {{ product.sku }}</p>
+        {% if product.avg_rating %}
+        <div class="product-info__rating" aria-label="Рейтинг {{ product.avg_rating|floatformat:1 }} з 5">
+          <span class="product-info__rating-star" aria-hidden="true">★</span>
+          <span>{{ product.avg_rating|floatformat:1 }}</span>
+          <span class="product-info__rating-count">({{ product.review_count }} відгуків)</span>
+        </div>
+        {% endif %}
+      </div>
 
       <div class="product-info__badges">
         {% if product.is_top_sale %}<span class="badge badge--top">Хіт</span>{% endif %}
@@ -43,31 +60,43 @@
 
       <h1 class="product-info__title">{{ product.name }}</h1>
 
-      {% if product.avg_rating %}
-      <div class="product-info__rating">★ {{ product.avg_rating|floatformat:1 }} ({{ product.review_count }} відгуків)</div>
+      {% if product.short_description %}
+      <p class="product-info__lead">{{ product.short_description }}</p>
       {% endif %}
 
-      <div class="product-info__price">
-        <span class="product-info__price-current">{{ product.price|format_price }}</span>
-        {% if product.old_price %}<span class="product-card__price-old">{{ product.old_price|format_price }}</span>{% endif %}
-      </div>
+      <div class="product-info__buybox">
+        <div class="product-info__price">
+          <span class="product-info__price-current">{{ product.price|format_price }}</span>
+          {% if product.old_price %}<span class="product-info__price-old">{{ product.old_price|format_price }}</span>{% endif %}
+        </div>
 
-      <p class="product-info__stock">
-        {% if product.is_available %}✓ Є в наявності{% elif product.availability == 'expected' %}Очікується{% else %}Немає в наявності{% endif %}
-      </p>
+        <p class="product-info__stock {% if product.is_available %}product-info__stock--ok{% elif product.availability == 'expected' %}product-info__stock--wait{% else %}product-info__stock--out{% endif %}">
+          {% if product.is_available %}
+          <span class="product-info__stock-icon" aria-hidden="true">✓</span> Є в наявності
+          {% elif product.availability == 'expected' %}
+          Очікується
+          {% else %}
+          Немає в наявності
+          {% endif %}
+        </p>
 
-      <div class="product-info__actions">
-        {% if product.is_available %}
-        <form action="{% url 'cart:add' product.pk %}" method="post" hx-post="{% url 'cart:add' product.pk %}" hx-target="#cart-count" hx-swap="outerHTML">
-          {% csrf_token %}
-          <button type="submit" class="btn btn--primary btn--block">Купити</button>
-        </form>
-        {% endif %}
-        {% include 'partials/wishlist_btn.html' with product=product variant='detail' %}
-        <form action="{% url 'cart:compare_add' product.pk %}" method="post" hx-post="{% url 'cart:compare_add' product.pk %}" hx-target="#compare-bar">
-          {% csrf_token %}
-          <button type="submit" class="btn btn--secondary btn--block">Порівняти</button>
-        </form>
+        <div class="product-info__actions">
+          {% if product.is_available %}
+          <form class="product-info__buy-form" action="{% url 'cart:add' product.pk %}" method="post" hx-post="{% url 'cart:add' product.pk %}" hx-target="#cart-count" hx-swap="outerHTML">
+            {% csrf_token %}
+            <button type="submit" class="btn btn--primary product-info__buy-btn">Купити</button>
+          </form>
+          {% endif %}
+          {% include 'partials/wishlist_btn.html' with product=product variant='detail' %}
+          <form class="product-info__compare-form" action="{% url 'cart:compare_add' product.pk %}" method="post" hx-post="{% url 'cart:compare_add' product.pk %}" hx-target="#compare-bar">
+            {% csrf_token %}
+            <button type="submit" class="btn btn--secondary btn--icon product-info__compare-btn" aria-label="Порівняти">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 19V9M10 19V5M16 19v-7M22 19V11" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -80,29 +109,44 @@
       <button type="button" class="product-tabs__btn" data-tab="delivery">Доставка</button>
     </div>
     <div class="product-tabs__panels">
-      <div data-panel="desc">{{ product.description|linebreaks }}</div>
-      <div data-panel="specs" hidden>
-        {% if product.attributes.exists %}
-        <table class="compare-table"><tbody>
-          {% for attr in product.attributes.all %}
-          <tr><th>{{ attr.name }}</th><td>{{ attr.value }}</td></tr>
-          {% endfor %}
-        </tbody></table>
-        {% else %}<p>Характеристики уточнюються.</p>{% endif %}
+      <div class="product-tabs__panel product-tabs__prose" data-panel="desc">
+        {% if product.description %}
+          {{ product.description|linebreaks }}
+        {% else %}
+          <p class="product-tabs__empty">Опис уточнюється.</p>
+        {% endif %}
       </div>
-      <div data-panel="reviews" hidden>
+      <div class="product-tabs__panel" data-panel="specs" hidden>
+        {% if product.attributes.exists %}
+        <dl class="product-specs">
+          {% for attr in product.attributes.all %}
+          <div class="product-specs__row">
+            <dt class="product-specs__name">{{ attr.name }}</dt>
+            <span class="product-specs__leader" aria-hidden="true"></span>
+            <dd class="product-specs__value">{{ attr.value }}</dd>
+          </div>
+          {% endfor %}
+        </dl>
+        {% else %}
+        <p class="product-tabs__empty">Характеристики уточнюються.</p>
+        {% endif %}
+      </div>
+      <div class="product-tabs__panel product-tabs__prose" data-panel="reviews" hidden>
         {% for review in product.reviews.all %}
           {% if review.is_published %}
-          <div class="product-review">
-            <strong>{{ review.author_name }}</strong> — ★ {{ review.rating }}
-            <p>{{ review.text }}</p>
-          </div>
+          <article class="product-review">
+            <header class="product-review__head">
+              <strong class="product-review__author">{{ review.author_name }}</strong>
+              <span class="product-review__rating" aria-label="Оцінка {{ review.rating }} з 5">★ {{ review.rating }}</span>
+            </header>
+            <p class="product-review__text">{{ review.text }}</p>
+          </article>
           {% endif %}
         {% empty %}
-        <p>Поки немає відгуків.</p>
+        <p class="product-tabs__empty">Поки немає відгуків.</p>
         {% endfor %}
       </div>
-      <div data-panel="delivery" hidden>
+      <div class="product-tabs__panel product-tabs__prose" data-panel="delivery" hidden>
         <p>Доставка Новою Поштою та Укрпоштою — 1–3 дні. Оплата через LiqPay.</p>
       </div>
     </div>

@@ -4,8 +4,8 @@
 {% block title %}{{ page.title }} — Oyra{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/content.css' %}?v=20260710d">
-<link rel="stylesheet" href="{% static 'css/pages/legal_page.css' %}?v=20260710d">
+<link rel="stylesheet" href="{% static 'css/pages/content.css' %}?v=20260710e">
+<link rel="stylesheet" href="{% static 'css/pages/legal_page.css' %}?v=20260710e">
 {% endblock %}
 
 {% block content %}
@@ -27,12 +27,12 @@
   <div class="legal-page__body">
     {% for section in page.sections %}
     <section class="legal-page__section">
+      {% if section.title %}
       <h2 class="legal-page__section-title">{{ section.title }}</h2>
-      {% if section.paragraphs %}
+      {% endif %}
       {% for paragraph in section.paragraphs %}
       <p class="legal-page__text">{{ paragraph }}</p>
       {% endfor %}
-      {% endif %}
       {% if section.items %}
       <ul class="legal-page__list">
         {% for item in section.items %}

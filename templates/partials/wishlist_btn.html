@@ -18,15 +18,12 @@
   {% if list_mode %}<input type="hidden" name="list_mode" value="1">{% endif %}
   <button
     type="submit"
-    class="wishlist-btn{% if variant == 'detail' %} wishlist-btn--detail btn btn--secondary{% else %} wishlist-btn--card{% endif %}{% if is_wished %} is-active{% endif %}"
+    class="wishlist-btn{% if variant == 'detail' %} wishlist-btn--detail btn btn--secondary btn--icon{% else %} wishlist-btn--card{% endif %}{% if is_wished %} is-active{% endif %}"
     aria-label="{% if is_wished %}Видалити з обраного{% else %}Додати в обране{% endif %}"
     aria-pressed="{% if is_wished %}true{% else %}false{% endif %}"
   >
     <svg class="wishlist-btn__icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
       <path class="wishlist-btn__heart" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
     </svg>
-    {% if variant == 'detail' %}
-    <span class="wishlist-btn__label">{% if is_wished %}В обраному{% else %}В обране{% endif %}</span>
-    {% endif %}
   </button>
 </form>

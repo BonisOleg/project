@@ -27,11 +27,21 @@ LEGAL_NAV_ORDER = (
 )
 
 
+def _normalize_legal_section(section: dict) -> dict:
+    """Завжди list для items — інакше Django template бере dict.items()."""
+    return {
+        'title': section.get('title', ''),
+        'paragraphs': list(section.get('paragraphs') or []),
+        'items': list(section.get('items') or []),
+    }
+
+
 def get_legal_page(slug: str) -> dict | None:
     page = LEGAL_PAGES.get(slug)
     if not page:
         return None
-    return {**page, 'slug': slug}
+    sections = [_normalize_legal_section(s) for s in page.get('sections', [])]
+    return {**page, 'slug': slug, 'sections': sections}
 
 
 def get_related_legal_pages(current_slug: str) -> list[dict]:
