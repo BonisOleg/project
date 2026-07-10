@@ -40,6 +40,9 @@ BLOCK_FIELD_LABELS: dict[tuple[str, str], str] = {
     ('site', 'header_action_login_visible'): 'Показувати «Вхід» / «Кабінет»',
     ('site', 'header_nav_delivery_visible'): 'Показувати «Доставка» (моб. меню)',
     ('site', 'header_nav_about_visible'): 'Показувати «Про нас» (моб. меню)',
+    ('site', 'footer_about_text'): 'Короткий опис магазину',
+    ('site', 'footer_copyright'): 'Копірайт (текст нижнього блоку)',
+    ('site', 'footer_schedule'): 'Графік роботи (нижній блок)',
 }
 
 BLOCK_DEFAULTS: dict[tuple[str, str], str] = {
@@ -87,6 +90,12 @@ BLOCK_DEFAULTS: dict[tuple[str, str], str] = {
     ('site', 'header_action_login_visible'): '1',
     ('site', 'header_nav_delivery_visible'): '1',
     ('site', 'header_nav_about_visible'): '1',
+    ('site', 'footer_about_text'): (
+        'Oyra — інтернет-магазин товарів для дому, офісу та відпочинку. '
+        'Швидка доставка по Україні, зручна оплата.'
+    ),
+    ('site', 'footer_copyright'): '© 2024 Oyra. Усі права захищені.',
+    ('site', 'footer_schedule'): 'Пн–Пт: 9:00–18:00',
 }
 
 BLOCK_CONTENT_TYPES: dict[tuple[str, str], str] = {
@@ -100,6 +109,7 @@ MULTILINE_KEYS: frozenset[str] = frozenset({
     'benefit_2_text',
     'benefit_3_text',
     'benefit_4_text',
+    'footer_about_text',
 })
 
 INLINE_KEYS: frozenset[str] = frozenset({
@@ -121,6 +131,8 @@ INLINE_KEYS: frozenset[str] = frozenset({
     'header_nav_catalog_label',
     'header_nav_sale_label',
     'header_nav_news_label',
+    'footer_copyright',
+    'footer_schedule',
 })
 
 VISIBILITY_SUFFIX = '_visible'

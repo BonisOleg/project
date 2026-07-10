@@ -2,7 +2,9 @@ from django.contrib import admin
 from django.utils.html import format_html
 from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
 from unfold.admin import ModelAdmin, TabularInline
+from unfold.contrib.filters.admin import ChoicesDropdownFilter, RelatedDropdownFilter
 
+from src.core.admin_guidelines import get_image_hint
 from src.core.admin_utils import ImagePreviewMixin, TinyMCEAdminMixin
 
 from .models import (
@@ -13,6 +15,9 @@ from .models import (
     ProductAttribute,
     ProductImage,
 )
+
+_PRODUCT_IMAGE_HINT = get_image_hint('product')
+_CATEGORY_IMAGE_HINT = get_image_hint('category')
 
 
 class ProductImageInline(SortableInlineAdminMixin, TabularInline):
@@ -25,10 +30,15 @@ class ProductImageInline(SortableInlineAdminMixin, TabularInline):
     def get_image_preview(self, obj):
         if obj and obj.pk and obj.image:
             return format_html(
-                '<img src="{}" alt="" style="max-height:56px;border-radius:8px;object-fit:cover;">',
+                '<img src="{}" alt="" class="product-image-inline-preview">'
+                '<span class="product-image-upload-hint">{}</span>',
                 obj.image.url,
+                _PRODUCT_IMAGE_HINT,
             )
-        return '—'
+        return format_html(
+            '<span class="product-image-upload-hint">{}</span>',
+            _PRODUCT_IMAGE_HINT,
+        )
 
 
 class ProductAttributeInline(TabularInline):
@@ -40,22 +50,36 @@ class ProductAttributeInline(TabularInline):
 @admin.register(Category)
 class CategoryAdmin(SortableAdminMixin, ImagePreviewMixin, TinyMCEAdminMixin, ModelAdmin):
     list_display = ('name', 'parent', 'get_image_preview', 'is_active', 'sort_order')
-    list_filter = ('is_active', 'parent')
+    list_filter = [
+        ('is_active', ChoicesDropdownFilter),
+        ('parent', RelatedDropdownFilter),
+    ]
     list_filter_submit = True
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name',)
     readonly_fields = ('get_image_preview',)
     fieldsets = (
-        ('Основне', {'fields': ('name', 'slug', 'parent', 'description', 'image', 'get_image_preview', 'icon')}),
+        ('Основне', {'fields': (
+            'name', 'slug', 'parent', 'description',
+            'image', 'get_image_preview', 'icon',
+        )}),
         ('Відображення', {'fields': ('sort_order', 'is_active')}),
         ('SEO', {'fields': ('meta_title', 'meta_description'), 'classes': ('collapse',)}),
     )
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        field = super().formfield_for_dbfield(db_field, request, **kwargs)
+        if db_field.name == 'image':
+            field.help_text = _CATEGORY_IMAGE_HINT
+        return field
 
 
 @admin.register(Brand)
 class BrandAdmin(ModelAdmin):
     list_display = ('name', 'is_active')
-    list_filter = ('is_active',)
+    list_filter = [
+        ('is_active', ChoicesDropdownFilter),
+    ]
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name',)
 
@@ -65,7 +89,15 @@ class ProductAdmin(SortableAdminMixin, TinyMCEAdminMixin, ModelAdmin):
     list_display = (
         'get_image_preview', 'name', 'sku', 'category', 'price', 'availability', 'is_active',
     )
-    list_filter = ('is_active', 'category', 'brand', 'availability', 'is_top_sale', 'is_new', 'is_on_sale')
+    list_filter = [
+        ('is_active', ChoicesDropdownFilter),
+        ('availability', ChoicesDropdownFilter),
+        ('category', RelatedDropdownFilter),
+        ('brand', RelatedDropdownFilter),
+        ('is_top_sale', ChoicesDropdownFilter),
+        ('is_new', ChoicesDropdownFilter),
+        ('is_on_sale', ChoicesDropdownFilter),
+    ]
     list_filter_submit = True
     search_fields = ('name', 'sku')
     prepopulated_fields = {'slug': ('name',)}

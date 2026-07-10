@@ -126,6 +126,27 @@ UNFOLD = {
     'SITE_TITLE': 'Oyra Admin',
     'SITE_HEADER': 'Oyra — Адмінпанель',
     'SITE_SYMBOL': 'storefront',
+    'STYLES': [
+        lambda request: static('css/admin/theme.css'),
+    ],
+    'SCRIPTS': [
+        lambda request: static('js/admin/theme-init.js'),
+    ],
+    'COLORS': {
+        'primary': {
+            '50': '239 246 255',
+            '100': '219 234 254',
+            '200': '191 219 254',
+            '300': '147 197 253',
+            '400': '96 165 250',
+            '500': '59 130 246',
+            '600': '37 99 235',
+            '700': '29 78 216',
+            '800': '30 64 175',
+            '900': '30 58 138',
+            '950': '23 37 84',
+        },
+    },
     'SITE_ICON': {
         'light': lambda request: static('images/favicon/favicon-32.png'),
         'dark': lambda request: static('images/favicon/favicon-32.png'),
@@ -177,7 +198,7 @@ UNFOLD = {
                 ],
             },
             {
-                'title': 'Контент сторінок',
+                'title': 'Вміст сторінок',
                 'separator': True,
                 'items': build_content_sidebar_items(),
             },

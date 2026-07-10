@@ -13,6 +13,7 @@ from src.core.models import (
     HomeCategoriesSettings,
     HomeHeroSettings,
     HomeProductsSettings,
+    SiteFooterSettings,
     SiteHeaderSettings,
     SiteSettings,
 )
@@ -52,6 +53,7 @@ _SECTION_MODELS: tuple[tuple[type[SiteSettings], str, str], ...] = (
     (HomeAboutSettings, 'home', 'about'),
     (HomeBlogSettings, 'home', 'blog'),
     (SiteHeaderSettings, 'site', 'header'),
+    (SiteFooterSettings, 'site', 'footer'),
 )
 
 

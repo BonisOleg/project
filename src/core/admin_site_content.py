@@ -11,6 +11,7 @@ from unfold.widgets import UnfoldAdminFileFieldWidget, UnfoldBooleanWidget
 
 from src.core.admin_site_content_widgets import CmsAdminTextInputWidget, CmsAdminTextareaWidget
 
+from src.core.admin_guidelines import get_image_hint, get_text_limit_hint
 from src.core.block_defaults import (
     BLOCK_CONTENT_TYPES,
     BLOCK_DEFAULTS,
@@ -121,23 +122,26 @@ class SitePageContentForm(forms.Form):
             else:
                 widget = CmsAdminTextareaWidget(attrs={'rows': 2})
 
+            char_hint = get_text_limit_hint(key)
             self.fields[block_field_name(page, key, 'text_html')] = forms.CharField(
                 label=field_label,
                 initial=block.text_html,
                 required=False,
                 widget=widget,
+                help_text=char_hint or '',
             )
             return
 
         if block.content_type == SiteBlock.ContentType.IMAGE:
             image_field = block_field_name(page, key, 'image')
+            image_hint = get_image_hint('block_image')
+            current_hint = f'Поточне: {block.image.name}. ' if block.image else ''
             self.fields[image_field] = forms.ImageField(
                 label=field_label,
                 required=False,
                 widget=UnfoldAdminFileFieldWidget(),
+                help_text=current_hint + image_hint,
             )
-            if block.image:
-                self.fields[image_field].help_text = f'Поточне: {block.image.name}'
 
     def save(self) -> None:
         if SECTION_VISIBLE_FIELD in self.fields:

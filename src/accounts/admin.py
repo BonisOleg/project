@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from unfold.admin import ModelAdmin
+from unfold.contrib.filters.admin import ChoicesDropdownFilter
 from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
 
 from .models import DeliveryAddress, User, WishlistItem
@@ -12,7 +13,11 @@ class UserAdmin(DjangoUserAdmin, ModelAdmin):
     add_form = UserCreationForm
     change_password_form = AdminPasswordChangeForm
     list_display = ('email', 'first_name', 'last_name', 'phone', 'bonus_points', 'is_staff', 'is_active')
-    list_filter = ('is_staff', 'is_superuser', 'is_active')
+    list_filter = [
+        ('is_active', ChoicesDropdownFilter),
+        ('is_staff', ChoicesDropdownFilter),
+        ('is_superuser', ChoicesDropdownFilter),
+    ]
     list_filter_submit = True
     ordering = ('email',)
     search_fields = ('email', 'phone', 'first_name', 'last_name')

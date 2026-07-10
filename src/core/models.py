@@ -117,8 +117,15 @@ class HomeBlogSettings(SiteSettings):
 class SiteHeaderSettings(SiteSettings):
     class Meta:
         proxy = True
-        verbose_name = 'Шапка — Меню'
-        verbose_name_plural = 'Шапка — Меню'
+        verbose_name = 'Меню навігації'
+        verbose_name_plural = 'Меню навігації'
+
+
+class SiteFooterSettings(SiteSettings):
+    class Meta:
+        proxy = True
+        verbose_name = 'Нижній блок сайту'
+        verbose_name_plural = 'Нижній блок сайту'
 
 
 class SocialLink(models.Model):

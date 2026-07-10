@@ -1,5 +1,6 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin, TabularInline
+from unfold.contrib.filters.admin import ChoicesDropdownFilter
 
 from .models import Order, OrderItem
 
@@ -14,7 +15,10 @@ class OrderItemInline(TabularInline):
 @admin.register(Order)
 class OrderAdmin(ModelAdmin):
     list_display = ('order_number', 'email', 'phone', 'total', 'status', 'created_at')
-    list_filter = ('status', 'delivery_service', 'created_at')
+    list_filter = [
+        ('status', ChoicesDropdownFilter),
+        ('delivery_service', ChoicesDropdownFilter),
+    ]
     list_filter_submit = True
     search_fields = ('order_number', 'email', 'phone', 'first_name', 'last_name', 'tracking_number')
     readonly_fields = (

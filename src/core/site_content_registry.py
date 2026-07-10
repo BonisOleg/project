@@ -142,12 +142,12 @@ CONTENT_SECTIONS: tuple[ContentSection, ...] = (
     ContentSection(
         slug='header',
         page_slug='site',
-        title='Шапка сайту',
-        sidebar_title='Шапка — Меню',
+        title='Верхнє меню та навігація',
+        sidebar_title='Меню навігації',
         sidebar_icon='web',
         preview_url='/',
         admin_model_name='siteheadersettings',
-        description='Підписи пунктів меню та їх видимість у шапці та мобільному меню.',
+        description='Підписи пунктів меню та їх видимість у верхньому та мобільному меню.',
         blocks=(
             ('site', 'header_search_placeholder'),
             ('site', 'header_search_visible'),
@@ -181,6 +181,25 @@ CONTENT_SECTIONS: tuple[ContentSection, ...] = (
                 'header_nav_delivery_visible',
                 'header_nav_about_visible',
             )),
+        ),
+    ),
+    ContentSection(
+        slug='footer',
+        page_slug='site',
+        title='Нижній блок сайту',
+        sidebar_title='Нижній блок',
+        sidebar_icon='footer',
+        preview_url='/',
+        admin_model_name='sitefootersettings',
+        description='Текст з описом магазину, копірайт та графік роботи у нижній частині сайту.',
+        blocks=(
+            ('site', 'footer_about_text'),
+            ('site', 'footer_copyright'),
+            ('site', 'footer_schedule'),
+        ),
+        field_groups=(
+            FieldGroup('Опис магазину', ('footer_about_text',)),
+            FieldGroup('Контактна інформація', ('footer_copyright', 'footer_schedule')),
         ),
     ),
 )
