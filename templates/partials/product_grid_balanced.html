@@ -1,5 +1,5 @@
 {% if mobile_scroll %}
-<div class="product-scroll" data-product-scroll data-scrollable="1">
+<div class="product-scroll{% if fixed_tiles %} product-scroll--fixed-tiles{% endif %}" data-product-scroll data-scrollable="1"{% if fixed_tiles %} data-fixed-tiles="1"{% endif %}>
   <button type="button"
           class="product-scroll__btn product-scroll__btn--prev"
           aria-label="Попередні товари"

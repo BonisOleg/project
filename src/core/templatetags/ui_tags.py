@@ -41,14 +41,16 @@ def product_grid_cols(count):
 
 
 @register.inclusion_tag('partials/product_grid_balanced.html')
-def product_grid_balanced(products=None, list_mode=False, mobile_scroll=False):
+def product_grid_balanced(products=None, list_mode=False, mobile_scroll=False, fixed_tiles=False):
     items = list(products) if products is not None else []
     count = len(items)
+    use_scroll = bool(mobile_scroll) and (bool(fixed_tiles) or count > 2)
     return {
         'products': items,
         'grid_cols': pick_grid_columns(count),
         'list_mode': list_mode,
-        'mobile_scroll': bool(mobile_scroll) and count > 2,
+        'mobile_scroll': use_scroll,
+        'fixed_tiles': bool(fixed_tiles) and use_scroll,
     }
 
 

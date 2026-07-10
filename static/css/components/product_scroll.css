@@ -191,3 +191,109 @@
     }
   }
 }
+
+/* Фіксовані плитки (схожі товари): не розтягуються, навіть якщо < 5 */
+.product-scroll--fixed-tiles .product-grid--scroll-mobile {
+  width: max-content;
+  max-width: none;
+}
+
+.product-scroll--fixed-tiles:not([data-scrollable='1']) .product-grid--scroll-mobile {
+  width: max-content;
+  max-width: none;
+  padding-inline-end: 0;
+}
+
+.product-scroll--fixed-tiles:not([data-scrollable='1']) .product-grid--scroll-mobile > .product-grid__item {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 767px) {
+  .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item {
+    flex: 0 0 calc((100cqw - var(--sp-3)) / 2.2);
+    width: calc((100cqw - var(--sp-3)) / 2.2);
+  }
+
+  @supports not (width: 1cqw) {
+    .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item {
+      flex: 0 0 calc((100vw - 2 * var(--container-pad) - var(--sp-3)) / 2.2);
+      width: calc((100vw - 2 * var(--container-pad) - var(--sp-3)) / 2.2);
+    }
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .product-scroll--fixed-tiles .product-grid--scroll-mobile {
+    gap: var(--sp-5);
+  }
+
+  .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item {
+    flex: 0 0 calc((100cqw - 2 * var(--sp-5)) / 3.15);
+    width: calc((100cqw - 2 * var(--sp-5)) / 3.15);
+  }
+
+  @supports not (width: 1cqw) {
+    .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item {
+      flex: 0 0 calc((100vw - 2 * var(--container-pad) - 2 * var(--sp-5)) / 3.15);
+      width: calc((100vw - 2 * var(--container-pad) - 2 * var(--sp-5)) / 3.15);
+    }
+  }
+}
+
+@media (min-width: 1024px) {
+  .product-scroll--fixed-tiles .product-grid--scroll-mobile {
+    gap: var(--sp-5);
+  }
+
+  .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item {
+    flex: 0 0 calc((100cqw - 4 * var(--sp-5)) / 5.15);
+    width: calc((100cqw - 4 * var(--sp-5)) / 5.15);
+  }
+
+  @supports not (width: 1cqw) {
+    .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item {
+      flex: 0 0 calc((100vw - 2 * var(--container-pad) - 4 * var(--sp-5)) / 5.15);
+      width: calc((100vw - 2 * var(--container-pad) - 4 * var(--sp-5)) / 5.15);
+    }
+  }
+}
+
+/* Компактніша картка в ряду схожих */
+.product-scroll--fixed-tiles .product-card__body {
+  padding: var(--sp-3);
+  gap: var(--sp-2);
+}
+
+.product-scroll--fixed-tiles .product-card__title {
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-scroll--fixed-tiles .product-card__price-current {
+  font-size: 0.9375rem;
+}
+
+.product-scroll--fixed-tiles .product-card__rating {
+  font-size: 0.75rem;
+}
+
+.product-scroll--fixed-tiles .btn--sm {
+  min-height: 36px;
+  padding: 0 var(--sp-3);
+  font-size: 0.75rem;
+}
+
+@media (max-width: 767px) {
+  .product-scroll--fixed-tiles .product-card__body {
+    padding: var(--sp-2) var(--sp-2) var(--sp-3);
+  }
+
+  .product-scroll--fixed-tiles .btn--sm {
+    min-height: 34px;
+  }
+}

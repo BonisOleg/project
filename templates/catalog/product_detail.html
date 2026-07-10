@@ -5,8 +5,9 @@
 {% block meta_description %}{{ product.meta_description|default:product.short_description }}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/product_detail.css' %}?v=20260710g">
-<link rel="stylesheet" href="{% static 'css/pages/product_detail2.css' %}?v=20260710g">
+<link rel="stylesheet" href="{% static 'css/pages/product_detail.css' %}?v=20260710h">
+<link rel="stylesheet" href="{% static 'css/pages/product_detail2.css' %}?v=20260710h">
+<link rel="stylesheet" href="{% static 'css/components/product_scroll.css' %}?v=20260710c">
 {% endblock %}
 
 {% block content %}
@@ -158,7 +159,7 @@
   <div class="container">
     <h2 class="section__title reveal">Схожі товари</h2>
     <div class="reveal">
-      {% product_grid_balanced similar_products %}
+      {% product_grid_balanced similar_products mobile_scroll=True fixed_tiles=True %}
     </div>
   </div>
 </section>

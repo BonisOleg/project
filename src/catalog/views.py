@@ -56,7 +56,7 @@ def product_detail(request, slug):
     product.increment_views()
     similar = Product.objects.active().filter(
         category=product.category,
-    ).exclude(pk=product.pk)[:4]
+    ).exclude(pk=product.pk)[:12]
     parts = [('Каталог', '/catalog/')]
     category = product.category
     if category.parent:
