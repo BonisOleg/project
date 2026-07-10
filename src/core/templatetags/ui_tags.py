@@ -44,6 +44,8 @@ def product_grid_cols(count):
 def product_grid_balanced(products=None, list_mode=False, mobile_scroll=False, fixed_tiles=False):
     items = list(products) if products is not None else []
     count = len(items)
+    # fixed_tiles: компактні плитки (~5 у ряд), горизонтальний скрол при overflow (>5)
+    # без fixed_tiles: скрол лише якщо карток більше 2 (мобільний peek)
     use_scroll = bool(mobile_scroll) and (bool(fixed_tiles) or count > 2)
     return {
         'products': items,
