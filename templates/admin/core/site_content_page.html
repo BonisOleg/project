@@ -8,14 +8,6 @@
 
 {% block extrahead %}
 {{ block.super }}
-<style>
-  .site-content-editor .site-content-fieldset .flex-row > .border,
-  .site-content-editor .site-content-fieldset .flex-row > [class*="border-base"] {
-    color: rgb(var(--color-base-100) / 1);
-    background-color: rgb(var(--color-base-900) / 1);
-    border-color: rgb(var(--color-base-700) / 1);
-  }
-</style>
 {% if slides_formset %}
 <script src="{% static 'js/admin/hero_slides.js' %}" defer></script>
 {% endif %}

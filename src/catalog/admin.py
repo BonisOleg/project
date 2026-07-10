@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.template.loader import render_to_string
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
+from adminsortable2.admin import SortableAdminMixin
 from unfold.admin import ModelAdmin, TabularInline
 
 from src.core.admin_filters import (
@@ -14,42 +14,20 @@ from src.core.admin_filters import (
 from src.core.admin_guidelines import get_image_hint
 from src.core.admin_utils import ImagePreviewMixin, TinyMCEAdminMixin
 
+from .admin_product_images import ProductImageInline, ProductImagesAdminMixin
 from .models import (
     AttributeGroup,
     Brand,
     Category,
     Product,
     ProductAttribute,
-    ProductImage,
 )
 from . import admin_tabs  # noqa: F401
 
-_PRODUCT_IMAGE_HINT = get_image_hint('product')
 _CATEGORY_IMAGE_HINT = (
     get_image_hint('category')
     + ' Якщо фото не завантажено — на сайті показується вбудована іконка категорії (див. превʼю).'
 )
-
-
-class ProductImageInline(SortableInlineAdminMixin, TabularInline):
-    model = ProductImage
-    extra = 1
-    fields = ('image', 'get_image_preview', 'alt_text', 'is_main', 'sort_order')
-    readonly_fields = ('get_image_preview',)
-
-    @admin.display(description='Превʼю')
-    def get_image_preview(self, obj):
-        if obj and obj.pk and obj.image:
-            return format_html(
-                '<img src="{}" alt="" class="product-image-inline-preview">'
-                '<span class="product-image-upload-hint">{}</span>',
-                obj.image.url,
-                _PRODUCT_IMAGE_HINT,
-            )
-        return format_html(
-            '<span class="product-image-upload-hint">{}</span>',
-            _PRODUCT_IMAGE_HINT,
-        )
 
 
 class ProductAttributeInline(TabularInline):
@@ -114,7 +92,13 @@ class BrandAdmin(DropdownFiltersMixin, ModelAdmin):
 
 
 @admin.register(Product)
-class ProductAdmin(DropdownFiltersMixin, SortableAdminMixin, TinyMCEAdminMixin, ModelAdmin):
+class ProductAdmin(
+    ProductImagesAdminMixin,
+    DropdownFiltersMixin,
+    SortableAdminMixin,
+    TinyMCEAdminMixin,
+    ModelAdmin,
+):
     list_display = (
         'get_image_preview', 'name', 'sku', 'category', 'price', 'availability', 'is_active',
     )
@@ -136,8 +120,11 @@ class ProductAdmin(DropdownFiltersMixin, SortableAdminMixin, TinyMCEAdminMixin, 
         ('Основне', {
             'fields': (
                 'name', 'slug', 'sku', 'category', 'brand',
-                'short_description', 'description', 'get_image_preview',
+                'short_description', 'description',
             ),
+        }),
+        ('Фото', {
+            'fields': ('get_image_preview',),
         }),
         ('Ціни та наявність', {
             'fields': ('price', 'old_price', 'availability', 'sale_ends_at'),
@@ -159,7 +146,7 @@ class ProductAdmin(DropdownFiltersMixin, SortableAdminMixin, TinyMCEAdminMixin, 
         }),
     )
 
-    @admin.display(description='Фото')
+    @admin.display(description='Головне фото')
     def get_image_preview(self, obj):
         image = obj.main_image
         if image and image.image:

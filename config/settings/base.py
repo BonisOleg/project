@@ -137,6 +137,7 @@ UNFOLD = {
     'SCRIPTS': [
         lambda request: static('js/admin/theme-init.js'),
         lambda request: static('js/admin/filters.js'),
+        lambda request: static('js/admin/product_images.js'),
     ],
     'COLORS': {
         'primary': {
@@ -290,11 +291,6 @@ UNFOLD = {
                         'link': reverse_lazy('admin:accounts_user_changelist'),
                     },
                     {
-                        'title': 'Адреси',
-                        'icon': 'location_on',
-                        'link': reverse_lazy('admin:accounts_deliveryaddress_changelist'),
-                    },
-                    {
                         'title': 'Обране',
                         'icon': 'favorite',
                         'link': reverse_lazy('admin:accounts_wishlistitem_changelist'),
@@ -330,11 +326,6 @@ UNFOLD = {
                         'title': 'FAQ',
                         'icon': 'help',
                         'link': reverse_lazy('admin:pages_faqitem_changelist'),
-                    },
-                    {
-                        'title': 'Інструкції',
-                        'icon': 'description',
-                        'link': reverse_lazy('admin:pages_productinstruction_changelist'),
                     },
                 ],
             },

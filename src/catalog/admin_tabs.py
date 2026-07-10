@@ -1,14 +1,18 @@
 from django.contrib import admin
+from adminsortable2.admin import SortableAdminBase
 from unfold.admin import ModelAdmin
 
 from src.core.admin_utils import ImagePreviewMixin
 
+from .admin_product_images import ProductImageInline, ProductImagesAdminMixin
 from .models import MostViewedProduct, NewArrivalProduct, OnSaleProduct, TopSaleProduct
 
 
-class _TabProductAdminBase(ModelAdmin):
+class _TabProductAdminBase(ProductImagesAdminMixin, SortableAdminBase, ModelAdmin):
     search_fields = ('name', 'sku')
     list_per_page = 25
+    inlines = [ProductImageInline]
+    readonly_fields = ('get_image_preview',)
 
     @admin.display(description='Фото')
     def get_image_preview(self, obj):
@@ -34,6 +38,14 @@ class TopSaleProductAdmin(_TabProductAdminBase):
     list_editable = ('is_top_sale', 'sort_order')
     list_display_links = ('get_image_preview', 'name')
     ordering = ('-sort_order', '-created_at')
+    fieldsets = (
+        ('Основне', {
+            'fields': ('name', 'sku', 'price', 'is_top_sale', 'sort_order'),
+        }),
+        ('Фото', {
+            'fields': ('get_image_preview',),
+        }),
+    )
 
     def get_queryset(self, request):
         return (
@@ -51,8 +63,16 @@ class NewArrivalProductAdmin(_TabProductAdminBase):
     )
     list_editable = ('is_new',)
     list_display_links = ('get_image_preview', 'name')
-    readonly_fields = ('created_at',)
+    readonly_fields = ('get_image_preview', 'created_at')
     ordering = ('-created_at',)
+    fieldsets = (
+        ('Основне', {
+            'fields': ('name', 'sku', 'price', 'is_new', 'created_at'),
+        }),
+        ('Фото', {
+            'fields': ('get_image_preview',),
+        }),
+    )
 
     def get_queryset(self, request):
         return (
@@ -70,8 +90,16 @@ class MostViewedProductAdmin(_TabProductAdminBase):
     )
     list_editable = ('is_top_sale',)
     list_display_links = ('get_image_preview', 'name')
-    readonly_fields = ('views_count',)
+    readonly_fields = ('get_image_preview', 'views_count')
     ordering = ('-views_count', '-created_at')
+    fieldsets = (
+        ('Основне', {
+            'fields': ('name', 'sku', 'price', 'views_count', 'is_top_sale'),
+        }),
+        ('Фото', {
+            'fields': ('get_image_preview',),
+        }),
+    )
 
     def get_queryset(self, request):
         return (
@@ -91,6 +119,17 @@ class OnSaleProductAdmin(_TabProductAdminBase):
     list_editable = ('is_on_sale', 'sort_order')
     list_display_links = ('get_image_preview', 'name')
     ordering = ('-sort_order', '-created_at')
+    fieldsets = (
+        ('Основне', {
+            'fields': (
+                'name', 'sku', 'price', 'old_price',
+                'is_on_sale', 'sale_ends_at', 'sort_order',
+            ),
+        }),
+        ('Фото', {
+            'fields': ('get_image_preview',),
+        }),
+    )
 
     def get_queryset(self, request):
         return (

@@ -372,6 +372,37 @@
   background: var(--c-surface);
   border-radius: var(--r-lg);
   border: 1px solid var(--c-border);
+  transition:
+    transform var(--t-fast),
+    box-shadow var(--t-fast),
+    border-color var(--t-fast);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .benefit-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+    border-color: var(--c-border-strong);
+  }
+}
+
+.benefit-card:active {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--c-border-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .benefit-card {
+    transition: none;
+  }
+
+  .benefit-card:hover,
+  .benefit-card:active {
+    transform: none;
+  }
 }
 
 .benefit-card__title {

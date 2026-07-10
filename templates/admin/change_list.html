@@ -92,9 +92,6 @@
                         {% block result_list %}
                             {% include "unfold/helpers/change_list_actions.html" %}
                             {% unfold_result_list cl %}
-                            {% block pagination %}
-                                {% pagination cl %}
-                            {% endblock %}
                         {% endblock %}
                     </form>
 
@@ -105,4 +102,10 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block footer %}
+    {% block pagination %}
+        {% include "unfold/helpers/pagination.html" %}
+    {% endblock %}
 {% endblock %}

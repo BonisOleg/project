@@ -14,12 +14,26 @@
   overflow-wrap: anywhere;
 }
 
-/* Логотип Oyra в шапці сайдбару */
-.border-b img.h-8[src*="logo-oyra"] {
+/* Логотип Oyra в шапці сайдбару — лише лого, по центру */
+.border-b.flex.items-center.h-\[65px\] > div.grow {
+  justify-content: center;
+}
+
+.border-b img.h-8[src*="logo-oyra"],
+.admin-sidebar-logo img.h-8 {
+  display: block;
   width: auto;
   height: 2rem;
   max-width: 7.5rem;
   object-fit: contain;
+  margin-inline: auto;
+}
+
+.admin-sidebar-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 /* ====================================================
@@ -368,12 +382,49 @@
   color: rgb(var(--color-primary-300));
 }
 
-/* Кнопка завантаження файлу — синій акцент замість чорної */
-.site-content-editor button[type="button"],
+/* ====================================================
+   Changelist sticky footer (list_editable Save)
+   ==================================================== */
+#changelist-form + * .flex.flex-row.grow.items-center,
+.lg\:scrollable-top .flex.flex-row.grow.items-center {
+  gap: 1rem;
+}
+
+.lg\:scrollable-top .flex.flex-row.grow.items-center > .ml-auto {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Primary / dark-looking buttons — синій фон + білий текст (світла тема) */
+form button.bg-base-900,
 form .relative button.bg-base-900,
-form button.bg-primary-600 {
+form button.bg-primary-600,
+form a.bg-primary-600 {
   background-color: rgb(var(--color-primary-600));
   border-color: rgb(var(--color-primary-600));
+  color: #fff;
+}
+
+form button.bg-base-900:hover,
+form .relative button.bg-base-900:hover,
+form button.bg-primary-600:hover,
+form a.bg-primary-600:hover {
+  background-color: rgb(var(--color-primary-700));
+  border-color: rgb(var(--color-primary-700));
+  color: #fff;
+}
+
+/* File input: права «плашка» лишається світлою в light theme */
+.site-content-editor .bg-white.flex.flex-none,
+form .bg-white.flex.flex-none {
+  background-color: #fff;
+  color: rgb(var(--color-base-500));
+}
+
+.dark .site-content-editor .bg-white.flex.flex-none,
+.dark form .bg-white.flex.flex-none {
+  background-color: rgb(var(--color-base-900));
+  color: rgb(var(--color-base-400));
 }
 
 @media (max-width: 760px) {
@@ -432,6 +483,32 @@ form button.bg-primary-600 {
   .site-content-editor input[type="tel"],
   .site-content-editor input[type="search"],
   .site-content-editor__textarea {
+    font-size: 16px;
+  }
+}
+
+/* ====================================================
+   Product bulk images (multi-upload field)
+   ==================================================== */
+.product-bulk-images-input {
+  max-width: 100%;
+}
+
+.aligned .form-row:has(.product-bulk-images-input) .help,
+.aligned .form-row:has(.product-bulk-images-input) .helptext {
+  max-width: 36rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 768px) {
+  .aligned .form-row:has(.product-bulk-images-input) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@supports (-webkit-touch-callout: none) {
+  .product-bulk-images-input {
     font-size: 16px;
   }
 }

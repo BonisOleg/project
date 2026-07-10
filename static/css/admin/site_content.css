@@ -91,16 +91,25 @@
   align-items: center;
   gap: 0.25rem;
   padding: 0.5rem 0.875rem;
+  border: 1px solid rgb(var(--color-primary-600));
   border-radius: 9999px;
-  background: transparent;
+  background-color: rgb(var(--color-primary-600));
+  color: #fff;
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.hero-slides-admin__add:hover {
+  border-color: rgb(var(--color-primary-700));
+  background-color: rgb(var(--color-primary-700));
+  color: #fff;
 }
 
 .hero-slides-admin__add .material-symbols-outlined {
   font-size: 1rem;
+  color: inherit;
 }
 
 .hero-slides-admin__list {
