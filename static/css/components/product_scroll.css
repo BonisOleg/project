@@ -90,14 +90,15 @@
   box-sizing: border-box;
 }
 
-/* Немає overflow — картки розтягуються на всю ширину, стрілки ховаємо */
-.product-scroll:not([data-scrollable='1']) .product-grid--scroll-mobile {
+/* Немає overflow — картки розтягуються на всю ширину, стрілки ховаємо
+   (крім fixed-tiles — там розмір завжди компактний) */
+.product-scroll:not([data-scrollable='1']):not(.product-scroll--fixed-tiles) .product-grid--scroll-mobile {
   width: 100%;
   max-width: 100%;
   padding-inline-end: 0;
 }
 
-.product-scroll:not([data-scrollable='1']) .product-grid--scroll-mobile > .product-grid__item {
+.product-scroll:not([data-scrollable='1']):not(.product-scroll--fixed-tiles) .product-grid--scroll-mobile > .product-grid__item {
   flex: 1 1 0;
   width: auto;
 }
@@ -192,10 +193,11 @@
   }
 }
 
-/* Фіксовані плитки (схожі товари): не розтягуються, навіть якщо < 5 */
+/* Фіксовані плитки (схожі товари): ніколи не розтягуються на всю ширину */
 .product-scroll--fixed-tiles .product-grid--scroll-mobile {
   width: max-content;
   max-width: none;
+  justify-content: flex-start;
 }
 
 .product-scroll--fixed-tiles:not([data-scrollable='1']) .product-grid--scroll-mobile {
@@ -204,19 +206,26 @@
   padding-inline-end: 0;
 }
 
+.product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item,
 .product-scroll--fixed-tiles:not([data-scrollable='1']) .product-grid--scroll-mobile > .product-grid__item {
-  flex: 0 0 auto;
+  flex-grow: 0;
+  flex-shrink: 0;
+  width: min(16rem, 100%);
+  max-width: 16rem;
 }
 
 @media (max-width: 767px) {
-  .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item {
-    flex: 0 0 calc((100cqw - var(--sp-3)) / 2.2);
+  .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item,
+  .product-scroll--fixed-tiles:not([data-scrollable='1']) .product-grid--scroll-mobile > .product-grid__item {
+    flex-basis: calc((100cqw - var(--sp-3)) / 2.2);
     width: calc((100cqw - var(--sp-3)) / 2.2);
+    max-width: none;
   }
 
   @supports not (width: 1cqw) {
-    .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item {
-      flex: 0 0 calc((100vw - 2 * var(--container-pad) - var(--sp-3)) / 2.2);
+    .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item,
+    .product-scroll--fixed-tiles:not([data-scrollable='1']) .product-grid--scroll-mobile > .product-grid__item {
+      flex-basis: calc((100vw - 2 * var(--container-pad) - var(--sp-3)) / 2.2);
       width: calc((100vw - 2 * var(--container-pad) - var(--sp-3)) / 2.2);
     }
   }
@@ -227,14 +236,17 @@
     gap: var(--sp-5);
   }
 
-  .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item {
-    flex: 0 0 calc((100cqw - 2 * var(--sp-5)) / 3.15);
+  .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item,
+  .product-scroll--fixed-tiles:not([data-scrollable='1']) .product-grid--scroll-mobile > .product-grid__item {
+    flex-basis: calc((100cqw - 2 * var(--sp-5)) / 3.15);
     width: calc((100cqw - 2 * var(--sp-5)) / 3.15);
+    max-width: 14rem;
   }
 
   @supports not (width: 1cqw) {
-    .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item {
-      flex: 0 0 calc((100vw - 2 * var(--container-pad) - 2 * var(--sp-5)) / 3.15);
+    .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item,
+    .product-scroll--fixed-tiles:not([data-scrollable='1']) .product-grid--scroll-mobile > .product-grid__item {
+      flex-basis: calc((100vw - 2 * var(--container-pad) - 2 * var(--sp-5)) / 3.15);
       width: calc((100vw - 2 * var(--container-pad) - 2 * var(--sp-5)) / 3.15);
     }
   }
@@ -245,14 +257,17 @@
     gap: var(--sp-5);
   }
 
-  .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item {
-    flex: 0 0 calc((100cqw - 4 * var(--sp-5)) / 5.15);
+  .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item,
+  .product-scroll--fixed-tiles:not([data-scrollable='1']) .product-grid--scroll-mobile > .product-grid__item {
+    flex-basis: calc((100cqw - 4 * var(--sp-5)) / 5.15);
     width: calc((100cqw - 4 * var(--sp-5)) / 5.15);
+    max-width: 15rem;
   }
 
   @supports not (width: 1cqw) {
-    .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item {
-      flex: 0 0 calc((100vw - 2 * var(--container-pad) - 4 * var(--sp-5)) / 5.15);
+    .product-scroll--fixed-tiles .product-grid--scroll-mobile > .product-grid__item,
+    .product-scroll--fixed-tiles:not([data-scrollable='1']) .product-grid--scroll-mobile > .product-grid__item {
+      flex-basis: calc((100vw - 2 * var(--container-pad) - 4 * var(--sp-5)) / 5.15);
       width: calc((100vw - 2 * var(--container-pad) - 4 * var(--sp-5)) / 5.15);
     }
   }

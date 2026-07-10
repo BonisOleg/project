@@ -19,12 +19,26 @@ function updateButtons(viewport, prevBtn, nextBtn) {
 }
 
 function remeasureScrollable(root, viewport, prevBtn, nextBtn) {
+  const fixedTiles = root.dataset.fixedTiles === '1';
+
   // Міряємо в peek-режимі, інакше flex-grow ховає реальний overflow
   root.dataset.scrollable = '1';
   void viewport.offsetWidth;
 
   const maxScroll = viewport.scrollWidth - viewport.clientWidth;
   const scrollable = maxScroll > 4;
+
+  // Фіксовані плитки ніколи не перемикаємо в stretch-режим (роздуває 1 картку на весь екран)
+  if (fixedTiles) {
+    root.dataset.scrollable = scrollable ? '1' : '0';
+    prevBtn.disabled = !scrollable || viewport.scrollLeft <= 4;
+    nextBtn.disabled = !scrollable || viewport.scrollLeft >= maxScroll - 4;
+    if (!scrollable && viewport.scrollLeft !== 0) {
+      viewport.scrollLeft = 0;
+    }
+    return;
+  }
+
   root.dataset.scrollable = scrollable ? '1' : '0';
 
   if (!scrollable) {
