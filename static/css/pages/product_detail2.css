@@ -58,7 +58,7 @@
 }
 
 .product-tabs__prose {
-  max-width: min(40rem, 100%);
+  max-width: min(36rem, 100%);
   width: 100%;
   font-family: var(--ff-base);
   font-size: var(--fs-md);

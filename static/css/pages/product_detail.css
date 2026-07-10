@@ -2,10 +2,16 @@
   display: grid;
   gap: var(--sp-5);
   padding: var(--sp-4) 0 var(--sp-10);
-  width: 100%;
-  max-width: 100%;
   min-width: 0;
-  overflow-x: hidden;
+  overflow-x: clip;
+}
+
+/* Не даємо width:100% зʼїсти горизонтальні відступи .container */
+.container.product-detail {
+  width: min(
+    100% - 2 * max(var(--container-pad), var(--safe-left), var(--safe-right)),
+    var(--container-max)
+  );
 }
 
 .product-detail > .breadcrumbs {
@@ -165,6 +171,7 @@
   flex-direction: column;
   gap: var(--sp-3);
   min-width: 0;
+  max-width: 36rem;
 }
 
 @media (min-width: 768px) {
@@ -249,7 +256,8 @@
   border: 1px solid var(--c-border);
   border-radius: var(--r-lg);
   min-width: 0;
-  max-width: 100%;
+  width: 100%;
+  max-width: 28rem;
   box-sizing: border-box;
 }
 

@@ -126,6 +126,13 @@
   border-radius: var(--r-lg);
 }
 
+@media (min-width: 900px) {
+  .cabinet-panel {
+    justify-self: center;
+    width: 100%;
+  }
+}
+
 .cabinet-panel__title {
   font-family: var(--ff-display);
   font-size: var(--fs-xl);
