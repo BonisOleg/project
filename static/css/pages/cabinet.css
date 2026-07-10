@@ -37,7 +37,7 @@
 }
 
 .cabinet-page__eyebrow {
-  font-size: var(--fs-xs);
+  font-size: var(--fs-page-eyebrow);
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -47,7 +47,7 @@
 
 .cabinet-page__title {
   font-family: var(--ff-display);
-  font-size: var(--fs-h2);
+  font-size: var(--fs-page-title);
   line-height: 1.15;
 }
 
@@ -78,7 +78,7 @@
 .cabinet-nav__link {
   flex-shrink: 0;
   padding: var(--sp-2) var(--sp-4);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-page-nav);
   font-weight: 500;
   color: var(--c-text-secondary);
   border-radius: var(--r-pill);
@@ -136,7 +136,7 @@
 
 .cabinet-panel__title {
   font-family: var(--ff-display);
-  font-size: var(--fs-xl);
+  font-size: var(--fs-page-panel);
   margin-bottom: var(--sp-5);
   padding-bottom: var(--sp-4);
   border-bottom: 1px solid var(--c-border);

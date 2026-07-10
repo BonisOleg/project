@@ -60,6 +60,13 @@
   --fs-h2: clamp(1.5rem, 3vw, 2rem);
   --fs-h1: clamp(2rem, 5vw, 3.25rem);
 
+  /* Єдина шкала заголовків сторінок (хлібні / підпис / H1 / nav / panel) */
+  --fs-page-crumb: var(--fs-sm);
+  --fs-page-eyebrow: var(--fs-xs);
+  --fs-page-title: var(--fs-h2);
+  --fs-page-nav: var(--fs-sm);
+  --fs-page-panel: var(--fs-xl);
+
   --sp-1: 0.25rem;
   --sp-2: 0.5rem;
   --sp-3: 0.75rem;
@@ -102,6 +109,17 @@
     --container-pad: var(--sp-6);
     /* Планшет: також 2 ряди до 1023px */
     --header-h: 8rem;
+  }
+}
+
+/* Мобільний + планшет: фіксована шкала page-header */
+@media (max-width: 1023px) {
+  :root {
+    --fs-page-crumb: var(--fs-xs);   /* 12px */
+    --fs-page-eyebrow: var(--fs-xs); /* 12px */
+    --fs-page-title: 1.5rem;         /* 24px */
+    --fs-page-nav: var(--fs-sm);     /* 14px */
+    --fs-page-panel: 1.5rem;         /* 24px */
   }
 }
 

@@ -67,7 +67,7 @@
 
 .catalog-page-title {
   font-family: var(--ff-display);
-  font-size: var(--fs-h2);
+  font-size: var(--fs-page-title);
   text-wrap: balance;
   line-height: 1.2;
 }

@@ -7,7 +7,7 @@
 }
 
 .blog-page__eyebrow {
-  font-size: var(--fs-xs);
+  font-size: var(--fs-page-eyebrow);
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
