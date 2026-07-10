@@ -185,3 +185,25 @@
     }
   }
 }
+
+/* Схожі товари: home.css не підключений на PDP — локальні стилі секції */
+.product-detail ~ .section {
+  padding: var(--sp-8) 0;
+}
+
+.product-detail ~ .section--alt {
+  background: var(--c-bg-alt);
+}
+
+.product-detail ~ .section .section__title {
+  font-family: var(--ff-display);
+  font-size: var(--fs-h2);
+  text-wrap: balance;
+  margin: 0 0 var(--sp-6);
+}
+
+@media (max-width: 767px) {
+  .product-detail ~ .section {
+    padding: var(--sp-6) 0 var(--sp-8);
+  }
+}
