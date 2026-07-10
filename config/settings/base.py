@@ -252,6 +252,23 @@ UNFOLD = {
                 ],
             },
             {
+                'title': 'Керування акціями',
+                'separator': True,
+                'collapsible': True,
+                'items': [
+                    {
+                        'title': 'Товари на акції',
+                        'icon': 'percent',
+                        'link': reverse_lazy('admin:catalog_onsaleproduct_changelist'),
+                    },
+                    {
+                        'title': 'Промокоди',
+                        'icon': 'local_offer',
+                        'link': reverse_lazy('admin:promotions_promocode_changelist'),
+                    },
+                ],
+            },
+            {
                 'title': 'Продажі',
                 'separator': True,
                 'items': [
@@ -259,11 +276,6 @@ UNFOLD = {
                         'title': 'Замовлення',
                         'icon': 'shopping_cart',
                         'link': reverse_lazy('admin:orders_order_changelist'),
-                    },
-                    {
-                        'title': 'Промокоди',
-                        'icon': 'local_offer',
-                        'link': reverse_lazy('admin:promotions_promocode_changelist'),
                     },
                 ],
             },

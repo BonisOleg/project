@@ -6,8 +6,11 @@ from __future__ import annotations
 from collections.abc import Generator
 from typing import Any
 
+from django.contrib import admin
 from django.contrib.admin.views.main import ChangeList
 from unfold.contrib.filters.admin import ChoicesDropdownFilter, RelatedDropdownFilter
+from unfold.contrib.filters.admin.mixins import ValueMixin
+from unfold.contrib.filters.forms import DropdownForm
 
 
 class UkChoicesDropdownFilter(ChoicesDropdownFilter):
@@ -52,6 +55,29 @@ class UkRelatedDropdownFilter(RelatedDropdownFilter):
                 choices=choices,
                 data={self.lookup_kwarg: self.value() or ''},
                 multiple=self.multiple if hasattr(self, 'multiple') else False,
+            ),
+        }
+
+
+class UkBooleanDropdownFilter(ValueMixin, admin.BooleanFieldListFilter):
+    """BooleanField як <select>: Всі / Так / Ні."""
+
+    template = 'unfold/filters/filters_field.html'
+    form_class = DropdownForm
+    all_option = ['', 'Всі']
+
+    def choices(self, changelist: ChangeList) -> Generator[dict[str, Any], None, None]:
+        choices = [
+            self.all_option,
+            ['1', 'Так'],
+            ['0', 'Ні'],
+        ]
+        yield {
+            'form': self.form_class(
+                label=str(self.title).strip().capitalize(),
+                name=self.lookup_kwarg,
+                choices=choices,
+                data={self.lookup_kwarg: self.value() or ''},
             ),
         }
 

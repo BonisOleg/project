@@ -1,0 +1,31 @@
+{% with toast_tag=tag|default:'info' %}
+<div class="message message--{{ toast_tag }}" data-toast role="status">
+  <span class="message__icon" aria-hidden="true">
+    {% if 'success' in toast_tag %}
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 6 9 17l-5-5"/>
+    </svg>
+    {% elif 'error' in toast_tag %}
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 6 6 18M6 6l12 12"/>
+    </svg>
+    {% elif 'warning' in toast_tag %}
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m12 3 9.5 16.5H2.5L12 3Z"/>
+      <path d="M12 10v4M12 17h.01"/>
+    </svg>
+    {% else %}
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 8h.01M11 12h1v4h1"/>
+    </svg>
+    {% endif %}
+  </span>
+  <div class="message__body">
+    <span class="message__text">{{ text }}</span>
+    {% if link_url %}
+    <a class="message__link" href="{{ link_url }}">{{ link_label|default:'Детальніше' }}</a>
+    {% endif %}
+  </div>
+</div>
+{% endwith %}

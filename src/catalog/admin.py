@@ -7,6 +7,7 @@ from unfold.admin import ModelAdmin, TabularInline
 
 from src.core.admin_filters import (
     DropdownFiltersMixin,
+    UkBooleanDropdownFilter,
     UkChoicesDropdownFilter,
     UkRelatedDropdownFilter,
 )
@@ -61,7 +62,7 @@ class ProductAttributeInline(TabularInline):
 class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, ImagePreviewMixin, TinyMCEAdminMixin, ModelAdmin):
     list_display = ('name', 'parent', 'get_image_preview', 'is_active', 'sort_order')
     list_filter = [
-        ('is_active', UkChoicesDropdownFilter),
+        ('is_active', UkBooleanDropdownFilter),
         ('parent', UkRelatedDropdownFilter),
     ]
     prepopulated_fields = {'slug': ('name',)}
@@ -106,7 +107,7 @@ class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, ImagePreviewMixin,
 class BrandAdmin(DropdownFiltersMixin, ModelAdmin):
     list_display = ('name', 'is_active')
     list_filter = [
-        ('is_active', UkChoicesDropdownFilter),
+        ('is_active', UkBooleanDropdownFilter),
     ]
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name',)
@@ -118,13 +119,13 @@ class ProductAdmin(DropdownFiltersMixin, SortableAdminMixin, TinyMCEAdminMixin, 
         'get_image_preview', 'name', 'sku', 'category', 'price', 'availability', 'is_active',
     )
     list_filter = [
-        ('is_active', UkChoicesDropdownFilter),
+        ('is_active', UkBooleanDropdownFilter),
         ('availability', UkChoicesDropdownFilter),
         ('category', UkRelatedDropdownFilter),
         ('brand', UkRelatedDropdownFilter),
-        ('is_top_sale', UkChoicesDropdownFilter),
-        ('is_new', UkChoicesDropdownFilter),
-        ('is_on_sale', UkChoicesDropdownFilter),
+        ('is_top_sale', UkBooleanDropdownFilter),
+        ('is_new', UkBooleanDropdownFilter),
+        ('is_on_sale', UkBooleanDropdownFilter),
     ]
     search_fields = ('name', 'sku')
     prepopulated_fields = {'slug': ('name',)}

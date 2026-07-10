@@ -71,30 +71,42 @@ body {
 .messages {
   position: fixed;
   top: calc(var(--header-h) + var(--safe-top) + var(--sp-3));
-  right: var(--sp-4);
+  right: max(var(--sp-4), var(--safe-right));
+  left: auto;
+  bottom: auto;
   z-index: var(--z-toast);
   display: grid;
   gap: var(--sp-2);
+  width: min(22rem, calc(100vw - var(--sp-4) * 2 - var(--safe-left) - var(--safe-right)));
   max-width: 22rem;
+  pointer-events: none;
 }
 
 .message {
-  padding: var(--sp-3) var(--sp-4);
-  border-radius: var(--r-md);
-  background: var(--c-surface-dark);
-  color: var(--c-text-inverse);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: var(--r-lg);
+  background: var(--c-surface);
+  color: var(--c-text);
+  border: 1px solid var(--c-border);
   box-shadow: var(--shadow-md);
   font-size: var(--fs-sm);
-  animation: slideIn var(--t-base) forwards;
+  line-height: 1.45;
+  pointer-events: auto;
+  animation: toastIn var(--t-base) forwards;
 }
 
-.message--success { border-left: 3px solid var(--c-success); }
-.message--error { border-left: 3px solid var(--c-danger); }
-.message--warning { border-left: 3px solid var(--c-warning); }
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(1rem); }
-  to { opacity: 1; transform: translateX(0); }
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.4rem) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .page-header {

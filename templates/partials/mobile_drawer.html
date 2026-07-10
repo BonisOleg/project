@@ -2,11 +2,11 @@
 <div class="mobile-drawer" id="mobile-drawer" aria-hidden="true">
   <div class="mobile-drawer__backdrop" data-drawer-close></div>
   <div class="mobile-drawer__panel">
-    <button type="button" data-drawer-close aria-label="Закрити">✕</button>
+    <button class="mobile-drawer__close" type="button" data-drawer-close aria-label="Закрити">✕</button>
     {% section_visible 'site' 'header_search_visible' as show_search %}
     {% if show_search %}
-    <form action="{% url 'catalog:search' %}" method="get">
-      <input class="field__input" type="search" name="q" placeholder="{% block_plain 'site' 'header_search_placeholder' 'Пошук...' %}" style="margin-top:1rem">
+    <form class="mobile-drawer__search" action="{% url 'catalog:search' %}" method="get">
+      <input class="field__input" type="search" name="q" placeholder="{% block_plain 'site' 'header_search_placeholder' 'Пошук...' %}">
     </form>
     {% endif %}
     <nav class="mobile-drawer__nav">

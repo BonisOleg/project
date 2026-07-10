@@ -239,3 +239,10 @@ class MostViewedProduct(Product):
         proxy = True
         verbose_name = 'Топ переглядів'
         verbose_name_plural = 'Топ переглядів'
+
+
+class OnSaleProduct(Product):
+    class Meta:
+        proxy = True
+        verbose_name = 'Товар на акції'
+        verbose_name_plural = 'Товари на акції'

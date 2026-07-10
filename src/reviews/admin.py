@@ -3,6 +3,7 @@ from unfold.admin import ModelAdmin
 
 from src.core.admin_filters import (
     DropdownFiltersMixin,
+    UkBooleanDropdownFilter,
     UkChoicesDropdownFilter,
     UkRelatedDropdownFilter,
 )
@@ -14,7 +15,7 @@ from .models import Review
 class ReviewAdmin(DropdownFiltersMixin, ModelAdmin):
     list_display = ('product', 'author_name', 'rating', 'is_published', 'created_at')
     list_filter = [
-        ('is_published', UkChoicesDropdownFilter),
+        ('is_published', UkBooleanDropdownFilter),
         ('rating', UkChoicesDropdownFilter),
         ('product', UkRelatedDropdownFilter),
     ]

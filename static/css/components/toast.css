@@ -1,4 +1,72 @@
-/* Toast / flash messages — mobile & dismiss */
+/* Toast — світла картка зверху справа */
+
+.message__icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--r-md);
+  background: var(--c-brand-bg);
+  color: var(--c-brand);
+}
+
+.message__icon svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.message--success .message__icon {
+  background: rgba(43, 189, 126, 0.14);
+  color: var(--c-success);
+}
+
+.message--error .message__icon {
+  background: rgba(255, 59, 92, 0.12);
+  color: var(--c-danger);
+}
+
+.message--warning .message__icon {
+  background: rgba(255, 201, 60, 0.22);
+  color: #B8860B;
+}
+
+.message--info .message__icon {
+  background: var(--c-brand-bg);
+  color: var(--c-brand);
+}
+
+.message__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-4);
+  flex: 1;
+  min-width: 0;
+  padding-block: 0.2rem;
+}
+
+.message__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 500;
+  color: var(--c-text);
+}
+
+.message__link {
+  flex-shrink: 0;
+  color: var(--c-brand);
+  text-decoration: none;
+  font-weight: 600;
+  text-underline-offset: 0.15em;
+  margin-inline-start: 0;
+}
+
+.message__link:hover,
+.message__link:focus-visible {
+  text-decoration: underline;
+  color: var(--c-brand-dark);
+}
 
 .message--out {
   animation: toastOut var(--t-fast) forwards;
@@ -7,57 +75,54 @@
 @keyframes toastOut {
   from {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
   to {
     opacity: 0;
-    transform: translateY(0.5rem);
+    transform: translateY(-0.35rem) scale(0.97);
   }
 }
 
-@media (min-width: 1024px) {
-  @keyframes toastOut {
-    from {
-      opacity: 1;
-      transform: translateX(0);
-    }
-    to {
-      opacity: 0;
-      transform: translateX(0.75rem);
-    }
-  }
-}
-
-/* Мобілка / планшет: над bottom-nav, на всю ширину з полями (iOS safe-area) */
+/* Планшет / мобілка: зверху справа, safe-area (iOS Safari) */
 @media (max-width: 1023px) {
   .messages {
-    top: auto;
+    top: calc(var(--header-h) + var(--safe-top) + var(--sp-3));
     right: max(var(--sp-3), var(--safe-right));
-    left: max(var(--sp-3), var(--safe-left));
-    bottom: calc(var(--bottom-nav-h, 0px) + var(--safe-bottom) + var(--sp-3));
-    max-width: none;
+    left: auto;
+    bottom: auto;
+    width: min(20rem, calc(100vw - var(--sp-3) * 2 - var(--safe-left) - var(--safe-right)));
   }
 
   .message {
-    animation-name: toastInUp;
+    padding: var(--sp-3) var(--sp-4);
+    gap: var(--sp-3);
+  }
+
+  .message__icon {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .message__icon svg {
+    width: 1rem;
+    height: 1rem;
   }
 }
 
-@keyframes toastInUp {
-  from {
-    opacity: 0;
-    transform: translateY(0.75rem);
+@media (max-width: 479px) {
+  .messages {
+    width: calc(100vw - var(--sp-3) * 2 - var(--safe-left) - var(--safe-right));
+    max-width: none;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .message__body {
+    gap: var(--sp-2) var(--sp-3);
   }
 }
 
-.message__link {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 0.15em;
-  margin-inline-start: var(--sp-2);
-  font-weight: 600;
+@media (prefers-reduced-motion: reduce) {
+  .message,
+  .message--out {
+    animation: none;
+  }
 }

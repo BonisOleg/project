@@ -2,6 +2,11 @@ from django.contrib import admin
 from unfold.admin import ModelAdmin
 
 from .admin_utils import ReadableUnfoldFieldsMixin, SingletonModelAdminMixin
+from .admin_filters import (
+    DropdownFiltersMixin,
+    UkBooleanDropdownFilter,
+    UkChoicesDropdownFilter,
+)
 from .models import SiteSettings, SocialLink
 
 
@@ -14,10 +19,13 @@ class SiteSettingsAdmin(ReadableUnfoldFieldsMixin, SingletonModelAdminMixin, Mod
 
 
 @admin.register(SocialLink)
-class SocialLinkAdmin(ReadableUnfoldFieldsMixin, ModelAdmin):
+class SocialLinkAdmin(DropdownFiltersMixin, ReadableUnfoldFieldsMixin, ModelAdmin):
     list_display = ('network', 'url', 'sort_order', 'is_active')
     list_editable = ('url', 'sort_order', 'is_active')
-    list_filter = ('network', 'is_active')
+    list_filter = [
+        ('network', UkChoicesDropdownFilter),
+        ('is_active', UkBooleanDropdownFilter),
+    ]
     search_fields = ('url',)
     ordering = ('sort_order', 'id')
     list_display_links = ('network',)

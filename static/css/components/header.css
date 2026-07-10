@@ -323,6 +323,27 @@
 
 .mobile-drawer.is-open .mobile-drawer__panel { transform: translateX(0); }
 
+.mobile-drawer__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  margin: calc(var(--sp-2) * -1) 0 0 calc(var(--sp-2) * -1);
+  padding: var(--sp-2);
+  border: 0;
+  background: transparent;
+  color: var(--c-text);
+  font-size: var(--fs-xl);
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-drawer__search {
+  margin-top: var(--sp-5);
+}
+
 .mobile-drawer__nav {
   display: grid;
   gap: var(--sp-1);

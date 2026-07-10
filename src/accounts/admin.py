@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from unfold.admin import ModelAdmin
 from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
 
-from src.core.admin_filters import DropdownFiltersMixin, UkChoicesDropdownFilter
+from src.core.admin_filters import DropdownFiltersMixin, UkBooleanDropdownFilter
 
 from .models import DeliveryAddress, User, WishlistItem
 
@@ -15,9 +15,9 @@ class UserAdmin(DropdownFiltersMixin, DjangoUserAdmin, ModelAdmin):
     change_password_form = AdminPasswordChangeForm
     list_display = ('email', 'first_name', 'last_name', 'phone', 'bonus_points', 'is_staff', 'is_active')
     list_filter = [
-        ('is_active', UkChoicesDropdownFilter),
-        ('is_staff', UkChoicesDropdownFilter),
-        ('is_superuser', UkChoicesDropdownFilter),
+        ('is_active', UkBooleanDropdownFilter),
+        ('is_staff', UkBooleanDropdownFilter),
+        ('is_superuser', UkBooleanDropdownFilter),
     ]
     ordering = ('email',)
     search_fields = ('email', 'phone', 'first_name', 'last_name')
@@ -37,7 +37,7 @@ class UserAdmin(DropdownFiltersMixin, DjangoUserAdmin, ModelAdmin):
 class DeliveryAddressAdmin(DropdownFiltersMixin, ModelAdmin):
     list_display = ('user', 'label', 'city', 'address', 'is_default')
     list_filter = [
-        ('is_default', UkChoicesDropdownFilter),
+        ('is_default', UkBooleanDropdownFilter),
     ]
     search_fields = ('user__email', 'city', 'address', 'label')
     autocomplete_fields = ('user',)

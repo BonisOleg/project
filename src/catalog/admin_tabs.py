@@ -3,7 +3,7 @@ from unfold.admin import ModelAdmin
 
 from src.core.admin_utils import ImagePreviewMixin
 
-from .models import MostViewedProduct, NewArrivalProduct, TopSaleProduct
+from .models import MostViewedProduct, NewArrivalProduct, OnSaleProduct, TopSaleProduct
 
 
 class _TabProductAdminBase(ModelAdmin):
@@ -77,6 +77,25 @@ class MostViewedProductAdmin(_TabProductAdminBase):
         return (
             super().get_queryset(request)
             .filter(is_active=True)
+            .select_related('category', 'brand')
+            .prefetch_related('images')
+        )
+
+
+@admin.register(OnSaleProduct)
+class OnSaleProductAdmin(_TabProductAdminBase):
+    list_display = (
+        'get_image_preview', 'name', 'sku', 'price', 'old_price',
+        'is_on_sale', 'sale_ends_at', 'sort_order',
+    )
+    list_editable = ('is_on_sale', 'sort_order')
+    list_display_links = ('get_image_preview', 'name')
+    ordering = ('-sort_order', '-created_at')
+
+    def get_queryset(self, request):
+        return (
+            super().get_queryset(request)
+            .filter(is_on_sale=True)
             .select_related('category', 'brand')
             .prefetch_related('images')
         )
