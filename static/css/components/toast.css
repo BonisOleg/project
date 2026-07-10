@@ -1,0 +1,63 @@
+/* Toast / flash messages — mobile & dismiss */
+
+.message--out {
+  animation: toastOut var(--t-fast) forwards;
+}
+
+@keyframes toastOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  @keyframes toastOut {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(0.75rem);
+    }
+  }
+}
+
+/* Мобілка / планшет: над bottom-nav, на всю ширину з полями (iOS safe-area) */
+@media (max-width: 1023px) {
+  .messages {
+    top: auto;
+    right: max(var(--sp-3), var(--safe-right));
+    left: max(var(--sp-3), var(--safe-left));
+    bottom: calc(var(--bottom-nav-h, 0px) + var(--safe-bottom) + var(--sp-3));
+    max-width: none;
+  }
+
+  .message {
+    animation-name: toastInUp;
+  }
+}
+
+@keyframes toastInUp {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message__link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  margin-inline-start: var(--sp-2);
+  font-weight: 600;
+}

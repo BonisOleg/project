@@ -52,5 +52,6 @@ class ReadableUnfoldFieldsMixin:
         from src.core.admin_site_content_widgets import apply_readable_widget
 
         formfield = super().formfield_for_dbfield(db_field, request, **kwargs)
-        formfield.widget = apply_readable_widget(formfield.widget)
+        if formfield is not None:
+            formfield.widget = apply_readable_widget(formfield.widget)
         return formfield

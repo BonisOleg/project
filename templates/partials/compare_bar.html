@@ -1,6 +1,6 @@
-{% if compare_count %}
-<div class="compare-bar is-visible" id="compare-bar">
+<div class="compare-bar{% if compare_count %} is-visible{% endif %}" id="compare-bar"{% if not compare_count %} aria-hidden="true"{% endif %}>
+  {% if compare_count %}
   <span>{{ compare_count }} у порівнянні</span>
   <a href="{% url 'catalog:compare' %}" class="btn btn--primary btn--sm">Порівняти</a>
+  {% endif %}
 </div>
-{% endif %}

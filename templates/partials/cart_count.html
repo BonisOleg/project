@@ -1,2 +1,10 @@
 <span class="header-icon__badge" id="cart-count">{% if cart_count %}{{ cart_count }}{% endif %}</span>
 <span class="bottom-nav__badge" id="cart-count-bottom" hx-swap-oob="true">{% if cart_count %}{{ cart_count }}{% endif %}</span>
+{% if toast_message %}
+<div class="messages" id="toast-root" hx-swap-oob="true" aria-live="polite" aria-relevant="additions">
+  <div class="message message--{{ toast_tag|default:'success' }}" data-toast role="status">
+    {{ toast_message }}
+    <a class="message__link" href="{% url 'cart:detail' %}">До кошика</a>
+  </div>
+</div>
+{% endif %}

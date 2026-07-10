@@ -46,6 +46,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
     'csp.middleware.CSPMiddleware',
+    'config.middleware.AdminUkrainianMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -81,6 +82,10 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = 'uk'
+LANGUAGES = [
+    ('uk', 'Українська'),
+]
+LOCALE_PATHS = [BASE_DIR / 'locale']
 TIME_ZONE = 'Europe/Kyiv'
 USE_I18N = True
 USE_TZ = True
@@ -123,14 +128,15 @@ TINYMCE_DEFAULT_CONFIG = {
 }
 
 UNFOLD = {
-    'SITE_TITLE': 'Oyra Admin',
-    'SITE_HEADER': 'Oyra — Адмінпанель',
+    'SITE_TITLE': 'Oyra — Панель адміністрування',
+    'SITE_HEADER': 'Панель адміністрування',
     'SITE_SYMBOL': 'storefront',
     'STYLES': [
         lambda request: static('css/admin/theme.css'),
     ],
     'SCRIPTS': [
         lambda request: static('js/admin/theme-init.js'),
+        lambda request: static('js/admin/filters.js'),
     ],
     'COLORS': {
         'primary': {
@@ -148,8 +154,8 @@ UNFOLD = {
         },
     },
     'SITE_ICON': {
-        'light': lambda request: static('images/favicon/favicon-32.png'),
-        'dark': lambda request: static('images/favicon/favicon-32.png'),
+        'light': lambda request: static('images/logo-oyra.svg'),
+        'dark': lambda request: static('images/logo-oyra-dark.svg'),
     },
     'SITE_FAVICONS': [
         {
@@ -200,16 +206,33 @@ UNFOLD = {
             {
                 'title': 'Вміст сторінок',
                 'separator': True,
+                'collapsible': True,
                 'items': build_content_sidebar_items(),
             },
             {
                 'title': 'Каталог',
                 'separator': True,
+                'collapsible': True,
                 'items': [
                     {
                         'title': 'Товари',
                         'icon': 'inventory_2',
                         'link': reverse_lazy('admin:catalog_product_changelist'),
+                    },
+                    {
+                        'title': 'Топ продажу',
+                        'icon': 'local_fire_department',
+                        'link': reverse_lazy('admin:catalog_topsaleproduct_changelist'),
+                    },
+                    {
+                        'title': 'Новинки',
+                        'icon': 'new_releases',
+                        'link': reverse_lazy('admin:catalog_newarrivalproduct_changelist'),
+                    },
+                    {
+                        'title': 'Топ переглядів',
+                        'icon': 'visibility',
+                        'link': reverse_lazy('admin:catalog_mostviewedproduct_changelist'),
                     },
                     {
                         'title': 'Категорії',
@@ -247,6 +270,7 @@ UNFOLD = {
             {
                 'title': 'Клієнти',
                 'separator': True,
+                'collapsible': True,
                 'items': [
                     {
                         'title': 'Користувачі',
@@ -278,6 +302,7 @@ UNFOLD = {
             {
                 'title': 'Контент',
                 'separator': True,
+                'collapsible': True,
                 'items': [
                     {
                         'title': 'Блог',

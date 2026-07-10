@@ -12,6 +12,7 @@ from unfold.widgets import UnfoldAdminFileFieldWidget, UnfoldBooleanWidget
 from src.core.admin_site_content_widgets import CmsAdminTextInputWidget, CmsAdminTextareaWidget
 
 from src.core.admin_guidelines import get_image_hint, get_text_limit_hint
+from src.core.admin_hero_slides import build_hero_slide_formset
 from src.core.block_defaults import (
     BLOCK_CONTENT_TYPES,
     BLOCK_DEFAULTS,
@@ -255,15 +256,27 @@ def site_content_section_view(
         raise Http404 from exc
 
     blocks = load_section_blocks(section)
+    use_hero_slides = section.slug == 'hero'
+    slides_formset = None
 
     if request.method == 'POST':
         form = SitePageContentForm(section, blocks, request.POST, request.FILES)
-        if form.is_valid():
+        if use_hero_slides:
+            slides_formset = build_hero_slide_formset(request.POST, request.FILES)
+            forms_ok = form.is_valid() and slides_formset.is_valid()
+        else:
+            forms_ok = form.is_valid()
+
+        if forms_ok:
             form.save()
+            if slides_formset is not None:
+                slides_formset.save()
             messages.success(request, f'«{section.sidebar_title or section.title}» збережено.')
             return HttpResponseRedirect(_section_admin_change_url(section))
     else:
         form = SitePageContentForm(section, blocks)
+        if use_hero_slides:
+            slides_formset = build_hero_slide_formset()
 
     opts = model_admin.model._meta if model_admin else SiteBlock._meta
     context = {
@@ -271,6 +284,7 @@ def site_content_section_view(
         'form': form,
         'section': section,
         'fieldsets': _section_fieldsets(form, section),
+        'slides_formset': slides_formset,
         'preview_url': section.preview_url,
         'title': section.sidebar_title or section.title,
         'breadcrumb': (

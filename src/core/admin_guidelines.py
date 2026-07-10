@@ -16,10 +16,13 @@ class ImageProfile(TypedDict):
 
 IMAGE_PROFILES: dict[str, ImageProfile] = {
     'hero': {
-        'label': 'Головне фото банера',
-        'recommended': '1920×600 пікселів',
+        'label': 'Слайд hero-банера',
+        'recommended': '1920×1080 пікселів',
         'max_size_mb': 3,
-        'hint': 'JPG, PNG або WebP. Рекомендований розмір: 1920×600 пікселів. Макс. розмір файлу: 3 МБ.',
+        'hint': (
+            'JPG, PNG або WebP. Рекомендований розмір: 1920×1080 пікселів. '
+            'Макс. 3 МБ. Файл буде автоматично конвертовано у WebP.'
+        ),
     },
     'category': {
         'label': 'Фото категорії',
@@ -52,7 +55,6 @@ TEXT_LIMITS: dict[str, int] = {
     'hero_eyebrow': 60,
     'hero_title': 100,
     'hero_lead': 220,
-    'hero_image_alt': 120,
     'hero_btn_catalog': 30,
     'hero_btn_sale': 30,
     'products_section_title': 80,

@@ -29,10 +29,14 @@ def cart_add(request, product_id):
     cart = CartService(request)
     qty = int(request.POST.get('quantity', 1))
     cart.add(product_id, qty)
-    messages.success(request, 'Товар додано до кошика')
     if request.htmx:
-        html = render_to_string('partials/cart_count.html', {'cart_count': cart.count})
+        html = render_to_string('partials/cart_count.html', {
+            'cart_count': cart.count,
+            'toast_message': 'Товар додано',
+            'toast_tag': 'success',
+        })
         return HttpResponse(html)
+    messages.success(request, 'Товар додано до кошика')
     return redirect('cart:detail')
 
 
@@ -92,7 +96,10 @@ def mini_cart(request):
 @require_POST
 def compare_add(request, product_id):
     svc = CompareService(request)
-    if svc.add(product_id):
+    pid = int(product_id)
+    if pid in svc.ids:
+        messages.info(request, 'Товар уже в порівнянні')
+    elif svc.add(product_id):
         messages.success(request, 'Додано до порівняння')
     else:
         messages.warning(request, f'Максимум {svc.max_items} товарів для порівняння')
@@ -106,8 +113,5 @@ def compare_remove(request, product_id):
     svc = CompareService(request)
     svc.remove(product_id)
     if request.htmx:
-        return render(request, 'partials/compare_bar.html', {
-            'compare_products': svc.get_products(),
-            'compare_count': svc.count,
-        })
+        return render(request, 'partials/compare_count.html', {'compare_count': svc.count})
     return redirect('catalog:compare')

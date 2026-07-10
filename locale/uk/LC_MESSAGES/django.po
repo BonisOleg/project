@@ -1,0 +1,272 @@
+# Ukrainian translations for Oyra admin (Unfold + project overrides).
+# Copyright (C) 2026 Oyra
+# This file is distributed under the same license as the Django package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Oyra 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != "
+"11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % "
+"100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || "
+"(n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
+
+msgid "Search apps and models..."
+msgstr "Пошук розділів і моделей…"
+
+msgid "Filter navigation items"
+msgstr "Фільтр навігації"
+
+msgid "Return to site"
+msgstr "Повернутись на сайт"
+
+msgid "Welcome back to"
+msgstr "Ласкаво просимо до"
+
+msgid "Log in"
+msgstr "Увійти"
+
+msgid "Forgotten your password or username?"
+msgstr "Забули пароль або імʼя користувача?"
+
+msgid "Run"
+msgstr "Виконати"
+
+msgid "Run the selected action"
+msgstr "Виконати обрану дію"
+
+msgid "Expand row"
+msgstr "Розгорнути рядок"
+
+msgid "Type to search"
+msgstr "Пошук"
+
+msgid "Select action to run"
+msgstr "Оберіть дію для виконання"
+
+msgid "Clear selection"
+msgstr "Скасувати вибір"
+
+msgid "Click here to select the objects across all pages"
+msgstr "Натисніть, щоб обрати записи на всіх сторінках"
+
+msgid "History"
+msgstr "Історія"
+
+msgid "View on site"
+msgstr "На сайті"
+
+msgid "Save"
+msgstr "Зберегти"
+
+msgid "Save and continue editing"
+msgstr "Зберегти і продовжити редагування"
+
+msgid "Save and view"
+msgstr "Зберегти і переглянути"
+
+msgid "Save and add another"
+msgstr "Зберегти і додати ще"
+
+msgid "Save as new"
+msgstr "Зберегти як новий"
+
+msgid "Close"
+msgstr "Закрити"
+
+msgid "Delete"
+msgstr "Видалити"
+
+msgid "Add"
+msgstr "Додати"
+
+msgid "Change"
+msgstr "Змінити"
+
+msgid "View"
+msgstr "Переглянути"
+
+msgid "Site administration"
+msgstr "Адміністрування сайту"
+
+msgid "Django site admin"
+msgstr "Адмін-панель"
+
+msgid "Authentication and Authorization"
+msgstr "Користувачі та права"
+
+msgid "You don’t have permission to view or edit anything."
+msgstr "У вас немає прав для перегляду або редагування."
+
+msgid "Models in the %(name)s application"
+msgstr "Моделі в розділі «%(name)s»"
+
+msgid "This object doesn’t have a change history. It probably wasn’t added via this admin site."
+msgstr "У цього обʼєкта немає історії змін. Ймовірно, він не додавався через цю адмін-панель."
+
+msgid "After you've created a user, you’ll be able to edit more user options."
+msgstr "Після створення користувача ви зможете редагувати додаткові параметри."
+
+msgid "Change password"
+msgstr "Змінити пароль"
+
+msgid "Light"
+msgstr "Світла"
+
+msgid "Dark"
+msgstr "Темна"
+
+msgid "System"
+msgstr "Системна"
+
+msgid "Click to download"
+msgstr "Натисніть, щоб завантажити"
+
+msgid "Select all %(total_count)s %(module_name)s"
+msgstr "Обрати всі %(total_count)s: %(module_name)s"
+
+msgid "entry"
+msgid_plural "entries"
+msgstr[0] "запис"
+msgstr[1] "записи"
+msgstr[2] "записів"
+msgstr[3] "записів"
+
+msgid "No results found"
+msgstr "Нічого не знайдено"
+
+msgid "This page yielded into no results. Create a new item or reset your filters."
+msgstr "На цій сторінці немає записів. Створіть новий або скиньте фільтри."
+
+msgid "Reset filters"
+msgstr "Скинути фільтри"
+
+msgid "Filters"
+msgstr "Фільтри"
+
+msgid "Apply Filters"
+msgstr "Застосувати фільтри"
+
+msgid "Clear all filters"
+msgstr "Очистити всі фільтри"
+
+msgid "Hide counts"
+msgstr "Сховати кількість"
+
+msgid "Show counts"
+msgstr "Показати кількість"
+
+msgid "No results matching your query"
+msgstr "Немає результатів за вашим запитом"
+
+msgid "Loading more results..."
+msgstr "Завантаження ще результатів…"
+
+msgid "Recent searches"
+msgstr "Нещодавні пошуки"
+
+msgid "No recent searches"
+msgstr "Немає нещодавніх пошуків"
+
+msgid "Select all rows"
+msgstr "Обрати всі рядки"
+
+msgid "More actions"
+msgstr "Більше дій"
+
+msgid "View site"
+msgstr "Переглянути сайт"
+
+msgid "Log out"
+msgstr "Вийти"
+
+msgid "Cancel"
+msgstr "Скасувати"
+
+msgid "Submit"
+msgstr "Надіслати"
+
+msgid "No, take me back"
+msgstr "Ні, повернутися"
+
+msgid "Yes, I’m sure"
+msgstr "Так, впевнений"
+
+msgid "Yes, I'm sure"
+msgstr "Так, впевнений"
+
+msgid "Record picture"
+msgstr "Зображення запису"
+
+msgid "Remove"
+msgstr "Видалити"
+
+msgid "This item will be deleted."
+msgstr "Цей запис буде видалено."
+
+msgid "Click to cancel"
+msgstr "Натисніть, щоб скасувати"
+
+msgid "Go back"
+msgstr "Назад"
+
+msgid "General"
+msgstr "Загальне"
+
+msgid "Previous"
+msgstr "Попередня"
+
+msgid "Next"
+msgstr "Наступна"
+
+msgid "All applications"
+msgstr "Усі розділи"
+
+msgid "No data"
+msgstr "Немає даних"
+
+msgid "Add row"
+msgstr "Додати рядок"
+
+msgid "Toggle password visibility"
+msgstr "Показати або приховати пароль"
+
+msgid "Unknown"
+msgstr "Невідомо"
+
+msgid "True"
+msgstr "Так"
+
+msgid "False"
+msgstr "Ні"
+
+msgid "You have been successfully logged out from the administration"
+msgstr "Ви успішно вийшли з адмін-панелі"
+
+msgid "Thanks for spending some quality time with the web site today."
+msgstr "Дякуємо за роботу з сайтом сьогодні."
+
+msgid "Log in again"
+msgstr "Увійти знову"
+
+msgid "Add %(name)s"
+msgstr "Додати %(name)s"
+
+msgid "Select action"
+msgstr "Оберіть дію"
+
+msgid "Choose file to upload"
+msgstr "Оберіть файл для завантаження"
+
+msgid "Catalog"
+msgstr "Каталог"
+
+msgid "Home"
+msgstr "Домівка"
+
+msgid "All"
+msgstr "Всі"

@@ -1,51 +1,37 @@
 from django.templatetags.static import static
 from django.urls import reverse
 
-from src.catalog.models import Product
+from src.core.models import HeroSlide
 
-HERO_SLIDE_SKUS = ('BAT374', 'B173', 'P9040')
+_FALLBACK_FILES = ('trampoline.jpg', 'chair.jpg', 'shelf.jpg')
+_FALLBACK_ALTS = (
+    'Батут дитячий для двору',
+    'Крісло для кухні Bonro B-173 біле',
+    'Стелаж металевий 180×90×40 чорний',
+)
 
 
-def get_hero_slides(limit: int = 3):
-    products = (
-        Product.objects.active()
-        .filter(sku__in=HERO_SLIDE_SKUS)
-        .select_related('category', 'brand')
-        .prefetch_related('images')
-    )
-    product_map = {product.sku: product for product in products}
-
+def get_hero_slides():
+    catalog_url = reverse('catalog:list')
     slides = []
-    for sku in HERO_SLIDE_SKUS[:limit]:
-        product = product_map.get(sku)
-        if not product:
-            continue
-        image = product.main_image
-        if not image:
-            continue
+
+    for slide in HeroSlide.objects.filter(is_active=True).exclude(image=''):
         slides.append({
-            'link_url': product.get_absolute_url(),
-            'image_url': image.image.url,
-            'alt': image.alt_text or product.name,
-            'title': product.name,
+            'link_url': catalog_url,
+            'image_url': slide.image.url,
+            'alt': slide.alt_text or '',
+            'title': slide.alt_text or '',
         })
 
-    if len(slides) >= 2:
+    if slides:
         return slides
 
-    catalog_url = reverse('catalog:list')
-    fallback_files = ('trampoline.jpg', 'chair.jpg', 'shelf.jpg')
-    fallback_alts = (
-        'Батут дитячий для двору',
-        'Крісло для кухні Bonro B-173 біле',
-        'Стелаж металевий 180×90×40 чорний',
-    )
     return [
         {
             'link_url': catalog_url,
-            'image_url': static(f'images/hero/{fallback_files[index - 1]}'),
-            'alt': fallback_alts[index - 1],
-            'title': fallback_alts[index - 1],
+            'image_url': static(f'images/hero/{_FALLBACK_FILES[index]}'),
+            'alt': _FALLBACK_ALTS[index],
+            'title': _FALLBACK_ALTS[index],
         }
-        for index in range(1, min(limit, len(fallback_files)) + 1)
+        for index in range(len(_FALLBACK_FILES))
     ]

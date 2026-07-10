@@ -1,24 +1,24 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from unfold.admin import ModelAdmin
-from unfold.contrib.filters.admin import ChoicesDropdownFilter
 from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
+
+from src.core.admin_filters import DropdownFiltersMixin, UkChoicesDropdownFilter
 
 from .models import DeliveryAddress, User, WishlistItem
 
 
 @admin.register(User)
-class UserAdmin(DjangoUserAdmin, ModelAdmin):
+class UserAdmin(DropdownFiltersMixin, DjangoUserAdmin, ModelAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
     change_password_form = AdminPasswordChangeForm
     list_display = ('email', 'first_name', 'last_name', 'phone', 'bonus_points', 'is_staff', 'is_active')
     list_filter = [
-        ('is_active', ChoicesDropdownFilter),
-        ('is_staff', ChoicesDropdownFilter),
-        ('is_superuser', ChoicesDropdownFilter),
+        ('is_active', UkChoicesDropdownFilter),
+        ('is_staff', UkChoicesDropdownFilter),
+        ('is_superuser', UkChoicesDropdownFilter),
     ]
-    list_filter_submit = True
     ordering = ('email',)
     search_fields = ('email', 'phone', 'first_name', 'last_name')
     fieldsets = (
@@ -34,9 +34,11 @@ class UserAdmin(DjangoUserAdmin, ModelAdmin):
 
 
 @admin.register(DeliveryAddress)
-class DeliveryAddressAdmin(ModelAdmin):
+class DeliveryAddressAdmin(DropdownFiltersMixin, ModelAdmin):
     list_display = ('user', 'label', 'city', 'address', 'is_default')
-    list_filter = ('is_default', 'city')
+    list_filter = [
+        ('is_default', UkChoicesDropdownFilter),
+    ]
     search_fields = ('user__email', 'city', 'address', 'label')
     autocomplete_fields = ('user',)
 

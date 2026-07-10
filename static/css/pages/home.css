@@ -198,8 +198,8 @@
 
 @media (max-width: 767px) {
   .hero {
-    min-height: calc(var(--vh) * 0.22);
-    height: calc(var(--vh) * 0.22);
+    min-height: calc(var(--vh) * 0.35);
+    height: calc(var(--vh) * 0.35);
   }
 }
 

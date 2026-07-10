@@ -40,7 +40,7 @@ def block_image(
 ) -> str:
     blocks = context.get('site_blocks', {})
     block = blocks.get(f'{page}.{key}')
-    alt_key = 'hero_image_alt' if key == 'hero_image' else f'{key}_alt'
+    alt_key = f'{key}_alt'
     alt = get_block_text(page, alt_key, site_blocks=blocks, site_settings=context.get('site_settings'))
     size_attrs = ''
     if width:

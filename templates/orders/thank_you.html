@@ -1,18 +1,117 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static ui_tags %}
+
+{% block body_class %}page-thank-you{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/content.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/thank_you.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="content-page content-page--center">
+<section class="thank-you">
   {% include 'partials/breadcrumbs.html' %}
-  <h1 class="content-page__title">Дякуємо за замовлення!</h1>
-  <p class="content-page__body">Номер замовлення: <strong>{{ order.order_number }}</strong></p>
-  <p class="content-page__body">Ми обробимо замовлення та надішлемо підтвердження на {{ order.email }}.</p>
-  <div class="content-page__actions">
-    <a href="{% url 'catalog:list' %}" class="btn btn--primary">Продовжити покупки</a>
+
+  <div class="thank-you__card">
+    <header class="thank-you__hero">
+      <div class="thank-you__mark" aria-hidden="true">
+        {% if order.status == 'paid' %}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6 9 17l-5-5"/>
+        </svg>
+        {% else %}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 7v5l3 2"/>
+        </svg>
+        {% endif %}
+      </div>
+      <p class="thank-you__eyebrow">Oyra</p>
+      <h1 class="thank-you__title">
+        {% if order.first_name %}Дякуємо, {{ order.first_name }}{% else %}Дякуємо{% endif %}
+      </h1>
+      <p class="thank-you__lead">
+        {% if order.status == 'paid' %}
+          Ваше замовлення прийнято. Підтвердження надіслано на {{ order.email }}.
+        {% else %}
+          Замовлення збережено. Завершіть оплату, щоб ми могли його обробити.
+        {% endif %}
+      </p>
+      <div class="thank-you__meta">
+        <p class="thank-you__number"><span>№</span> {{ order.order_number }}</p>
+        <span class="thank-you__status thank-you__status--{{ order.status }}">{{ order.get_status_display }}</span>
+      </div>
+    </header>
+
+    <section class="thank-you__section" aria-labelledby="thank-you-items-title">
+      <h2 class="thank-you__section-title" id="thank-you-items-title">Склад замовлення</h2>
+      <div class="thank-you__items">
+        {% for item in order.items.all %}
+        <article class="thank-you__item">
+          <div>
+            <p class="thank-you__item-name">{{ item.product_name }}</p>
+            <p class="thank-you__item-meta">{{ item.quantity }} × {{ item.price|format_price }}</p>
+          </div>
+          <span class="thank-you__item-price">{{ item.line_total|format_price }}</span>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="thank-you__section" aria-labelledby="thank-you-delivery-title">
+      <h2 class="thank-you__section-title" id="thank-you-delivery-title">Доставка</h2>
+      <div class="thank-you__delivery">
+        <div class="thank-you__row">
+          <span class="thank-you__label">Служба</span>
+          <span class="thank-you__value">{{ order.get_delivery_service_display }}</span>
+        </div>
+        {% if order.delivery_type %}
+        <div class="thank-you__row">
+          <span class="thank-you__label">Тип</span>
+          <span class="thank-you__value">{{ order.get_delivery_type_display }}</span>
+        </div>
+        {% endif %}
+        <div class="thank-you__row">
+          <span class="thank-you__label">Місто</span>
+          <span class="thank-you__value">{{ order.delivery_city }}</span>
+        </div>
+        <div class="thank-you__row">
+          <span class="thank-you__label">Адреса</span>
+          <span class="thank-you__value">{{ order.delivery_address }}</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="thank-you__section" aria-labelledby="thank-you-summary-title">
+      <h2 class="thank-you__section-title" id="thank-you-summary-title">Сума</h2>
+      <div class="thank-you__summary">
+        <div class="thank-you__summary-row">
+          <span>Товари</span>
+          <span>{{ order.subtotal|format_price }}</span>
+        </div>
+        {% if order.discount %}
+        <div class="thank-you__summary-row thank-you__summary-row--discount">
+          <span>Знижка{% if order.promo_code %} ({{ order.promo_code }}){% endif %}</span>
+          <span>−{{ order.discount|format_price }}</span>
+        </div>
+        {% endif %}
+        {% if order.delivery_cost %}
+        <div class="thank-you__summary-row">
+          <span>Доставка</span>
+          <span>{{ order.delivery_cost|format_price }}</span>
+        </div>
+        {% endif %}
+        <div class="thank-you__summary-total">
+          <span>Разом</span>
+          <span>{{ order.total|format_price }}</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="thank-you__actions">
+      <a href="{% url 'catalog:list' %}" class="btn btn--primary">До каталогу</a>
+      <a href="{% url 'accounts:cabinet' %}" class="btn btn--secondary">Мої замовлення</a>
+      <a href="{% url 'core:home' %}" class="btn btn--secondary">На головну</a>
+    </div>
   </div>
-</div>
+</section>
 {% endblock %}

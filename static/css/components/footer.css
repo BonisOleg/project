@@ -200,14 +200,24 @@
 
 .site-footer__bottom {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--sp-2) var(--sp-4);
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  width: 100%;
   margin-top: var(--sp-5);
   padding-top: var(--sp-4);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   font-size: var(--fs-xs);
   color: rgba(207, 210, 224, 0.45);
+}
+
+@media (max-width: 1023px) {
+  .site-footer__bottom {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--sp-1) var(--sp-3);
+  }
 }
 
 .site-footer__bottom a {

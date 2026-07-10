@@ -7,6 +7,7 @@ import { initGallery } from './modules/gallery.js';
 import { initHeroCarousel } from './modules/hero_carousel.js?v=20260703f';
 import { initHomeTabs } from './modules/home_tabs.js';
 import { initProductScroll } from './modules/product_scroll.js';
+import { initToasts } from './modules/toast.js';
 
 function onReady(callback) {
   if (document.readyState === 'loading') {
@@ -26,6 +27,7 @@ onReady(() => {
   initHeroCarousel();
   initHomeTabs();
   initProductScroll();
+  initToasts();
 });
 
 document.body.addEventListener('htmx:configRequest', (event) => {
@@ -42,4 +44,9 @@ document.body.addEventListener('htmx:afterSwap', (event) => {
   if (target?.id === 'home-products-panel') {
     initProductScroll(target);
   }
+  initToasts(document.getElementById('toast-root') || document);
+});
+
+document.body.addEventListener('htmx:oobAfterSwap', (event) => {
+  initToasts(event.detail?.target || document);
 });

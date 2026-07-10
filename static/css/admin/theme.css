@@ -14,6 +14,14 @@
   overflow-wrap: anywhere;
 }
 
+/* Логотип Oyra в шапці сайдбару */
+.border-b img.h-8[src*="logo-oyra"] {
+  width: auto;
+  height: 2rem;
+  max-width: 7.5rem;
+  object-fit: contain;
+}
+
 /* ====================================================
    CMS-редактор секцій (site_content_page.html)
    ==================================================== */
@@ -241,9 +249,154 @@
   max-width: 180px;
 }
 
+.category-admin-icon-preview {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  border: 1px solid rgb(var(--color-base-200));
+  background: rgb(var(--color-primary-50));
+  color: rgb(var(--color-primary-600));
+}
+
+.dark .category-admin-icon-preview {
+  border-color: rgb(var(--color-base-700));
+  background: rgb(var(--color-base-800));
+  color: rgb(var(--color-primary-400));
+}
+
+.category-admin-icon-preview .category-pill__svg {
+  width: 36px;
+  height: 36px;
+  display: block;
+}
+
 /* ====================================================
-   Адаптація: мобільні та планшетні
+   Горизонтальна смуга фільтрів над таблицею
    ==================================================== */
+.admin-filter-bar {
+  margin: 0 0 1rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid rgb(var(--color-base-200));
+  border-radius: 12px;
+  background: rgb(var(--color-base-50));
+}
+
+.dark .admin-filter-bar {
+  border-color: rgb(var(--color-base-700));
+  background: rgb(var(--color-base-900));
+}
+
+.admin-filter-bar__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+}
+
+.admin-filter-bar__fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.admin-filter-bar__field {
+  flex: 1 1 160px;
+  max-width: 240px;
+  min-width: 140px;
+}
+
+.admin-filter-bar__field label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: rgb(var(--color-base-600));
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.dark .admin-filter-bar__field label {
+  color: rgb(var(--color-base-400));
+}
+
+.admin-filter-bar__field .select2-container,
+.admin-filter-bar__field select {
+  width: 100%;
+  min-width: 0;
+}
+
+.admin-filter-bar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.admin-filter-bar__reset {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid rgb(var(--color-base-300));
+  border-radius: 8px;
+  color: rgb(var(--color-base-700));
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.admin-filter-bar__reset:hover {
+  background: rgb(var(--color-base-100));
+  border-color: rgb(var(--color-primary-400));
+  color: rgb(var(--color-primary-700));
+}
+
+.dark .admin-filter-bar__reset {
+  border-color: rgb(var(--color-base-600));
+  color: rgb(var(--color-base-200));
+}
+
+.dark .admin-filter-bar__reset:hover {
+  background: rgb(var(--color-base-800));
+  color: rgb(var(--color-primary-300));
+}
+
+/* Кнопка завантаження файлу — синій акцент замість чорної */
+.site-content-editor button[type="button"],
+form .relative button.bg-base-900,
+form button.bg-primary-600 {
+  background-color: rgb(var(--color-primary-600));
+  border-color: rgb(var(--color-primary-600));
+}
+
+@media (max-width: 760px) {
+  .admin-filter-bar {
+    padding: 0.75rem;
+  }
+
+  .admin-filter-bar__field {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .admin-filter-bar__actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .admin-filter-bar__reset {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 @media (max-width: 760px) {
   .site-content-editor__head {
     flex-direction: column;

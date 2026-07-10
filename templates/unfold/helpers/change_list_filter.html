@@ -1,0 +1,25 @@
+{% load i18n admin_list unfold %}
+
+<div id="changelist-filter" class="admin-filter-bar">
+    <form id="filter-form" method="get" class="admin-filter-bar__form">
+        {% if cl.model_admin.list_filter_submit %}
+            {% preserve_filters %}
+        {% endif %}
+
+        <div class="admin-filter-bar__fields">
+            {% for spec in cl.filter_specs %}
+                <div class="admin-filter-bar__field">
+                    {% admin_list_filter cl spec %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="admin-filter-bar__actions">
+            {% if cl.has_active_filters %}
+                <a href="{{ cl.clear_all_filters_qs }}" class="admin-filter-bar__reset">
+                    Скинути фільтри
+                </a>
+            {% endif %}
+        </div>
+    </form>
+</div>

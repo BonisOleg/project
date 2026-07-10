@@ -7,8 +7,6 @@ BLOCK_FIELD_LABELS: dict[tuple[str, str], str] = {
     ('home', 'hero_eyebrow'): 'Мітка (eyebrow)',
     ('home', 'hero_title'): 'Заголовок',
     ('home', 'hero_lead'): 'Підзаголовок',
-    ('home', 'hero_image'): 'Фото hero',
-    ('home', 'hero_image_alt'): 'Alt-текст фото',
     ('home', 'hero_btn_catalog'): 'Кнопка «Каталог»',
     ('home', 'hero_btn_sale'): 'Кнопка «Акції»',
     ('home', 'products_section_title'): 'Заголовок секції',
@@ -50,7 +48,6 @@ BLOCK_DEFAULTS: dict[tuple[str, str], str] = {
     ('home', 'hero_eyebrow'): 'Oyra — преміальний магазин',
     ('home', 'hero_title'): 'Корисні товари для дому, офісу та відпочинку',
     ('home', 'hero_lead'): HERO_LEAD_DEFAULT,
-    ('home', 'hero_image_alt'): 'Діти стрибають на батуті у дворі',
     ('home', 'hero_btn_catalog'): 'Переглянути каталог',
     ('home', 'hero_btn_sale'): 'Акції',
     ('home', 'products_section_visible'): '1',
@@ -98,9 +95,7 @@ BLOCK_DEFAULTS: dict[tuple[str, str], str] = {
     ('site', 'footer_schedule'): 'Пн–Пт: 9:00–18:00',
 }
 
-BLOCK_CONTENT_TYPES: dict[tuple[str, str], str] = {
-    ('home', 'hero_image'): 'image',
-}
+BLOCK_CONTENT_TYPES: dict[tuple[str, str], str] = {}
 
 MULTILINE_KEYS: frozenset[str] = frozenset({
     'hero_lead',
@@ -115,7 +110,6 @@ MULTILINE_KEYS: frozenset[str] = frozenset({
 INLINE_KEYS: frozenset[str] = frozenset({
     'hero_eyebrow',
     'hero_title',
-    'hero_image_alt',
     'hero_btn_catalog',
     'hero_btn_sale',
     'products_section_title',

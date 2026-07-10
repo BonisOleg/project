@@ -72,6 +72,25 @@ class SiteBlock(models.Model):
         return f'{self.page}.{self.key}'
 
 
+class HeroSlide(models.Model):
+    image = models.ImageField('Фото', upload_to='hero/')
+    alt_text = models.CharField('Alt-текст', max_length=200, blank=True)
+    sort_order = models.PositiveIntegerField('Порядок', default=0)
+    is_active = models.BooleanField('Активний', default=True)
+
+    class Meta:
+        ordering = ['sort_order', 'id']
+        verbose_name = 'Слайд hero'
+        verbose_name_plural = 'Слайди hero'
+
+    def __str__(self) -> str:
+        if self.alt_text:
+            return self.alt_text
+        if self.image:
+            return self.image.name
+        return f'Слайд #{self.pk or "новий"}'
+
+
 class HomeHeroSettings(SiteSettings):
     class Meta:
         proxy = True

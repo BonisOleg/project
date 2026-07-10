@@ -16,6 +16,9 @@
     border-color: rgb(var(--color-base-700) / 1);
   }
 </style>
+{% if slides_formset %}
+<script src="{% static 'js/admin/hero_slides.js' %}" defer></script>
+{% endif %}
 {% endblock %}
 
 {% block title %}{{ title }} · {{ site_title|default:_('Django site admin') }}{% endblock %}
@@ -62,6 +65,10 @@
                 </div>
             </section>
             {% endfor %}
+
+            {% if slides_formset %}
+            {% include "admin/core/hero_slides_fieldset.html" with formset=slides_formset %}
+            {% endif %}
         </div>
 
         <div class="site-content-editor__actions">

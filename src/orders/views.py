@@ -133,7 +133,10 @@ def checkout(request, step=1):
 
 
 def thank_you(request, order_number):
-    order = get_object_or_404(Order, order_number=order_number)
+    order = get_object_or_404(
+        Order.objects.prefetch_related('items'),
+        order_number=order_number,
+    )
     if order.status == Order.STATUS_PAID:
         cart = CartService(request)
         cart.clear()
@@ -141,6 +144,7 @@ def thank_you(request, order_number):
         request.session.pop('promo_code', None)
     return render(request, 'orders/thank_you.html', {
         'order': order,
+        'page_title': 'Замовлення оформлено',
         'breadcrumbs': make_breadcrumbs(('Замовлення оформлено', '')),
     })
 

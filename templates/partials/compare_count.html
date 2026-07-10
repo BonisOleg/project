@@ -1,0 +1,7 @@
+<span class="header-icon__badge" id="compare-count">{% if compare_count %}{{ compare_count }}{% endif %}</span>
+<div class="compare-bar{% if compare_count %} is-visible{% endif %}" id="compare-bar" hx-swap-oob="true"{% if not compare_count %} aria-hidden="true"{% endif %}>
+  {% if compare_count %}
+  <span>{{ compare_count }} у порівнянні</span>
+  <a href="{% url 'catalog:compare' %}" class="btn btn--primary btn--sm">Порівняти</a>
+  {% endif %}
+</div>

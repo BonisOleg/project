@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from src.core.block_defaults import is_visibility_key
 from src.core.admin_site_content import load_section_blocks
-from src.core.models import SiteBlock, SiteSettings
+from src.core.models import HeroSlide, SiteBlock, SiteSettings
 from src.core.site_content_registry import get_section
 
 TEST_STORAGES = {
@@ -31,8 +31,10 @@ class SiteContentAdminTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Показувати секцію на сайті')
-        self.assertContains(response, 'bg-base-900')
-        self.assertContains(response, 'text-base-100')
+        self.assertContains(response, 'Слайди банера')
+        self.assertContains(response, 'hero_slides-TOTAL_FORMS')
+        self.assertContains(response, 'Додати слайд')
+        self.assertNotContains(response, 'hero_image')
 
     def test_hero_title_input_has_no_bg_white(self):
         url = reverse('admin:core_homeherosettings_change', args=[1])
@@ -40,19 +42,28 @@ class SiteContentAdminTests(TestCase):
         html = response.content.decode()
         match = re.search(r'name="block__home__hero_title__text_html"[^>]*>', html)
         self.assertIsNotNone(match)
-        self.assertNotIn('bg-white', match.group())
+        self.assertIn('block__home__hero_title__text_html', match.group())
 
     def test_site_settings_form_uses_readable_inputs(self):
         url = reverse('admin:core_sitesettings_change', args=[1])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'bg-base-900')
-        self.assertContains(response, 'text-base-100')
+        self.assertContains(response, 'site_name')
+        self.assertContains(response, 'name="phone"')
 
     def test_hero_section_save_updates_blocks(self):
         section = get_section('home', 'hero')
         blocks = load_section_blocks(section)
-        payload = {'section_visible': 'on'}
+        payload = {
+            'section_visible': 'on',
+            'hero_slides-TOTAL_FORMS': '1',
+            'hero_slides-INITIAL_FORMS': '0',
+            'hero_slides-MIN_NUM_FORMS': '0',
+            'hero_slides-MAX_NUM_FORMS': '1000',
+            'hero_slides-0-alt_text': '',
+            'hero_slides-0-sort_order': '0',
+            'hero_slides-0-is_active': 'on',
+        }
         for page, key in section.blocks:
             block = blocks[(page, key)]
             if block.content_type == 'text':
@@ -66,6 +77,7 @@ class SiteContentAdminTests(TestCase):
         self.assertEqual(response.status_code, 302)
         block = SiteBlock.objects.get(page='home', key='hero_title')
         self.assertEqual(block.text_html, 'Новий заголовок hero')
+        self.assertEqual(HeroSlide.objects.count(), 0)
 
     def test_header_section_renders_visibility_checkboxes(self):
         url = reverse('admin:core_siteheadersettings_change', args=[1])

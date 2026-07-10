@@ -5,3 +5,4 @@ class PagesConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'src.pages'
     label = 'pages'
+    verbose_name = 'Сторінки'

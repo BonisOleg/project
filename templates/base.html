@@ -16,7 +16,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/1_reset.css' %}">
   <link rel="stylesheet" href="{% static 'css/2_tokens.css' %}?v=20260710e">
-  <link rel="stylesheet" href="{% static 'css/3_base.css' %}?v=20260710f">
+  <link rel="stylesheet" href="{% static 'css/3_base.css' %}?v=20260710g">
   <link rel="stylesheet" href="{% static 'css/components/header.css' %}?v=20260710e">
   <link rel="stylesheet" href="{% static 'css/components/footer.css' %}?v=20260710b">
   <link rel="stylesheet" href="{% static 'css/components/button.css' %}">
@@ -25,20 +25,21 @@
   <link rel="stylesheet" href="{% static 'css/components/wishlist.css' %}?v=20260710e">
   <link rel="stylesheet" href="{% static 'css/components/bottom_nav.css' %}?v=20260710f">
   <link rel="stylesheet" href="{% static 'css/components/cookie_banner.css' %}?v=20260710a">
+  <link rel="stylesheet" href="{% static 'css/components/toast.css' %}?v=20260710a">
   {% block extra_css %}{% endblock %}
   <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
-  <script type="module" src="{% static 'js/main.js' %}?v=20260710b"></script>
+  <script type="module" src="{% static 'js/main.js' %}?v=20260710c"></script>
 </head>
 <body class="has-bottom-nav {% block body_class %}{% endblock %}">
   {% include 'partials/header.html' %}
 
-  {% if messages %}
-  <div class="messages" role="status">
+  <div class="messages" id="toast-root" aria-live="polite" aria-relevant="additions">
+    {% if messages %}
     {% for message in messages %}
-    <div class="message message--{{ message.tags }}">{{ message }}</div>
+    <div class="message message--{{ message.tags }}" data-toast role="status">{{ message }}</div>
     {% endfor %}
+    {% endif %}
   </div>
-  {% endif %}
 
   <main id="main">{% block content %}{% endblock %}</main>
 

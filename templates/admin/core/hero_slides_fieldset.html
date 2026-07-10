@@ -1,0 +1,79 @@
+{% load i18n %}
+
+<section class="site-content-fieldset border border-base-200 dark:border-base-700 rounded-default shadow-sm dark:bg-base-900 p-4 md:p-5" data-hero-slides>
+  <div class="hero-slides-admin__head">
+    <div>
+      <h2 class="site-content-fieldset__title text-font-important-light dark:text-font-important-dark">Слайди банера</h2>
+      <p class="hero-slides-admin__hint text-font-subtle-light dark:text-font-subtle-dark">
+        Перетягніть рядки, щоб змінити порядок. Додайте стільки слайдів, скільки потрібно.
+      </p>
+    </div>
+    <button type="button" class="hero-slides-admin__add border border-base-300 dark:border-base-600" data-hero-slides-add>
+      <span class="material-symbols-outlined" aria-hidden="true">add</span>
+      Додати слайд
+    </button>
+  </div>
+
+  {{ formset.management_form }}
+  {% if formset.non_form_errors %}
+    {% include "unfold/helpers/messages/errornote.html" with errors=formset.non_form_errors %}
+  {% endif %}
+
+  <div class="hero-slides-admin__list" data-hero-slides-list>
+    {% for slide_form in formset %}
+    <div class="hero-slides-admin__row border border-base-200 dark:border-base-700{% if slide_form.errors %} is-invalid{% endif %}" data-hero-slide-row draggable="true">
+      {% for hidden in slide_form.hidden_fields %}{{ hidden }}{% endfor %}
+      <button type="button" class="hero-slides-admin__handle" aria-label="Перетягнути слайд" data-hero-slide-handle>
+        <span class="material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+      </button>
+      <div class="hero-slides-admin__preview">
+        {% if slide_form.instance.pk and slide_form.instance.image %}
+        <img src="{{ slide_form.instance.image.url }}" alt="" width="96" height="64" loading="lazy" decoding="async">
+        {% else %}
+        <span class="hero-slides-admin__preview-empty">Немає фото</span>
+        {% endif %}
+      </div>
+      <div class="hero-slides-admin__fields">
+        {% include "unfold/helpers/field.html" with field=slide_form.image %}
+        {% include "unfold/helpers/field.html" with field=slide_form.alt_text %}
+        <label class="hero-slides-admin__active">
+          {{ slide_form.is_active }}
+          <span>Активний</span>
+        </label>
+        {% if slide_form.DELETE %}
+        <label class="hero-slides-admin__delete">
+          {{ slide_form.DELETE }}
+          <span>Видалити</span>
+        </label>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <template data-hero-slides-empty>
+    <div class="hero-slides-admin__row border border-base-200 dark:border-base-700" data-hero-slide-row draggable="true">
+      {% for hidden in formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+      <button type="button" class="hero-slides-admin__handle" aria-label="Перетягнути слайд" data-hero-slide-handle>
+        <span class="material-symbols-outlined" aria-hidden="true">drag_indicator</span>
+      </button>
+      <div class="hero-slides-admin__preview">
+        <span class="hero-slides-admin__preview-empty">Немає фото</span>
+      </div>
+      <div class="hero-slides-admin__fields">
+        {% include "unfold/helpers/field.html" with field=formset.empty_form.image %}
+        {% include "unfold/helpers/field.html" with field=formset.empty_form.alt_text %}
+        <label class="hero-slides-admin__active">
+          {{ formset.empty_form.is_active }}
+          <span>Активний</span>
+        </label>
+        {% if formset.empty_form.DELETE %}
+        <label class="hero-slides-admin__delete">
+          {{ formset.empty_form.DELETE }}
+          <span>Видалити</span>
+        </label>
+        {% endif %}
+      </div>
+    </div>
+  </template>
+</section>

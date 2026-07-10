@@ -89,7 +89,7 @@
           </form>
           {% endif %}
           {% include 'partials/wishlist_btn.html' with product=product variant='detail' %}
-          <form class="product-info__compare-form" action="{% url 'cart:compare_add' product.pk %}" method="post" hx-post="{% url 'cart:compare_add' product.pk %}" hx-target="#compare-bar">
+          <form class="product-info__compare-form" action="{% url 'cart:compare_add' product.pk %}" method="post" hx-post="{% url 'cart:compare_add' product.pk %}" hx-target="#compare-count" hx-swap="outerHTML">
             {% csrf_token %}
             <button type="submit" class="btn btn--secondary btn--icon product-info__compare-btn" aria-label="Порівняти">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">

@@ -218,3 +218,24 @@ def make_slug(instance, source_field='name'):
         slug = f'{base}-{counter}'
         counter += 1
     return slug
+
+
+class TopSaleProduct(Product):
+    class Meta:
+        proxy = True
+        verbose_name = 'Топ продажу'
+        verbose_name_plural = 'Топ продажу'
+
+
+class NewArrivalProduct(Product):
+    class Meta:
+        proxy = True
+        verbose_name = 'Новинка'
+        verbose_name_plural = 'Новинки'
+
+
+class MostViewedProduct(Product):
+    class Meta:
+        proxy = True
+        verbose_name = 'Топ переглядів'
+        verbose_name_plural = 'Топ переглядів'
