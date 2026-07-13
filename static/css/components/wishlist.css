@@ -73,6 +73,11 @@
   transition: fill var(--t-fast);
 }
 
+.wishlist-btn--card .wishlist-btn__heart {
+  fill: currentColor;
+  stroke: currentColor;
+}
+
 .wishlist-btn.is-active .wishlist-btn__heart {
   fill: currentColor;
 }
