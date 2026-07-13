@@ -59,6 +59,8 @@
   }
 }
 
+/* Стилі .catalog-types__item лишаються для горизонтального скролу */
+
 .catalog-types__item {
   display: flex;
   flex-direction: column;
@@ -74,10 +76,32 @@
   transition: border-color var(--t-fast), background var(--t-fast);
 }
 
+.catalog-types__icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-md);
+  color: var(--cat-color, var(--c-brand));
+  background: color-mix(in srgb, var(--cat-color, var(--c-brand)) 14%, white);
+  margin-bottom: var(--sp-1);
+}
+
+.catalog-types__icon .category-pill__svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.catalog-types__icon .category-pill__svg--img {
+  width: 1.25rem;
+  height: 1.25rem;
+  object-fit: contain;
+}
+
 .catalog-types__item:hover,
 .catalog-types__item:focus-visible {
-  border-color: var(--c-brand);
-  background: var(--c-brand-bg);
+  border-color: var(--cat-color, var(--c-brand));
+  background: color-mix(in srgb, var(--cat-color, var(--c-brand)) 8%, white);
 }
 
 .catalog-types__name {

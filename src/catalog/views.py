@@ -9,8 +9,7 @@ from src.core.breadcrumbs import make_breadcrumbs
 from .filters import (
     PER_PAGE_CHOICES,
     ProductFilter,
-    build_attr_facets,
-    mark_attr_facets,
+    build_filter_sections,
     resolve_per_page,
 )
 from .models import Brand, Category, Product
@@ -54,13 +53,20 @@ def _selected_attrs(params):
 def _product_list_context(request, base_qs, page_title, breadcrumbs, category=None, show_types=False):
     annotated = base_qs.annotate_rating()
     selected_attrs = _selected_attrs(request.GET)
-    attr_facets = mark_attr_facets(build_attr_facets(annotated), selected_attrs)
+    filter_sections = build_filter_sections(annotated, selected_attrs)
     filtered = ProductFilter(annotated, request.GET).apply()
     per_page = resolve_per_page(request.GET)
     paginator = Paginator(filtered, per_page)
     page = paginator.get_page(request.GET.get('page'))
     sort = request.GET.get('sort', 'popular') or 'popular'
     query_wo_page = _query_without_page(request.GET)
+    root_categories = Category.objects.filter(parent=None, is_active=True).prefetch_related('children')
+    if category:
+        vid_categories = category.children.filter(is_active=True)
+        if not vid_categories.exists() and category.parent_id:
+            vid_categories = category.parent.children.filter(is_active=True)
+    else:
+        vid_categories = root_categories
     context = {
         'products': page,
         'page_obj': page,
@@ -68,8 +74,9 @@ def _product_list_context(request, base_qs, page_title, breadcrumbs, category=No
         'breadcrumbs': breadcrumbs,
         'category': category,
         'brands': Brand.objects.filter(is_active=True),
-        'root_categories': Category.objects.filter(parent=None, is_active=True).prefetch_related('children'),
-        'attr_facets': attr_facets,
+        'root_categories': root_categories,
+        'vid_categories': vid_categories,
+        'filter_sections': filter_sections,
         'selected_brands': _selected_brands(request.GET),
         'selected_category': request.GET.get('category', ''),
         'current_sort': sort,

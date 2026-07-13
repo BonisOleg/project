@@ -279,6 +279,8 @@
   .category-pills { grid-template-columns: repeat(4, 1fr); }
 }
 
+/* Стилі .category-pill лишаються для скрол-ряду */
+
 .category-pill {
   display: grid;
   gap: var(--sp-2);
@@ -315,6 +317,12 @@
   width: 24px;
   height: 24px;
   display: block;
+}
+
+.category-pill__svg--img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .category-pill__icon--blue {

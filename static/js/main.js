@@ -7,6 +7,7 @@ import { initGallery } from './modules/gallery.js';
 import { initHeroCarousel } from './modules/hero_carousel.js?v=20260703f';
 import { initHomeTabs } from './modules/home_tabs.js';
 import { initProductScroll } from './modules/product_scroll.js';
+import { initCategoryScroll } from './modules/category_scroll.js';
 import { initToasts } from './modules/toast.js';
 
 function onReady(callback) {
@@ -27,6 +28,7 @@ onReady(() => {
   initHeroCarousel();
   initHomeTabs();
   initProductScroll();
+  initCategoryScroll();
   initToasts();
 });
 

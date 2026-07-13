@@ -1,0 +1,192 @@
+/* Горизонтальний ряд категорій зі стрілками (головна + каталог) */
+
+.category-scroll {
+  position: relative;
+  margin: var(--sp-4) 0;
+}
+
+.category-scroll--spaced {
+  margin-top: var(--sp-6);
+}
+
+.category-scroll__btn {
+  display: none;
+  place-items: center;
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(20, 24, 43, 0.1);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--c-text-secondary);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition:
+    opacity var(--t-fast),
+    background var(--t-fast),
+    color var(--t-fast),
+    transform var(--t-fast);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.category-scroll__btn svg {
+  display: block;
+  pointer-events: none;
+}
+
+.category-scroll__btn--prev {
+  left: 0;
+}
+
+.category-scroll__btn--next {
+  right: 0;
+}
+
+.category-scroll__btn:hover {
+  background: #fff;
+  color: var(--c-brand);
+}
+
+.category-scroll__btn:active {
+  transform: translateY(-50%) scale(0.94);
+}
+
+.category-scroll__btn:disabled {
+  opacity: 0.32;
+  pointer-events: none;
+}
+
+.category-scroll__btn:focus-visible {
+  outline: 2px solid var(--c-brand);
+  outline-offset: 2px;
+}
+
+.category-scroll[data-scrollable='1'] .category-scroll__btn {
+  display: grid;
+}
+
+.category-scroll__viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  touch-action: pan-x;
+  padding-inline: 0.25rem;
+}
+
+.category-scroll[data-scrollable='1'] .category-scroll__viewport {
+  padding-inline: 2.25rem;
+}
+
+.category-scroll__viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.category-scroll__track {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: var(--sp-3);
+  width: max-content;
+  max-width: none;
+  padding-block: 2px;
+  padding-inline-end: var(--sp-2);
+}
+
+.category-scroll__item {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  box-sizing: border-box;
+  min-width: 6.5rem;
+  max-width: 9.5rem;
+  width: 7.75rem;
+}
+
+/* Картки категорій у ряду — без сітки */
+.category-scroll .category-pill {
+  height: 100%;
+  min-height: 0;
+}
+
+.category-scroll .catalog-types__item {
+  min-height: 0;
+  width: 100%;
+  align-items: center;
+  text-align: center;
+}
+
+.category-scroll .catalog-types__icon {
+  margin-inline: auto;
+  margin-bottom: var(--sp-1);
+}
+
+.category-scroll .catalog-types__name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.category-scroll .catalog-types__count {
+  display: none;
+}
+
+/* Підкатегорії (лише текст) — компактніше */
+.category-scroll--compact .category-scroll__item {
+  min-width: auto;
+  max-width: none;
+  width: auto;
+}
+
+.category-scroll--compact .category-pill {
+  padding: var(--sp-2) var(--sp-4);
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .category-scroll__btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .category-scroll[data-scrollable='1'] .category-scroll__viewport {
+    padding-inline: 2.75rem;
+  }
+
+  .category-scroll__item {
+    width: 8.5rem;
+    max-width: 10rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .category-scroll__btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .category-scroll__item {
+    width: 9rem;
+    max-width: 11rem;
+  }
+}
+
+/* iOS Safari: стабільний тап і скрол */
+@supports (-webkit-touch-callout: none) {
+  .category-scroll__viewport {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .category-scroll__btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

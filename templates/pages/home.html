@@ -2,9 +2,10 @@
 {% load static ui_tags oyra_content %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/home.css' %}?v=20260710b">
+<link rel="stylesheet" href="{% static 'css/pages/home.css' %}?v=20260713j">
 <link rel="stylesheet" href="{% static 'css/components/hero_carousel.css' %}">
 <link rel="stylesheet" href="{% static 'css/components/product_scroll.css' %}?v=20260710e">
+<link rel="stylesheet" href="{% static 'css/components/category_scroll.css' %}?v=20260713a">
 <link rel="stylesheet" href="{% static 'css/pages/blog.css' %}">
 {% endblock %}
 
@@ -46,15 +47,33 @@
 <section class="section section--alt" id="categories">
   <div class="container">
     <h2 class="section__title reveal">{% block_plain 'home' 'categories_section_title' %}</h2>
-    <div class="category-pills category-pills--spaced reveal">
-      {% for cat in categories %}
-      <a href="{{ cat.get_absolute_url }}" class="category-pill">
-        <span class="category-pill__icon category-pill__icon--{{ cat.slug|category_accent }}" aria-hidden="true">
-          {% include 'partials/category_icon.html' with slug=cat.slug %}
-        </span>
-        <span>{{ cat.name }}</span>
-      </a>
-      {% endfor %}
+    <div class="category-scroll category-scroll--spaced reveal" data-category-scroll data-scrollable="1" aria-label="Категорії">
+      <button type="button" class="category-scroll__btn category-scroll__btn--prev" aria-label="Попередні категорії" disabled>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M8.75 2.5 4.25 7l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="category-scroll__viewport">
+        <div class="category-scroll__track">
+          {% for cat in categories %}
+          <a href="{{ cat.get_absolute_url }}" class="category-pill category-scroll__item">
+            <span class="category-pill__icon" style="color: {{ cat.resolved_color }}; background: color-mix(in srgb, {{ cat.resolved_color }} 14%, white);" aria-hidden="true">
+              {% if cat.icon_file %}
+                {% include 'partials/category_icon.html' with icon_file_url=cat.icon_file.url icon_key=cat.resolved_icon_key %}
+              {% else %}
+                {% include 'partials/category_icon.html' with icon_key=cat.resolved_icon_key %}
+              {% endif %}
+            </span>
+            <span>{{ cat.name }}</span>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      <button type="button" class="category-scroll__btn category-scroll__btn--next" aria-label="Наступні категорії">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M5.25 2.5 9.75 7l-4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </div>
   </div>
 </section>

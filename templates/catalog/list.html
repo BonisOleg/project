@@ -2,7 +2,8 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/catalog.css' %}?v=20260713a">
+<link rel="stylesheet" href="{% static 'css/pages/catalog.css' %}?v=20260713j">
+<link rel="stylesheet" href="{% static 'css/components/category_scroll.css' %}?v=20260713a">
 {% endblock %}
 
 {% block content %}
@@ -14,25 +15,55 @@
   </div>
 
   {% if show_types and root_categories %}
-  <div class="catalog-types reveal" aria-label="Види товарів">
-    {% for cat in root_categories %}
-    <a href="{{ cat.get_absolute_url }}" class="catalog-types__item">
-      <span class="catalog-types__name">{{ cat.name }}</span>
-      {% with kids=cat.children.all %}
-      {% if kids %}
-      <span class="catalog-types__count">{{ kids|length }} видів</span>
-      {% endif %}
-      {% endwith %}
-    </a>
-    {% endfor %}
+  <div class="category-scroll reveal" data-category-scroll data-scrollable="1" aria-label="Види товарів">
+    <button type="button" class="category-scroll__btn category-scroll__btn--prev" aria-label="Попередні види" disabled>
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <path d="M8.75 2.5 4.25 7l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="category-scroll__viewport">
+      <div class="category-scroll__track">
+        {% for cat in root_categories %}
+        <a href="{{ cat.get_absolute_url }}" class="catalog-types__item category-scroll__item" style="--cat-color: {{ cat.resolved_color }}">
+          <span class="catalog-types__icon" aria-hidden="true">
+            {% if cat.icon_file %}
+              {% include 'partials/category_icon.html' with icon_file_url=cat.icon_file.url icon_key=cat.resolved_icon_key %}
+            {% else %}
+              {% include 'partials/category_icon.html' with icon_key=cat.resolved_icon_key %}
+            {% endif %}
+          </span>
+          <span class="catalog-types__name">{{ cat.name }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    <button type="button" class="category-scroll__btn category-scroll__btn--next" aria-label="Наступні види">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <path d="M5.25 2.5 9.75 7l-4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
   </div>
   {% endif %}
 
   {% if category and category.children.exists %}
-  <div class="category-pills category-pills--spaced reveal">
-    {% for sub in category.children.all %}
-    <a href="{{ sub.get_absolute_url }}" class="category-pill"><span>{{ sub.name }}</span></a>
-    {% endfor %}
+  <div class="category-scroll category-scroll--compact category-scroll--spaced reveal" data-category-scroll data-scrollable="1" aria-label="Підкатегорії">
+    <button type="button" class="category-scroll__btn category-scroll__btn--prev" aria-label="Попередні підкатегорії" disabled>
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <path d="M8.75 2.5 4.25 7l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="category-scroll__viewport">
+      <div class="category-scroll__track">
+        {% for sub in category.children.all %}
+        <a href="{{ sub.get_absolute_url }}" class="category-pill category-scroll__item"><span>{{ sub.name }}</span></a>
+        {% endfor %}
+      </div>
+    </div>
+    <button type="button" class="category-scroll__btn category-scroll__btn--next" aria-label="Наступні підкатегорії">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <path d="M5.25 2.5 9.75 7l-4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
   </div>
   {% endif %}
 
@@ -99,8 +130,23 @@
       <input type="hidden" name="per_page" value="{{ per_page }}" data-filter-per-page>
 
       <div class="catalog-filter-form__scroll">
-        <details class="filter-acc" open>
-          <summary class="filter-acc__summary">Ціна, грн</summary>
+        {% for section in filter_sections %}
+        <details class="filter-acc"{% if section.open %} open{% endif %}>
+          <summary class="filter-acc__summary">{{ section.name }}</summary>
+
+          {% if section.filter_type == 'brand' %}
+          <div class="filter-acc__body">
+            {% for brand in brands %}
+            <label class="filter-check">
+              <input type="checkbox" name="brand" value="{{ brand.slug }}" {% if brand.slug in selected_brands %}checked{% endif %}>
+              <span>{{ brand.name }}</span>
+            </label>
+            {% empty %}
+            <p class="checkout-note">Брендів поки немає</p>
+            {% endfor %}
+          </div>
+
+          {% elif section.filter_type == 'price' %}
           <div class="filter-acc__body filter-acc__body--row">
             <div class="filter-group filter-group--inline">
               <label class="field__label" for="price_min">Від</label>
@@ -111,68 +157,52 @@
               <input class="field__input" id="price_max" type="number" name="price_max" value="{{ request.GET.price_max }}" min="0" inputmode="numeric">
             </div>
           </div>
-        </details>
 
-        <details class="filter-acc">
-          <summary class="filter-acc__summary">Наявність</summary>
-          <div class="filter-acc__body">
-            <label class="filter-check">
-              <input type="checkbox" name="in_stock" value="1" {% if request.GET.in_stock %}checked{% endif %}>
-              <span>В наявності</span>
-            </label>
-          </div>
-        </details>
-
-        {% if not category and root_categories %}
-        <details class="filter-acc">
-          <summary class="filter-acc__summary">Вид</summary>
+          {% elif section.filter_type == 'category' %}
           <div class="filter-acc__body">
             <label class="filter-check">
               <input type="radio" name="category" value="" {% if not selected_category %}checked{% endif %}>
               <span>Усі види</span>
             </label>
-            {% for cat in root_categories %}
+            {% for cat in vid_categories %}
             <label class="filter-check">
               <input type="radio" name="category" value="{{ cat.slug }}" {% if selected_category == cat.slug %}checked{% endif %}>
               <span>{{ cat.name }}</span>
             </label>
+            {% if not category %}
             {% for sub in cat.children.all %}
             <label class="filter-check filter-check--nested">
               <input type="radio" name="category" value="{{ sub.slug }}" {% if selected_category == sub.slug %}checked{% endif %}>
               <span>{{ sub.name }}</span>
             </label>
             {% endfor %}
+            {% endif %}
             {% endfor %}
           </div>
-        </details>
-        {% endif %}
 
-        {% if brands %}
-        <details class="filter-acc">
-          <summary class="filter-acc__summary">Бренд</summary>
+          {% elif section.filter_type == 'in_stock' %}
           <div class="filter-acc__body">
-            {% for brand in brands %}
             <label class="filter-check">
-              <input type="checkbox" name="brand" value="{{ brand.slug }}" {% if brand.slug in selected_brands %}checked{% endif %}>
-              <span>{{ brand.name }}</span>
+              <input type="checkbox" name="in_stock" value="1" {% if request.GET.in_stock %}checked{% endif %}>
+              <span>В наявності</span>
             </label>
-            {% endfor %}
           </div>
-        </details>
-        {% endif %}
 
-        {% for facet in attr_facets %}
-        <details class="filter-acc">
-          <summary class="filter-acc__summary">{{ facet.name }}</summary>
+          {% elif section.filter_type == 'attribute' %}
           <div class="filter-acc__body">
-            {% for item in facet.values %}
+            {% for item in section.values %}
             <label class="filter-check">
-              <input type="checkbox" name="{{ facet.param }}" value="{{ item.value }}" {% if item.selected %}checked{% endif %}>
+              <input type="checkbox" name="{{ section.param }}" value="{{ item.value }}" {% if item.selected %}checked{% endif %}>
               <span>{{ item.value }}</span>
             </label>
+            {% empty %}
+            <p class="checkout-note">Немає значень</p>
             {% endfor %}
           </div>
+          {% endif %}
         </details>
+        {% empty %}
+        <p class="checkout-note">Фільтри не налаштовані в адмінці.</p>
         {% endfor %}
       </div>
 

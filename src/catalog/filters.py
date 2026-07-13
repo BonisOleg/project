@@ -3,7 +3,8 @@ from decimal import Decimal, InvalidOperation
 
 from django.db.models import Q
 
-from .models import ProductAttribute
+from .filter_schema import BONRO_ATTR_FACETS, BONRO_ATTR_FALLBACKS
+from .models import CatalogFilter, ProductAttribute
 
 
 def _parse_decimal(value):
@@ -93,10 +94,12 @@ class ProductFilter:
         return qs.distinct().order_by(*sort_map.get(sort, sort_map['popular']))
 
 
-def build_attr_facets(queryset, limit_names=12, limit_values=20):
+def _attr_values_map(queryset, names, limit_values=30):
+    if not names:
+        return {}
     rows = (
         ProductAttribute.objects
-        .filter(product_id__in=queryset.values('pk'))
+        .filter(product_id__in=queryset.values('pk'), name__in=names)
         .values_list('name', 'value')
         .distinct()
         .order_by('name', 'value')
@@ -105,15 +108,96 @@ def build_attr_facets(queryset, limit_names=12, limit_values=20):
     for name, value in rows:
         if not name or not value:
             continue
-        if name not in grouped and len(grouped) >= limit_names:
-            continue
         bucket = grouped[name]
         if value not in bucket and len(bucket) < limit_values:
             bucket.append(value)
+    return grouped
+
+
+def get_active_catalog_filters():
+    qs = CatalogFilter.objects.filter(is_active=True).order_by('sort_order', 'name')
+    if qs.exists():
+        return list(qs)
+    # Fallback на хардкод Bonro, якщо в БД ще немає записів
+    filters = []
+    filters.append(CatalogFilter(
+        name='Бренд', filter_type=CatalogFilter.TYPE_BRAND, sort_order=10, is_active=True,
+    ))
+    filters.append(CatalogFilter(
+        name='Ціна, грн', filter_type=CatalogFilter.TYPE_PRICE, sort_order=20,
+        is_active=True, open_by_default=True,
+    ))
+    filters.append(CatalogFilter(
+        name='Вид', filter_type=CatalogFilter.TYPE_CATEGORY, sort_order=30, is_active=True,
+    ))
+    for i, name in enumerate(BONRO_ATTR_FACETS, start=1):
+        fallback = '\n'.join(BONRO_ATTR_FALLBACKS.get(name, []))
+        filters.append(CatalogFilter(
+            name=name,
+            filter_type=CatalogFilter.TYPE_ATTRIBUTE,
+            attribute_name=name,
+            fallback_values=fallback,
+            sort_order=30 + i * 10,
+            is_active=True,
+        ))
+    filters.append(CatalogFilter(
+        name='Наявність', filter_type=CatalogFilter.TYPE_IN_STOCK, sort_order=200, is_active=True,
+    ))
+    return filters
+
+
+def build_filter_sections(queryset, selected_attrs, limit_values=30):
+    """Секції drawer-фільтра з адмінки (або fallback)."""
+    definitions = get_active_catalog_filters()
+    attr_names = [
+        f.attribute_name or f.name
+        for f in definitions
+        if f.filter_type == CatalogFilter.TYPE_ATTRIBUTE and (f.attribute_name or f.name)
+    ]
+    values_map = _attr_values_map(queryset, attr_names, limit_values)
+
+    sections = []
+    for filt in definitions:
+        section = {
+            'id': filt.pk or f'fallback-{filt.filter_type}-{filt.name}',
+            'name': filt.name,
+            'filter_type': filt.filter_type,
+            'open': bool(filt.open_by_default),
+        }
+        if filt.filter_type == CatalogFilter.TYPE_ATTRIBUTE:
+            attr_name = filt.attribute_name or filt.name
+            values = list(values_map.get(attr_name) or [])
+            fallback = filt.fallback_list()
+            if not values:
+                values = fallback
+            else:
+                for extra in fallback:
+                    if extra not in values and len(values) < limit_values:
+                        values.append(extra)
+            selected = selected_attrs.get(attr_name, set())
+            section.update({
+                'attr_name': attr_name,
+                'param': attr_param_key(attr_name),
+                'values': [
+                    {'value': value, 'selected': value in selected}
+                    for value in values
+                ],
+            })
+        sections.append(section)
+    return sections
+
+
+# Зворотна сумісність для старих імпортів
+def build_attr_facets(queryset, limit_values=30):
+    sections = build_filter_sections(queryset, {}, limit_values)
     return [
-        {'name': name, 'param': attr_param_key(name), 'values': values}
-        for name, values in grouped.items()
-        if values
+        {
+            'name': s['attr_name'],
+            'param': s['param'],
+            'values': [v['value'] for v in s['values']],
+        }
+        for s in sections
+        if s['filter_type'] == CatalogFilter.TYPE_ATTRIBUTE
     ]
 
 

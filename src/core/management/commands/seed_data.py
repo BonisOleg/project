@@ -10,7 +10,9 @@ from django.utils import timezone
 
 from src.accounts.models import User
 from src.blog.models import Post
-from src.catalog.models import Brand, Category, Product, ProductAttribute
+from src.catalog.models import Brand, CatalogFilter, Category, Product, ProductAttribute
+from src.catalog.category_icons import SLUG_TO_ICON_KEY
+from src.catalog.filter_schema import BONRO_ATTR_FACETS, BONRO_ATTR_FALLBACKS
 from src.core.models import SiteSettings, SocialLink
 from src.pages.models import FAQItem, StaticPage
 from src.pages.static_content import FAQ_ITEMS, STATIC_PAGES
@@ -126,11 +128,22 @@ class Command(BaseCommand):
 
         sort = 0
         cat_map = {}
+        cat_colors = {
+            'dim-i-sad': '#2BBD7E', 'valizy': '#2453E0', 'krisla': '#FF6A3D',
+            'budivnytstvo': '#2453E0', 'dytiachi': '#FFC93C', 'sport': '#FF6A3D',
+            'traktory': '#2BBD7E', 'zootovary': '#C99200', 'utsineni': '#FF3B5C', 'sto': '#2453E0',
+        }
         for slug, name, children in CATEGORIES:
             sort += 1
             parent, _ = Category.objects.update_or_create(
                 slug=slug,
-                defaults={'name': name, 'sort_order': sort, 'is_active': True},
+                defaults={
+                    'name': name,
+                    'sort_order': sort,
+                    'is_active': True,
+                    'icon_key': SLUG_TO_ICON_KEY.get(slug, 'grid'),
+                    'color': cat_colors.get(slug, '#2453E0'),
+                },
             )
             cat_map[slug] = parent
             for i, (cslug, cname) in enumerate(children, 1):
@@ -139,9 +152,32 @@ class Command(BaseCommand):
                     defaults={
                         'name': cname, 'parent': parent,
                         'sort_order': i, 'is_active': True,
+                        'icon_key': SLUG_TO_ICON_KEY.get(slug, 'grid'),
+                        'color': cat_colors.get(slug, '#2453E0'),
                     },
                 )
                 cat_map[cslug] = child
+
+        if not CatalogFilter.objects.exists():
+            defaults = [
+                ('Бренд', CatalogFilter.TYPE_BRAND, '', '', 10, False),
+                ('Ціна, грн', CatalogFilter.TYPE_PRICE, '', '', 20, True),
+                ('Вид', CatalogFilter.TYPE_CATEGORY, '', '', 30, False),
+            ]
+            order = 40
+            for aname in BONRO_ATTR_FACETS:
+                defaults.append((
+                    aname, CatalogFilter.TYPE_ATTRIBUTE, aname,
+                    '\n'.join(BONRO_ATTR_FALLBACKS.get(aname, [])), order, False,
+                ))
+                order += 10
+            defaults.append(('Наявність', CatalogFilter.TYPE_IN_STOCK, '', '', 200, False))
+            for name, ftype, attr, fallback, sord, opened in defaults:
+                CatalogFilter.objects.create(
+                    name=name, filter_type=ftype, attribute_name=attr,
+                    fallback_values=fallback, sort_order=sord,
+                    is_active=True, open_by_default=opened,
+                )
 
         brands = {}
         for bname in ('Bonro', 'GoodTool', 'Atleto', 'Oyra'):
@@ -171,14 +207,55 @@ class Command(BaseCommand):
                 },
             )
             if created:
-                ProductAttribute.objects.get_or_create(
-                    product=product, name='Матеріал', defaults={'value': 'Метал / текстиль'},
-                )
+                attrs = {
+                    'Матеріал': 'Метал / текстиль',
+                    'Форма': 'Класична',
+                    'Колір': 'Чорний' if 'чорн' in title.lower() else (
+                        'Білий' if 'біл' in title.lower() else (
+                            'Сірий' if 'сір' in title.lower() else 'Бежевий'
+                        )
+                    ),
+                    'Країна-виробник товару': 'Україна',
+                    'Країна реєстрації бренду': 'Україна',
+                }
+                if cat_slug == 'batuty':
+                    attrs.update({
+                        'Форма': 'Кругла',
+                        'Діаметр, см': '374',
+                        'Максимальне навантаження': '150 кг',
+                    })
+                for aname, avalue in attrs.items():
+                    ProductAttribute.objects.get_or_create(
+                        product=product, name=aname, defaults={'value': avalue},
+                    )
                 Review.objects.get_or_create(
                     product=product,
                     author_name='Олена К.',
                     defaults={'rating': 5, 'text': 'Чудова якість, швидка доставка!', 'is_published': True},
                 )
+            else:
+                # Оновити атрибути для вже існуючих демо-товарів (Bonro-фільтри)
+                defaults_attrs = {
+                    'Форма': 'Класична',
+                    'Колір': 'Чорний' if 'чорн' in title.lower() else (
+                        'Білий' if 'біл' in title.lower() else (
+                            'Сірий' if 'сір' in title.lower() else 'Бежевий'
+                        )
+                    ),
+                    'Країна-виробник товару': 'Україна',
+                    'Країна реєстрації бренду': 'Україна',
+                    'Матеріал': 'Метал / текстиль',
+                }
+                if cat_slug == 'batuty':
+                    defaults_attrs.update({
+                        'Форма': 'Кругла',
+                        'Діаметр, см': '374',
+                        'Максимальне навантаження': '150 кг',
+                    })
+                for aname, avalue in defaults_attrs.items():
+                    ProductAttribute.objects.get_or_create(
+                        product=product, name=aname, defaults={'value': avalue},
+                    )
 
         for slug, title, content in STATIC_PAGES:
             StaticPage.objects.update_or_create(

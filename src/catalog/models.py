@@ -3,6 +3,12 @@ from django.db.models import Avg, Count, Q
 from django.urls import reverse
 from slugify import slugify
 
+from .category_icons import (
+    CATEGORY_ICON_CHOICES,
+    DEFAULT_CATEGORY_COLOR,
+    SLUG_TO_ICON_KEY,
+)
+
 
 class CategoryQuerySet(models.QuerySet):
     def active(self):
@@ -11,18 +17,38 @@ class CategoryQuerySet(models.QuerySet):
 
 class Category(models.Model):
     name = models.CharField('Назва', max_length=200)
-    slug = models.SlugField('Slug', max_length=220, unique=True)
+    slug = models.SlugField('Слаг (URL)', max_length=220, unique=True)
     parent = models.ForeignKey(
         'self', null=True, blank=True, on_delete=models.CASCADE,
         related_name='children', verbose_name='Батьківська категорія',
     )
     description = models.TextField('Опис', blank=True)
     image = models.ImageField('Зображення', upload_to='categories/', blank=True)
-    icon = models.CharField('Іконка (CSS class)', max_length=50, blank=True)
+    icon = models.CharField('Іконка (CSS-клас, застаріле)', max_length=50, blank=True)
+    icon_key = models.CharField(
+        'Іконка зі списку',
+        max_length=30,
+        choices=CATEGORY_ICON_CHOICES,
+        default='grid',
+        blank=True,
+        help_text='Одна з 12 готових іконок для категорії.',
+    )
+    icon_file = models.FileField(
+        'Власна іконка',
+        upload_to='categories/icons/',
+        blank=True,
+        help_text='Завантажте SVG, PNG або JPG. Якщо файл є — він замінює іконку зі списку.',
+    )
+    color = models.CharField(
+        'Колір категорії',
+        max_length=7,
+        default=DEFAULT_CATEGORY_COLOR,
+        help_text='Оберіть колір у форматі HEX, наприклад #2453E0.',
+    )
     sort_order = models.PositiveIntegerField('Порядок', default=0)
     is_active = models.BooleanField('Активна', default=True)
-    meta_title = models.CharField('SEO title', max_length=255, blank=True)
-    meta_description = models.TextField('SEO description', blank=True)
+    meta_title = models.CharField('SEO-заголовок', max_length=255, blank=True)
+    meta_description = models.TextField('SEO-опис', blank=True)
 
     objects = CategoryQuerySet.as_manager()
 
@@ -47,10 +73,21 @@ class Category(models.Model):
             ids.extend(child.get_descendant_ids())
         return ids
 
+    def resolved_icon_key(self):
+        if self.icon_key:
+            return self.icon_key
+        return SLUG_TO_ICON_KEY.get(self.slug, 'grid')
+
+    def resolved_color(self):
+        color = (self.color or '').strip()
+        if color.startswith('#') and len(color) in (4, 7):
+            return color
+        return DEFAULT_CATEGORY_COLOR
+
 
 class Brand(models.Model):
     name = models.CharField('Назва', max_length=120)
-    slug = models.SlugField('Slug', max_length=140, unique=True)
+    slug = models.SlugField('Слаг (URL)', max_length=140, unique=True)
     is_active = models.BooleanField('Активний', default=True)
 
     class Meta:
@@ -106,7 +143,7 @@ class Product(models.Model):
         related_name='products', verbose_name='Бренд',
     )
     name = models.CharField('Назва', max_length=300)
-    slug = models.SlugField('Slug', max_length=320, unique=True)
+    slug = models.SlugField('Слаг (URL)', max_length=320, unique=True)
     sku = models.CharField('Артикул', max_length=80, unique=True)
     short_description = models.TextField('Короткий опис', blank=True)
     description = models.TextField('Опис', blank=True)
@@ -126,8 +163,8 @@ class Product(models.Model):
     views_count = models.PositiveIntegerField('Перегляди', default=0)
     sort_order = models.IntegerField('Порядок', default=0)
     sale_ends_at = models.DateTimeField('Акція до', null=True, blank=True)
-    meta_title = models.CharField('SEO title', max_length=255, blank=True)
-    meta_description = models.TextField('SEO description', blank=True)
+    meta_title = models.CharField('SEO-заголовок', max_length=255, blank=True)
+    meta_description = models.TextField('SEO-опис', blank=True)
     created_at = models.DateTimeField('Створено', auto_now_add=True)
     updated_at = models.DateTimeField('Оновлено', auto_now=True)
 
@@ -168,7 +205,7 @@ class Product(models.Model):
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField('Зображення', upload_to='products/')
-    alt_text = models.CharField('Alt', max_length=200, blank=True)
+    alt_text = models.CharField('Alt-текст', max_length=200, blank=True)
     sort_order = models.PositiveIntegerField('Порядок', default=0)
     is_main = models.BooleanField('Головне', default=False)
 
@@ -205,6 +242,55 @@ class ProductAttribute(models.Model):
         verbose_name = 'Характеристика'
         verbose_name_plural = 'Характеристики'
         ordering = ['sort_order', 'name']
+
+
+class CatalogFilter(models.Model):
+    """Фільтр каталогу — керується з адмінки (порядок, показ, значення)."""
+
+    TYPE_BRAND = 'brand'
+    TYPE_PRICE = 'price'
+    TYPE_CATEGORY = 'category'
+    TYPE_IN_STOCK = 'in_stock'
+    TYPE_ATTRIBUTE = 'attribute'
+    TYPE_CHOICES = [
+        (TYPE_BRAND, 'Бренд'),
+        (TYPE_PRICE, 'Ціна'),
+        (TYPE_CATEGORY, 'Вид (категорії)'),
+        (TYPE_IN_STOCK, 'Наявність'),
+        (TYPE_ATTRIBUTE, 'Характеристика товару'),
+    ]
+
+    name = models.CharField('Назва у фільтрі', max_length=120)
+    filter_type = models.CharField('Тип фільтра', max_length=20, choices=TYPE_CHOICES)
+    attribute_name = models.CharField(
+        'Назва характеристики',
+        max_length=120,
+        blank=True,
+        help_text='Для типу «Характеристика товару» вкажіть точну назву атрибута (наприклад: Колір).',
+    )
+    fallback_values = models.TextField(
+        'Значення за замовчуванням',
+        blank=True,
+        help_text='Кожне значення з нового рядка. Показуються, якщо в товарів ще немає таких атрибутів.',
+    )
+    sort_order = models.PositiveIntegerField('Порядок показу', default=0)
+    is_active = models.BooleanField('Показувати на сайті', default=True)
+    open_by_default = models.BooleanField('Розгорнути за замовчуванням', default=False)
+
+    class Meta:
+        verbose_name = 'Фільтр каталогу'
+        verbose_name_plural = 'Фільтри каталогу'
+        ordering = ['sort_order', 'name']
+
+    def __str__(self):
+        return self.name
+
+    def fallback_list(self):
+        return [
+            line.strip()
+            for line in (self.fallback_values or '').splitlines()
+            if line.strip()
+        ]
 
 
 def make_slug(instance, source_field='name'):

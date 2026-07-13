@@ -54,11 +54,11 @@
   .wishlist-btn--card[data-tooltip]::after {
     content: attr(data-tooltip);
     position: absolute;
-    right: 50%;
+    right: 0;
     bottom: calc(100% + 8px);
     left: auto;
     top: auto;
-    transform: translateX(50%) translateY(4px);
+    transform: translateY(4px);
     padding: 0.35rem 0.6rem;
     border-radius: var(--r-md);
     background: var(--c-surface-dark, #1a1f2e);
@@ -78,7 +78,7 @@
   .wishlist-btn--card[data-tooltip]:focus-visible::after {
     opacity: 1;
     visibility: visible;
-    transform: translateX(50%) translateY(0);
+    transform: translateY(0);
   }
 }
 
