@@ -283,18 +283,31 @@
 
 .category-pill {
   display: grid;
+  grid-template-rows: auto minmax(2.5rem, auto);
   gap: var(--sp-2);
   padding: var(--sp-4);
   background: var(--c-surface);
   border-radius: var(--r-lg);
   border: 1px solid var(--c-border);
   text-align: center;
+  align-content: start;
   transition: border-color var(--t-fast), transform var(--t-fast);
 }
 
 .category-pill:hover {
   border-color: var(--c-brand);
   transform: translateY(-2px);
+}
+
+.category-pill__name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: var(--fs-sm);
+  line-height: 1.25;
+  min-height: 2.5em;
 }
 
 .category-pill__icon {

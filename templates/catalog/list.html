@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static ui_tags %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/catalog.css' %}?v=20260713j">
-<link rel="stylesheet" href="{% static 'css/components/category_scroll.css' %}?v=20260713a">
+<link rel="stylesheet" href="{% static 'css/pages/catalog.css' %}?v=20260713k">
+<link rel="stylesheet" href="{% static 'css/components/category_scroll.css' %}?v=20260713b">
 {% endblock %}
 
 {% block content %}
@@ -24,8 +24,8 @@
     <div class="category-scroll__viewport">
       <div class="category-scroll__track">
         {% for cat in root_categories %}
-        <a href="{{ cat.get_absolute_url }}" class="catalog-types__item category-scroll__item" style="--cat-color: {{ cat.resolved_color }}">
-          <span class="catalog-types__icon" aria-hidden="true">
+        <a href="{{ cat.get_absolute_url }}" class="catalog-types__item category-scroll__item">
+          <span class="catalog-types__icon category-pill__icon--{{ cat.slug|category_accent }}" aria-hidden="true">
             {% if cat.icon_file %}
               {% include 'partials/category_icon.html' with icon_file_url=cat.icon_file.url icon_key=cat.resolved_icon_key %}
             {% else %}

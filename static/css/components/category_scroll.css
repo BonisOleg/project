@@ -101,30 +101,36 @@
 }
 
 .category-scroll__item {
-  flex: 0 0 auto;
+  flex: 0 0 8rem;
+  width: 8rem;
+  max-width: 8rem;
+  min-width: 8rem;
   scroll-snap-align: start;
   box-sizing: border-box;
-  min-width: 6.5rem;
-  max-width: 9.5rem;
-  width: 7.75rem;
 }
 
-/* Картки категорій у ряду — без сітки */
+/* Однакові плитки в ряду */
 .category-scroll .category-pill {
+  width: 100%;
   height: 100%;
-  min-height: 0;
+  min-height: 8.75rem;
+  box-sizing: border-box;
 }
 
 .category-scroll .catalog-types__item {
-  min-height: 0;
+  min-height: 8.75rem;
   width: 100%;
+  height: 100%;
   align-items: center;
+  justify-content: flex-start;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .category-scroll .catalog-types__icon {
   margin-inline: auto;
   margin-bottom: var(--sp-1);
+  flex-shrink: 0;
 }
 
 .category-scroll .catalog-types__name {
@@ -133,6 +139,7 @@
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  min-height: 2.5em;
 }
 
 .category-scroll .catalog-types__count {
@@ -141,14 +148,24 @@
 
 /* Підкатегорії (лише текст) — компактніше */
 .category-scroll--compact .category-scroll__item {
+  flex: 0 0 auto;
   min-width: auto;
   max-width: none;
   width: auto;
 }
 
 .category-scroll--compact .category-pill {
+  min-height: 0;
   padding: var(--sp-2) var(--sp-4);
   white-space: nowrap;
+  grid-template-rows: auto;
+}
+
+.category-scroll--compact .category-pill__name {
+  min-height: 0;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  display: inline;
 }
 
 @media (min-width: 768px) {
@@ -162,8 +179,15 @@
   }
 
   .category-scroll__item {
-    width: 8.5rem;
-    max-width: 10rem;
+    flex-basis: 9rem;
+    width: 9rem;
+    max-width: 9rem;
+    min-width: 9rem;
+  }
+
+  .category-scroll .category-pill,
+  .category-scroll .catalog-types__item {
+    min-height: 9.25rem;
   }
 }
 
@@ -174,8 +198,10 @@
   }
 
   .category-scroll__item {
-    width: 9rem;
-    max-width: 11rem;
+    flex-basis: 9.5rem;
+    width: 9.5rem;
+    max-width: 9.5rem;
+    min-width: 9.5rem;
   }
 }
 

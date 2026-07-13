@@ -87,6 +87,31 @@
   margin-bottom: var(--sp-1);
 }
 
+.catalog-types__icon.category-pill__icon--blue {
+  color: var(--blue);
+  background: rgba(36, 83, 224, 0.12);
+}
+
+.catalog-types__icon.category-pill__icon--orange {
+  color: var(--orange);
+  background: rgba(255, 106, 61, 0.12);
+}
+
+.catalog-types__icon.category-pill__icon--yellow {
+  color: #C99200;
+  background: rgba(255, 201, 60, 0.2);
+}
+
+.catalog-types__icon.category-pill__icon--green {
+  color: var(--green);
+  background: rgba(43, 189, 126, 0.12);
+}
+
+.catalog-types__icon.category-pill__icon--raspberry {
+  color: var(--raspberry);
+  background: rgba(255, 59, 92, 0.12);
+}
+
 .catalog-types__icon .category-pill__svg {
   width: 1.25rem;
   height: 1.25rem;
