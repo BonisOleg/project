@@ -46,6 +46,42 @@
   box-shadow: 0 1px 4px rgba(255, 59, 92, 0.18);
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .wishlist-btn--card[data-tooltip] {
+    position: relative;
+  }
+
+  .wishlist-btn--card[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    right: 50%;
+    bottom: calc(100% + 8px);
+    left: auto;
+    top: auto;
+    transform: translateX(50%) translateY(4px);
+    padding: 0.35rem 0.6rem;
+    border-radius: var(--r-md);
+    background: var(--c-surface-dark, #1a1f2e);
+    color: #fff;
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--t-fast), transform var(--t-fast), visibility var(--t-fast);
+    z-index: 5;
+  }
+
+  .wishlist-btn--card[data-tooltip]:hover::after,
+  .wishlist-btn--card[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(50%) translateY(0);
+  }
+}
+
 .wishlist-btn--detail {
   width: 44px;
   min-width: 44px;
