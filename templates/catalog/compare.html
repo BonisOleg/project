@@ -2,7 +2,7 @@
 {% load static ui_tags %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/catalog.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/catalog.css' %}?v=20260713m">
 {% endblock %}
 
 {% block content %}
@@ -14,6 +14,72 @@
   </header>
 
   {% if products %}
+  {# Мобілка: картки без горизонтального скролу #}
+  <div class="compare-cards" aria-label="Порівняння товарів">
+    {% for product in products %}
+    <article class="compare-card">
+      <div class="compare-card__head">
+        <form
+          class="compare-card__remove"
+          action="{% url 'cart:compare_remove' product.pk %}"
+          method="post"
+        >
+          {% csrf_token %}
+          <button
+            type="submit"
+            class="btn btn--secondary btn--sm btn--icon"
+            aria-label="Прибрати з порівняння"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </form>
+        <a href="{{ product.get_absolute_url }}" class="compare-card__media">
+          {% if product.main_image %}
+          <img
+            src="{{ product.main_image.image.url }}"
+            alt="{{ product.main_image.alt_text|default:product.name }}"
+            width="120"
+            height="120"
+            loading="lazy"
+            decoding="async"
+          >
+          {% else %}
+          <span class="compare-card__placeholder" aria-hidden="true"></span>
+          {% endif %}
+        </a>
+        <a href="{{ product.get_absolute_url }}" class="compare-card__name">{{ product.name }}</a>
+      </div>
+
+      <dl class="compare-card__specs">
+        <div class="compare-card__row">
+          <dt>Ціна</dt>
+          <dd class="compare-card__price">{{ product.price|format_price }}</dd>
+        </div>
+        <div class="compare-card__row">
+          <dt>Рейтинг</dt>
+          <dd>{% if product.avg_rating %}★ {{ product.avg_rating|floatformat:1 }}{% else %}—{% endif %}</dd>
+        </div>
+        {% for name in attr_names %}
+        <div class="compare-card__row">
+          <dt>{{ name }}</dt>
+          <dd>
+            {% for a in product.attributes.all %}{% if a.name == name %}{{ a.value }}{% endif %}{% endfor %}
+          </dd>
+        </div>
+        {% endfor %}
+      </dl>
+
+      <form class="compare-card__buy" action="{% url 'cart:add' product.pk %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn--primary btn--sm">Купити</button>
+      </form>
+    </article>
+    {% endfor %}
+  </div>
+
+  {# Планшет / десктоп: таблиця #}
   <div class="compare-page__table-wrap">
     <table class="compare-table">
       <thead>
