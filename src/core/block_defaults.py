@@ -79,7 +79,7 @@ BLOCK_DEFAULTS: dict[tuple[str, str], str] = {
     ('site', 'header_search_visible'): '1',
     ('site', 'header_nav_catalog_visible'): '1',
     ('site', 'header_nav_sale_visible'): '1',
-    ('site', 'header_nav_news_visible'): '1',
+    ('site', 'header_nav_news_visible'): '0',
     ('site', 'header_action_phone_visible'): '1',
     ('site', 'header_action_wishlist_visible'): '1',
     ('site', 'header_action_compare_visible'): '1',

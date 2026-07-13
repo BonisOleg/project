@@ -126,9 +126,3 @@
 .bottom-nav__badge:empty {
   display: none;
 }
-
-@media (max-width: 1023px) {
-  .compare-bar {
-    bottom: calc(var(--bottom-nav-h) + var(--safe-bottom) + var(--sp-3));
-  }
-}

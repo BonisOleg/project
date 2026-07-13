@@ -115,6 +115,7 @@ LIQPAY_SERVER_URL = config('LIQPAY_SERVER_URL', default='')
 LIQPAY_SANDBOX = config('LIQPAY_SANDBOX', default=True, cast=bool)
 
 NOVA_POSHTA_API_KEY = config('NOVA_POSHTA_API_KEY', default='')
+UKRPOSHTA_BEARER = config('UKRPOSHTA_BEARER', default='')
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 

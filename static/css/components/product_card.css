@@ -332,36 +332,3 @@
     min-height: 240px;
   }
 }
-
-.compare-bar {
-  position: fixed;
-  bottom: calc(var(--safe-bottom) + var(--sp-3));
-  left: 50%;
-  transform: translateX(-50%) translateY(120%);
-  z-index: var(--z-modal);
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  padding: var(--sp-3) var(--sp-4);
-  background: var(--c-surface-dark);
-  color: var(--c-text-inverse);
-  border-radius: var(--r-pill);
-  box-shadow: var(--shadow-lg);
-  transition: transform var(--t-base);
-  max-width: calc(100% - var(--sp-6));
-}
-
-.compare-bar.is-visible { transform: translateX(-50%) translateY(0); }
-
-.compare-bar__items {
-  display: flex;
-  gap: var(--sp-2);
-}
-
-.compare-bar__thumb {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--r-sm);
-  overflow: hidden;
-  border: 2px solid var(--c-brand);
-}

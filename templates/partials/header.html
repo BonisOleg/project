@@ -42,10 +42,6 @@
       {% if show_sale %}
       <a href="{% url 'catalog:sale' %}" class="site-nav__link">{% block_plain 'site' 'header_nav_sale_label' 'Акції' %}</a>
       {% endif %}
-      {% section_visible 'site' 'header_nav_news_visible' as show_news %}
-      {% if show_news %}
-      <a href="{% url 'blog:list' %}" class="site-nav__link">{% block_plain 'site' 'header_nav_news_label' 'Новини' %}</a>
-      {% endif %}
     </nav>
 
     <div class="site-header__actions">

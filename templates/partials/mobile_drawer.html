@@ -26,10 +26,6 @@
       {% if show_compare %}
       <a class="mobile-drawer__link" href="{% url 'catalog:compare' %}">Порівняння</a>
       {% endif %}
-      {% section_visible 'site' 'header_nav_news_visible' as show_news %}
-      {% if show_news %}
-      <a class="mobile-drawer__link" href="{% url 'blog:list' %}">{% block_plain 'site' 'header_nav_news_label' 'Новини' %}</a>
-      {% endif %}
       {% section_visible 'site' 'header_nav_delivery_visible' as show_delivery %}
       {% if show_delivery %}
       <a class="mobile-drawer__link" href="{% url 'pages:static' slug='delivery' %}">Доставка</a>

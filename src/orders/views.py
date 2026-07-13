@@ -2,11 +2,11 @@ import uuid
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from src.cart.services import CartService
 from src.core.breadcrumbs import make_breadcrumbs
@@ -14,8 +14,81 @@ from src.core.breadcrumbs import make_breadcrumbs
 from .forms import CheckoutStep2Form, CheckoutStep3Form
 from .models import Order, OrderItem
 from .services.liqpay import LiqPayService
+from .services.nova_poshta import NovaPoshtaError, NovaPoshtaService
+from .services.ukrposhta import UkrposhtaError, UkrposhtaService
 
 User = get_user_model()
+
+
+def _checkout_order_ready(request):
+    return bool(request.session.get('checkout_order_id'))
+
+
+@require_GET
+def np_cities(request):
+    if not _checkout_order_ready(request):
+        return JsonResponse({'error': 'checkout_required'}, status=403)
+    q = request.GET.get('q', '').strip()
+    svc = NovaPoshtaService()
+    if not svc.configured:
+        return JsonResponse({'results': [], 'configured': False})
+    try:
+        results = svc.search_cities(q)
+    except NovaPoshtaError as exc:
+        return JsonResponse({'error': str(exc), 'results': []}, status=502)
+    return JsonResponse({'results': results, 'configured': True})
+
+
+@require_GET
+def np_warehouses(request):
+    if not _checkout_order_ready(request):
+        return JsonResponse({'error': 'checkout_required'}, status=403)
+    city_ref = request.GET.get('city_ref', '').strip()
+    q = request.GET.get('q', '').strip()
+    delivery_type = request.GET.get('type', 'warehouse').strip() or 'warehouse'
+    svc = NovaPoshtaService()
+    if not svc.configured:
+        return JsonResponse({'results': [], 'configured': False})
+    try:
+        results = svc.search_warehouses(city_ref, q, delivery_type)
+    except NovaPoshtaError as exc:
+        return JsonResponse({'error': str(exc), 'results': []}, status=502)
+    return JsonResponse({'results': results, 'configured': True})
+
+
+@require_GET
+def up_cities(request):
+    if not _checkout_order_ready(request):
+        return JsonResponse({'error': 'checkout_required'}, status=403)
+    q = request.GET.get('q', '').strip()
+    svc = UkrposhtaService()
+    if not svc.configured:
+        return JsonResponse({'results': [], 'configured': False})
+    try:
+        results = svc.search_cities(q)
+    except UkrposhtaError as exc:
+        return JsonResponse({'error': str(exc), 'results': []}, status=502)
+    return JsonResponse({'results': results, 'configured': True})
+
+
+@require_GET
+def up_postoffices(request):
+    if not _checkout_order_ready(request):
+        return JsonResponse({'error': 'checkout_required'}, status=403)
+    city_ref = request.GET.get('city_ref', '').strip()
+    q = request.GET.get('q', '').strip()
+    region_id = request.GET.get('region_id', '').strip()
+    district_id = request.GET.get('district_id', '').strip()
+    svc = UkrposhtaService()
+    if not svc.configured:
+        return JsonResponse({'results': [], 'configured': False})
+    try:
+        results = svc.search_postoffices(
+            city_ref, q, region_id=region_id, district_id=district_id,
+        )
+    except UkrposhtaError as exc:
+        return JsonResponse({'error': str(exc), 'results': []}, status=502)
+    return JsonResponse({'results': results, 'configured': True})
 
 
 def _checkout_crumbs(step):
@@ -113,10 +186,18 @@ def checkout(request, step=1):
         if request.method == 'POST' and form.is_valid():
             form.save()
             return redirect('orders:checkout_step', step=4)
+        np_svc = NovaPoshtaService()
+        up_svc = UkrposhtaService()
         return render(request, 'orders/checkout_step3.html', {
             'form': form, 'order': order, 'step': step,
             'page_title': 'Оформлення — доставка',
             'breadcrumbs': _checkout_crumbs(step),
+            'np_configured': np_svc.configured,
+            'up_configured': up_svc.configured,
+            'np_cities_url': reverse('orders:np_cities'),
+            'np_warehouses_url': reverse('orders:np_warehouses'),
+            'up_cities_url': reverse('orders:up_cities'),
+            'up_postoffices_url': reverse('orders:up_postoffices'),
         })
 
     liqpay = LiqPayService()

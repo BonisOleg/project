@@ -29,7 +29,39 @@ class CheckoutStep3Form(forms.ModelForm):
         ]
         widgets = {
             'delivery_service': forms.RadioSelect(attrs={'class': 'delivery-option'}),
-            'delivery_city': forms.TextInput(attrs={'class': 'field__input'}),
+            'delivery_city': forms.TextInput(attrs={
+                'class': 'field__input',
+                'autocomplete': 'off',
+                'id': 'id_delivery_city',
+            }),
             'delivery_type': forms.RadioSelect(attrs={'class': 'delivery-option'}),
-            'delivery_address': forms.TextInput(attrs={'class': 'field__input'}),
+            'delivery_address': forms.TextInput(attrs={
+                'class': 'field__input',
+                'autocomplete': 'off',
+                'id': 'id_delivery_address',
+            }),
         }
+
+    def clean(self):
+        cleaned = super().clean()
+        service = cleaned.get('delivery_service')
+        city = (cleaned.get('delivery_city') or '').strip()
+        address = (cleaned.get('delivery_address') or '').strip()
+        delivery_type = cleaned.get('delivery_type') or ''
+
+        if not city:
+            self.add_error('delivery_city', 'Оберіть або введіть місто')
+        if not address:
+            self.add_error('delivery_address', 'Вкажіть відділення або адресу')
+
+        if service == Order.DELIVERY_NP:
+            if not delivery_type:
+                self.add_error('delivery_type', 'Оберіть тип доставки')
+            elif delivery_type == Order.NP_COURIER and len(address) < 5:
+                self.add_error('delivery_address', 'Вкажіть повну адресу для курʼєра')
+        elif service == Order.DELIVERY_UP:
+            cleaned['delivery_type'] = ''
+
+        cleaned['delivery_city'] = city
+        cleaned['delivery_address'] = address
+        return cleaned
