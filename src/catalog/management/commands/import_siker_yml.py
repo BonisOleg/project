@@ -216,7 +216,7 @@ class Command(BaseCommand):
         name = (name or '').strip()
         if not name:
             return None
-        slug = slugify(name, allow_unicode=True) or 'brand'
+        slug = slugify(name) or 'brand'
         brand, _ = Brand.objects.get_or_create(
             slug=slug,
             defaults={'name': name, 'is_active': True},
@@ -270,7 +270,10 @@ class Command(BaseCommand):
                     else Product.AVAIL_OUT
                 ),
                 is_active=True,
+                is_new=True,
+                is_top_sale=(idx <= 12),
                 is_on_sale=bool(old_price),
+                sort_order=total - idx + 1,
             )
             product.slug = make_slug(product)
             product.save()

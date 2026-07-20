@@ -294,9 +294,8 @@ class CatalogFilter(models.Model):
 
 
 def make_slug(instance, source_field='name'):
-    base = slugify(getattr(instance, source_field), allow_unicode=True)
-    if not base:
-        base = 'item'
+    # Лише ASCII: Django <slug:> = [-a-zA-Z0-9_]+, unicode ламає reverse()/каталог
+    base = slugify(getattr(instance, source_field)) or 'item'
     slug = base
     counter = 1
     model = instance.__class__
