@@ -107,13 +107,17 @@ class Command(BaseCommand):
 
         try:
             with transaction.atomic():
-                self._purge_catalog(keep_categories=options['keep_old_categories'])
-                cat_map = self._import_categories(catalog.categories)
-                stats = self._import_offers(
-                    catalog.offers,
-                    cat_map,
-                    skip_images=skip_images,
+                archived = self._purge_catalog(
+                    keep_categories=options['keep_old_categories'],
                 )
+                cat_map = self._import_categories(catalog.categories)
+
+            stats = self._import_offers(
+                catalog.offers,
+                cat_map,
+                skip_images=skip_images,
+            )
+            stats['archived'] = archived
         finally:
             if no_webp:
                 post_save.connect(product_image_to_webp, sender=ProductImage)
@@ -125,7 +129,7 @@ class Command(BaseCommand):
             f'архівовано через замовлення {stats["archived"]}.'
         ))
 
-    def _purge_catalog(self, keep_categories: bool) -> None:
+    def _purge_catalog(self, keep_categories: bool) -> int:
         protected_ids = set(
             OrderItem.objects.values_list('product_id', flat=True).distinct()
         )
@@ -147,7 +151,6 @@ class Command(BaseCommand):
         count = deletable.count()
         WishlistItem.objects.filter(product__in=deletable).delete()
         Review.objects.filter(product__in=deletable).delete()
-        # Файли зображень прибере Django storage при delete інстансів
         for img in ProductImage.objects.filter(product__in=deletable).iterator():
             img.image.delete(save=False)
         deletable.delete()
@@ -155,15 +158,14 @@ class Command(BaseCommand):
 
         if not keep_categories:
             empty = Category.objects.filter(products__isnull=True)
-            # лишаємо батьківські, якщо є захищені товари в дереві — тільки порожні
             removed = 0
-            # знизу вгору: спочатку листя
             for cat in list(empty.order_by('-id')):
                 if cat.products.exists() or cat.children.exists():
                     continue
                 cat.delete()
                 removed += 1
             self.stdout.write(f'Видалено порожніх категорій: {removed}')
+        return archived
 
     def _import_categories(self, categories) -> dict[str, Category]:
         by_ext: dict[str, Category] = {}
@@ -319,10 +321,10 @@ class Command(BaseCommand):
 
     @staticmethod
     def _safe_filename(sku: str, order: int, filename: str) -> str:
-        base = PurePosixPath(filename).name
-        base = _SAFE_NAME_RE.sub('-', base).strip('.-') or 'image.jpg'
-        if not PurePosixPath(base).suffix:
-            ext = mimetypes.guess_extension('image/jpeg') or '.jpg'
-            base = base + ext
-        sku_part = _SAFE_NAME_RE.sub('-', sku)[:40]
-        return f'{sku_part}_{order}_{base}'[:180]
+        """Коротке ім'я: ImageField за замовчуванням varchar(100), шлях products/ + ім'я."""
+        suffix = PurePosixPath(filename).suffix.lower()
+        if suffix not in {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'}:
+            suffix = mimetypes.guess_extension('image/jpeg') or '.jpg'
+        sku_part = _SAFE_NAME_RE.sub('-', sku)[:32]
+        # products/ (~9) + ім'я ≈ до 50 символів — з запасом під WebP/унікалізацію storage
+        return f'{sku_part}_{order}{suffix}'

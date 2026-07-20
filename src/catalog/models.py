@@ -204,7 +204,7 @@ class Product(models.Model):
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField('Зображення', upload_to='products/')
+    image = models.ImageField('Зображення', upload_to='products/', max_length=255)
     alt_text = models.CharField('Alt-текст', max_length=200, blank=True)
     sort_order = models.PositiveIntegerField('Порядок', default=0)
     is_main = models.BooleanField('Головне', default=False)
