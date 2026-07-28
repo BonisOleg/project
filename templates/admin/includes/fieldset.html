@@ -1,8 +1,9 @@
 {% load unfold %}
 
+{# «collapse» — маркер Django; НЕ додавати в class: Tailwind .collapse ховає блок #}
 {% if fieldset.name and "collapse" in fieldset.classes and "tab" not in fieldset.classes %}
 <details
-    class="oyra-admin-accordion module{% if fieldset.classes %} {{ fieldset.classes }}{% endif %}"
+    class="oyra-admin-accordion module"
     {% if stacked != 1 %}x-show="activeTab == 'general'"{% endif %}
 >
     <summary class="oyra-admin-accordion__summary">
@@ -27,7 +28,7 @@
     </div>
 </details>
 {% else %}
-    <fieldset class="module{% if fieldset.classes %} {{ fieldset.classes }}{% endif %}" {% if stacked != 1 %}x-show="activeTab == 'general'"{% endif %}>
+    <fieldset class="module{% if fieldset.classes %} {{ fieldset.classes|cut:"collapse" }}{% endif %}" {% if stacked != 1 %}x-show="activeTab == 'general'"{% endif %}>
         {% if fieldset.name and "tab" not in fieldset.classes %}
             <h2 class="bg-base-100 font-semibold mb-6 px-4 py-3 rounded text-font-important-light text-sm lg:-mx-4 dark:bg-white/[.02] dark:text-font-important-dark">
                 {{ fieldset.name }}

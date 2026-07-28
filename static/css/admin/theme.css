@@ -574,6 +574,8 @@ form .bg-white.flex.flex-none {
    Акордеони для додаткових fieldsets (classes: collapse)
    ==================================================== */
 .oyra-admin-accordion {
+  visibility: visible;
+  display: block;
   margin-bottom: 1.5rem;
   border: 1px solid rgb(var(--color-base-200));
   border-radius: 0.75rem;
