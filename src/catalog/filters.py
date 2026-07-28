@@ -167,13 +167,10 @@ def build_filter_sections(queryset, selected_attrs, limit_values=30):
         if filt.filter_type == CatalogFilter.TYPE_ATTRIBUTE:
             attr_name = filt.attribute_name or filt.name
             values = list(values_map.get(attr_name) or [])
-            fallback = filt.fallback_list()
+            # Не підставляємо seed-fallback (Bonro): інакше в UI є «244/Кругла»,
+            # а в товарів Siker таких атрибутів немає → count завжди 0.
             if not values:
-                values = fallback
-            else:
-                for extra in fallback:
-                    if extra not in values and len(values) < limit_values:
-                        values.append(extra)
+                continue
             selected = selected_attrs.get(attr_name, set())
             section.update({
                 'attr_name': attr_name,

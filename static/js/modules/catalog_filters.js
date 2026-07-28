@@ -20,7 +20,7 @@ function setFilterSubmitCount(btn, count) {
   const n = Number(count);
   if (!Number.isFinite(n) || n < 0) return;
   btn.textContent = `Показати ${n} ${ukGoodsLabel(n)}`;
-  btn.disabled = n === 0;
+  btn.disabled = false;
   btn.dataset.resultCount = String(n);
 }
 

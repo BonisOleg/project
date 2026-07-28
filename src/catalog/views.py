@@ -79,7 +79,9 @@ def _product_list_context(request, base_qs, page_title, breadcrumbs, category=No
         'page_title': page_title,
         'breadcrumbs': breadcrumbs,
         'category': category,
-        'brands': Brand.objects.filter(is_active=True),
+        'brands': Brand.objects.filter(
+            is_active=True, products__is_active=True,
+        ).distinct().order_by('name'),
         'root_categories': root_categories,
         'vid_categories': vid_categories,
         'filter_sections': filter_sections,
