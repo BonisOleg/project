@@ -26,7 +26,7 @@ INSTALLED_APPS = [
     'src.core',
     'src.catalog',
     'src.cart',
-    'src.orders',
+    'src.orders.apps.OrdersConfig',
     'src.accounts',
     'src.blog',
     'src.pages',
@@ -116,6 +116,14 @@ LIQPAY_SANDBOX = config('LIQPAY_SANDBOX', default=True, cast=bool)
 
 NOVA_POSHTA_API_KEY = config('NOVA_POSHTA_API_KEY', default='')
 UKRPOSHTA_BEARER = config('UKRPOSHTA_BEARER', default='')
+
+# TurboSMS (SMS + Viber / hybrid). Достатньо додати токен і sender у .env.
+TURBOSMS_ENABLED = config('TURBOSMS_ENABLED', default=False, cast=bool)
+TURBOSMS_TOKEN = config('TURBOSMS_TOKEN', default='')
+TURBOSMS_SMS_SENDER = config('TURBOSMS_SMS_SENDER', default='')
+TURBOSMS_VIBER_SENDER = config('TURBOSMS_VIBER_SENDER', default='')
+TURBOSMS_VIBER_TTL = config('TURBOSMS_VIBER_TTL', default=3600, cast=int)
+TURBOSMS_TIMEOUT = config('TURBOSMS_TIMEOUT', default=8, cast=int)
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 

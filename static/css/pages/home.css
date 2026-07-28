@@ -279,64 +279,7 @@
   .category-pills { grid-template-columns: repeat(4, 1fr); }
 }
 
-/* Стилі .category-pill лишаються для скрол-ряду */
-
-.category-pill {
-  display: grid;
-  grid-template-rows: auto minmax(2.5rem, auto);
-  gap: var(--sp-2);
-  padding: var(--sp-4);
-  background: var(--c-surface);
-  border-radius: var(--r-lg);
-  border: 1px solid var(--c-border);
-  text-align: center;
-  align-content: start;
-  transition: border-color var(--t-fast), transform var(--t-fast);
-}
-
-.category-pill:hover {
-  border-color: var(--c-brand);
-  transform: translateY(-2px);
-}
-
-.category-pill__name {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  font-size: var(--fs-sm);
-  line-height: 1.25;
-  min-height: 2.5em;
-}
-
-.category-pill__icon {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto;
-  border-radius: var(--r-md);
-  display: grid;
-  place-items: center;
-  color: var(--c-brand);
-  background: var(--c-brand-bg);
-  transition: transform var(--t-fast), background-color var(--t-fast);
-}
-
-.category-pill:hover .category-pill__icon {
-  transform: translateY(-1px);
-}
-
-.category-pill__svg {
-  width: 24px;
-  height: 24px;
-  display: block;
-}
-
-.category-pill__svg--img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
+/* Стилі .category-pill — для компактних підкатегорій у category_scroll.css */
 
 .category-pill__icon--blue {
   color: var(--blue);
@@ -363,16 +306,16 @@
   background: rgba(255, 59, 92, 0.12);
 }
 
-@media (max-width: 599px) {
-  .category-pill__icon {
-    width: 44px;
-    height: 44px;
-  }
+.category-pill__svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
 
-  .category-pill__svg {
-    width: 22px;
-    height: 22px;
-  }
+.category-pill__svg--img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .benefits {

@@ -27,7 +27,7 @@ def home(request):
         'active_tab': tab,
         'tab_products': tabs[tab],
         'hero_slides': get_hero_slides(),
-        'categories': Category.objects.filter(parent=None, is_active=True).order_by('sort_order')[:8],
+        'categories': Category.objects.filter(parent=None, is_active=True).order_by('sort_order'),
         'blog_posts': Post.objects.published()[:3],
     }
 

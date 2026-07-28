@@ -6,3 +6,6 @@ class OrdersConfig(AppConfig):
     name = 'src.orders'
     label = 'orders'
     verbose_name = 'Замовлення'
+
+    def ready(self):
+        from . import signals  # noqa: F401
