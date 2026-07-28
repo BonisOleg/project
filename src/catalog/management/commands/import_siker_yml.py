@@ -27,6 +27,7 @@ from src.catalog.siker_yml import (
     html_to_plain,
     load_yml_bytes,
     parse_yml,
+    resolve_sale_prices,
 )
 from src.orders.models import OrderItem
 from src.reviews.models import Review
@@ -251,9 +252,7 @@ class Command(BaseCommand):
             brand_name = offer.params.get('Виробник') or offer.params.get('Бренд') or ''
             brand = self._get_brand(brand_name)
 
-            old_price = None
-            if offer.price_drop is not None and offer.price_drop != offer.price:
-                old_price = offer.price_drop
+            price, old_price = resolve_sale_prices(offer.price, offer.price_drop)
 
             product = Product(
                 category=category,
@@ -262,7 +261,7 @@ class Command(BaseCommand):
                 sku=offer.vendor_code,
                 short_description=html_to_plain(offer.description_html),
                 description=offer.description_html,
-                price=offer.price,
+                price=price,
                 old_price=old_price,
                 availability=(
                     Product.AVAIL_IN_STOCK

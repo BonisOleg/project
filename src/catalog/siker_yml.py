@@ -87,6 +87,25 @@ def _decimal(raw: str) -> Decimal:
         raise ValueError(f'Некоректна ціна: {raw!r}') from exc
 
 
+def resolve_sale_prices(
+    list_price: Decimal,
+    price_drop: Decimal | None,
+) -> tuple[Decimal, Decimal | None]:
+    """
+    Нормалізація цін Siker → поля магазину.
+
+    У вигрузці: ``price`` — звичайна (вища), ``priceDrop`` — акційна (нижча).
+    У каталозі: ``price`` — поточна до оплати, ``old_price`` — перекреслена
+    (має бути вищою за ``price``, інакше блок «Акції» не показує товар).
+    """
+    if price_drop is None or price_drop == list_price:
+        return list_price, None
+    if price_drop < list_price:
+        return price_drop, list_price
+    # priceDrop вищий за price — трактуємо як «стару» ціну
+    return list_price, price_drop
+
+
 def clean_description_html(raw: str) -> str:
     """Розкодовує entities / CDATA і повертає HTML-опис."""
     if not raw:
