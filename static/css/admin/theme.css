@@ -280,6 +280,25 @@
   background: rgb(var(--color-base-50));
 }
 
+.category-admin-photo-preview--list {
+  width: 96px;
+  border-radius: 8px;
+}
+
+.category-admin-photo-wrap--list {
+  max-width: 120px;
+}
+
+.category-admin-photo-wrap--list .category-admin-icon-preview {
+  width: 96px;
+  height: 72px;
+}
+
+.category-admin-photo-wrap--list .product-image-upload-hint {
+  font-size: 0.7rem;
+  max-width: 96px;
+}
+
 .dark .category-admin-photo-preview {
   border-color: rgb(var(--color-base-700));
   background: rgb(var(--color-base-800));

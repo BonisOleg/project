@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin
+from django.db import models
 from django.template.loader import render_to_string
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -32,6 +33,24 @@ _CATEGORY_IMAGE_HINT = (
 )
 
 
+class CategoryHasCardImageFilter(admin.SimpleListFilter):
+    title = 'Фото картки'
+    parameter_name = 'has_card_image'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('1', 'Є фото'),
+            ('0', 'Лише іконка (без фото)'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == '1':
+            return queryset.exclude(image='').exclude(image__isnull=True)
+        if self.value() == '0':
+            return queryset.filter(models.Q(image='') | models.Q(image__isnull=True))
+        return queryset
+
+
 class ProductAttributeInline(TabularInline):
     model = ProductAttribute
     extra = 1
@@ -51,16 +70,22 @@ class CategoryAdminForm(forms.ModelForm):
 
 
 @admin.register(Category)
-class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, ImagePreviewMixin, TinyMCEAdminMixin, ModelAdmin):
+class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, TinyMCEAdminMixin, ModelAdmin):
     form = CategoryAdminForm
-    list_display = ('name', 'parent', 'get_color_swatch', 'get_image_preview', 'is_active', 'sort_order')
+    list_display = (
+        'name', 'parent', 'get_color_swatch', 'get_list_card_preview',
+        'is_active', 'sort_order',
+    )
     list_filter = [
         ('is_active', UkBooleanDropdownFilter),
         ('parent', UkRelatedDropdownFilter),
+        CategoryHasCardImageFilter,
     ]
+    list_select_related = ('parent',)
+    ordering = ('sort_order', 'name')
     prepopulated_fields = {'slug': ('name',)}
-    search_fields = ('name',)
-    readonly_fields = ('get_image_preview',)
+    search_fields = ('name', 'slug')
+    readonly_fields = ('get_form_card_preview',)
     fieldsets = (
         ('Основне', {'fields': (
             'name', 'slug', 'parent', 'description',
@@ -69,9 +94,9 @@ class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, ImagePreviewMixin,
             'description': (
                 'Фото на картці категорії на головній і в каталозі. '
                 'JPG, PNG або WebP. Рекомендований розмір: 800×600 пікселів (4:3). '
-                'Максимальний розмір файлу: 1 МБ.'
+                'Максимальний розмір файлу: 1 МБ. Без фото на сайті показується іконка.'
             ),
-            'fields': ('image', 'get_image_preview'),
+            'fields': ('image', 'get_form_card_preview'),
         }),
         ('Іконка та колір', {'fields': (
             'icon_key', 'icon_file', 'color',
@@ -104,35 +129,65 @@ class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, ImagePreviewMixin,
             color, color,
         )
 
-    @admin.display(description='Превʼю картки')
-    def get_image_preview(self, obj):
-        if not obj or not obj.pk:
-            return format_html(
-                '<span class="product-image-upload-hint">'
-                'Збережіть категорію, щоб побачити превʼю.</span>',
-            )
-        if obj.image:
-            return format_html(
-                '<div class="category-admin-photo-wrap">'
-                '<img src="{}" alt="" class="category-admin-photo-preview">'
-                '<span class="product-image-upload-hint">'
-                'Поточне фото картки на сайті. Можна замінити файлом вище '
-                '(макс. 1 МБ).</span></div>',
-                obj.image.url,
-            )
+    @staticmethod
+    def _has_card_image(obj) -> bool:
+        return bool(obj and obj.pk and getattr(obj.image, 'name', None))
+
+    def _icon_fallback_html(self, obj):
         ctx = {'icon_key': obj.resolved_icon_key()}
         if obj.icon_file:
             ctx['icon_file_url'] = obj.icon_file.url
         svg = render_to_string('partials/category_icon.html', ctx)
         return format_html(
-            '<div class="category-admin-photo-wrap">'
             '<span class="category-admin-icon-preview" style="color:{};'
-            'background:color-mix(in srgb, {} 14%, white)">{}</span>'
-            '<span class="product-image-upload-hint">'
-            'Фото не завантажено — на картці показується іконка. '
-            'Завантажте фото вище (макс. 1 МБ), щоб замінити іконку на зображення.'
-            '</span></div>',
+            'background:color-mix(in srgb, {} 14%, white)">{}</span>',
             obj.resolved_color(), obj.resolved_color(), mark_safe(svg),
+        )
+
+    @admin.display(description='Превʼю картки')
+    def get_list_card_preview(self, obj):
+        """Список: фото якщо є, інакше компактна іконка (як на сайті)."""
+        if not obj or not obj.pk:
+            return '—'
+        if self._has_card_image(obj):
+            return format_html(
+                '<img src="{}" alt="" class="category-admin-photo-preview '
+                'category-admin-photo-preview--list" title="Фото картки">',
+                obj.image.url,
+            )
+        return format_html(
+            '<div class="category-admin-photo-wrap category-admin-photo-wrap--list">'
+            '{}'
+            '<span class="product-image-upload-hint">Іконка (немає фото)</span>'
+            '</div>',
+            self._icon_fallback_html(obj),
+        )
+
+    @admin.display(description='Превʼю на сайті')
+    def get_form_card_preview(self, obj):
+        """Форма: реальне фото або іконка-фолбек — як на вітрині."""
+        if not obj or not obj.pk:
+            return format_html(
+                '<span class="product-image-upload-hint">'
+                'Збережіть категорію, щоб побачити превʼю.</span>',
+            )
+        if self._has_card_image(obj):
+            return format_html(
+                '<div class="category-admin-photo-wrap">'
+                '<img src="{}" alt="" class="category-admin-photo-preview">'
+                '<span class="product-image-upload-hint">'
+                'Поточне фото картки на сайті. Можна замінити полем вище.'
+                '</span></div>',
+                obj.image.url,
+            )
+        return format_html(
+            '<div class="category-admin-photo-wrap">'
+            '{}'
+            '<span class="product-image-upload-hint">'
+            'Фото немає — на сайті показується іконка (фолбек). '
+            'Завантажте фото вище, щоб замінити іконку на зображення.'
+            '</span></div>',
+            self._icon_fallback_html(obj),
         )
 
 
