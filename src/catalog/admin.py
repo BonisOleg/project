@@ -79,12 +79,17 @@ class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, TinyMCEAdminMixin,
                 'підтягнеться фото батьківської, якщо воно є.'
             ),
             'fields': ('image', 'get_form_card_preview'),
+            'classes': ('collapse',),
         }),
-        ('Іконка та колір', {'fields': (
-            'icon_key', 'icon_file', 'color',
-        )}),
+        ('Іконка та колір', {
+            'fields': ('icon_key', 'icon_file', 'color'),
+            'classes': ('collapse',),
+        }),
         ('Відображення на сайті', {'fields': ('sort_order', 'is_active')}),
-        ('SEO (пошукові системи)', {'fields': ('meta_title', 'meta_description'), 'classes': ('collapse',)}),
+        ('SEO (пошукові системи)', {
+            'fields': ('meta_title', 'meta_description'),
+            'classes': ('collapse',),
+        }),
     )
 
     def formfield_for_dbfield(self, db_field, request, **kwargs):
@@ -260,7 +265,11 @@ class ProductAdmin(
             'fields': ('price', 'old_price', 'availability', 'sale_ends_at'),
         }),
         ('Мітки', {
-            'fields': ('is_active', 'is_top_sale', 'is_new', 'is_on_sale', 'requires_prepayment', 'sort_order'),
+            'fields': (
+                'is_active', 'is_top_sale', 'is_new', 'is_on_sale',
+                'requires_prepayment', 'sort_order',
+            ),
+            'classes': ('collapse',),
         }),
         ('Медіа', {
             'fields': ('youtube_url', 'video_url', 'has_video'),

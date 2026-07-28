@@ -1,0 +1,49 @@
+{% load unfold %}
+
+{% if fieldset.name and "collapse" in fieldset.classes and "tab" not in fieldset.classes %}
+<details
+    class="oyra-admin-accordion module{% if fieldset.classes %} {{ fieldset.classes }}{% endif %}"
+    {% if stacked != 1 %}x-show="activeTab == 'general'"{% endif %}
+>
+    <summary class="oyra-admin-accordion__summary">
+        <span class="oyra-admin-accordion__title">{{ fieldset.name }}</span>
+        <span class="oyra-admin-accordion__chevron" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </span>
+    </summary>
+    <div class="oyra-admin-accordion__body">
+        {% if fieldset.description %}
+            <div class="leading-relaxed mb-4 max-w-4xl text-sm">
+                {{ fieldset.description|safe }}
+            </div>
+        {% endif %}
+        <div class="{% fieldset_rows_classes %}">
+            {% for line in fieldset %}
+                {% include "unfold/helpers/fieldset_row.html" %}
+            {% endfor %}
+        </div>
+    </div>
+</details>
+{% else %}
+    <fieldset class="module{% if fieldset.classes %} {{ fieldset.classes }}{% endif %}" {% if stacked != 1 %}x-show="activeTab == 'general'"{% endif %}>
+        {% if fieldset.name and "tab" not in fieldset.classes %}
+            <h2 class="bg-base-100 font-semibold mb-6 px-4 py-3 rounded text-font-important-light text-sm lg:-mx-4 dark:bg-white/[.02] dark:text-font-important-dark">
+                {{ fieldset.name }}
+            </h2>
+        {% endif %}
+
+        {% if fieldset.description %}
+            <div class="leading-relaxed mb-4 max-w-4xl text-sm">
+                {{ fieldset.description|safe }}
+            </div>
+        {% endif %}
+
+        <div class="{% fieldset_rows_classes %}">
+            {% for line in fieldset %}
+                {% include "unfold/helpers/fieldset_row.html" %}
+            {% endfor %}
+        </div>
+    </fieldset>
+{% endif %}
