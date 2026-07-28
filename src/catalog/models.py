@@ -85,7 +85,10 @@ class Category(models.Model):
         return DEFAULT_CATEGORY_COLOR
 
     def resolved_card_image(self):
-        """Власне фото картки або перше фото предка (для превʼю в адмінці)."""
+        """
+        Фото для превʼю: власне → предки → корінь з тією ж назвою, що має фото.
+        (Після імпорту Siker часто лишаються дублікати коренів без image.)
+        """
         node = self
         seen: set[int] = set()
         while node is not None and node.pk not in seen:
@@ -93,6 +96,24 @@ class Category(models.Model):
             if getattr(node.image, 'name', None):
                 return node.image
             node = node.parent
+
+        # Корінь-близнюк з фото (напр. sport vs sport-i-vidpochinok)
+        names = []
+        if self.name:
+            names.append(self.name)
+        if self.parent_id and self.parent and self.parent.name:
+            names.append(self.parent.name)
+        for name in names:
+            twin = (
+                Category.objects.filter(parent__isnull=True, name=name)
+                .exclude(pk__in=seen)
+                .exclude(image='')
+                .exclude(image__isnull=True)
+                .order_by('-is_active', 'sort_order')
+                .first()
+            )
+            if twin and getattr(twin.image, 'name', None):
+                return twin.image
         return None
 
 
