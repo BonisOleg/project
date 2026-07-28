@@ -261,12 +261,40 @@
   max-width: 180px;
 }
 
+.category-admin-photo-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 280px;
+}
+
+.category-admin-photo-preview {
+  display: block;
+  width: 240px;
+  max-width: 100%;
+  aspect-ratio: 4 / 3;
+  height: auto;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid rgb(var(--color-base-200));
+  background: rgb(var(--color-base-50));
+}
+
+.dark .category-admin-photo-preview {
+  border-color: rgb(var(--color-base-700));
+  background: rgb(var(--color-base-800));
+}
+
+.category-admin-photo-wrap .product-image-upload-hint {
+  max-width: 240px;
+}
+
 .category-admin-icon-preview {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 72px;
-  height: 72px;
+  width: 120px;
+  height: 90px;
   border-radius: 12px;
   border: 1px solid rgb(var(--color-base-200));
   background: rgb(var(--color-primary-50));
@@ -280,9 +308,21 @@
 }
 
 .category-admin-icon-preview .category-pill__svg {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: block;
+}
+
+@media (max-width: 640px) {
+  .category-admin-photo-preview {
+    width: 100%;
+    max-width: 240px;
+  }
+
+  .category-admin-icon-preview {
+    width: 96px;
+    height: 72px;
+  }
 }
 
 /* ====================================================

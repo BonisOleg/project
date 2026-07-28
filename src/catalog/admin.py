@@ -64,8 +64,15 @@ class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, ImagePreviewMixin,
     fieldsets = (
         ('Основне', {'fields': (
             'name', 'slug', 'parent', 'description',
-            'image', 'get_image_preview',
         )}),
+        ('Фото категорії', {
+            'description': (
+                'Фото на картці категорії на головній і в каталозі. '
+                'JPG, PNG або WebP. Рекомендований розмір: 800×600 пікселів (4:3). '
+                'Максимальний розмір файлу: 1 МБ.'
+            ),
+            'fields': ('image', 'get_image_preview'),
+        }),
         ('Іконка та колір', {'fields': (
             'icon_key', 'icon_file', 'color',
         )}),
@@ -76,6 +83,7 @@ class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, ImagePreviewMixin,
     def formfield_for_dbfield(self, db_field, request, **kwargs):
         field = super().formfield_for_dbfield(db_field, request, **kwargs)
         if db_field.name == 'image':
+            field.label = 'Фото картки'
             field.help_text = _CATEGORY_IMAGE_HINT
         if db_field.name == 'icon_key':
             field.help_text = 'Оберіть одну з 12 готових іконок або завантажте власний файл нижче.'
@@ -96,14 +104,20 @@ class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, ImagePreviewMixin,
             color, color,
         )
 
-    @admin.display(description='Іконка на сайті')
+    @admin.display(description='Превʼю картки')
     def get_image_preview(self, obj):
         if not obj or not obj.pk:
-            return '—'
+            return format_html(
+                '<span class="product-image-upload-hint">'
+                'Збережіть категорію, щоб побачити превʼю.</span>',
+            )
         if obj.image:
             return format_html(
-                '<img src="{}" alt="" class="product-image-inline-preview">'
-                '<span class="product-image-upload-hint">Завантажене фото</span>',
+                '<div class="category-admin-photo-wrap">'
+                '<img src="{}" alt="" class="category-admin-photo-preview">'
+                '<span class="product-image-upload-hint">'
+                'Поточне фото картки на сайті. Можна замінити файлом вище '
+                '(макс. 1 МБ).</span></div>',
                 obj.image.url,
             )
         ctx = {'icon_key': obj.resolved_icon_key()}
@@ -111,10 +125,13 @@ class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, ImagePreviewMixin,
             ctx['icon_file_url'] = obj.icon_file.url
         svg = render_to_string('partials/category_icon.html', ctx)
         return format_html(
-            '<span class="category-admin-icon-preview" style="color:{};display:inline-flex;'
-            'width:2.5rem;height:2.5rem;align-items:center;justify-content:center;'
-            'border-radius:0.5rem;background:color-mix(in srgb, {} 14%, white)">{}</span>'
-            '<span class="product-image-upload-hint">Іконка категорії</span>',
+            '<div class="category-admin-photo-wrap">'
+            '<span class="category-admin-icon-preview" style="color:{};'
+            'background:color-mix(in srgb, {} 14%, white)">{}</span>'
+            '<span class="product-image-upload-hint">'
+            'Фото не завантажено — на картці показується іконка. '
+            'Завантажте фото вище (макс. 1 МБ), щоб замінити іконку на зображення.'
+            '</span></div>',
             obj.resolved_color(), obj.resolved_color(), mark_safe(svg),
         )
 

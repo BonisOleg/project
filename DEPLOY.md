@@ -7,6 +7,7 @@
 - Droplet Ubuntu 24.04, ≥ 2 GB RAM
 - Шлях проєкту: `/var/www/oyra` (не вкладений `/var/www/oyra/oyra`)
 - Firewall: `ufw allow OpenSSH`, `ufw allow 80/tcp`, `ufw allow 443/tcp`
+- Адмінка: `https://your-domain.com/oyra-panel/` (старий `/admin/` вимкнено; змінюється через `ADMIN_URL` у `.env`)
 
 ## 1. Перший HTTP-деплой
 

@@ -11,7 +11,7 @@ def healthz(_request):
 
 urlpatterns = [
     path('healthz/', healthz),
-    path('admin/', admin.site.urls),
+    path(settings.ADMIN_URL, admin.site.urls),
     path('', include('src.core.urls')),
     path('catalog/', include('src.catalog.urls')),
     path('cart/', include('src.cart.urls')),

@@ -10,6 +10,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = config('SECRET_KEY')
 
+# Шлях адмінки (без початкового /, зі слешем в кінці). Старий /admin/ вимкнено.
+ADMIN_URL = config('ADMIN_URL', default='oyra-panel').strip().strip('/') + '/'
+
 INSTALLED_APPS = [
     'unfold',
     'unfold.contrib.filters',
@@ -354,7 +357,7 @@ UNFOLD = {
 }
 
 CONTENT_SECURITY_POLICY = {
-    'EXCLUDE_URL_PREFIXES': ('/admin/',),
+    'EXCLUDE_URL_PREFIXES': (f'/{ADMIN_URL}',),
     'DIRECTIVES': {
         'default-src': ("'self'",),
         'script-src': ("'self'",),
