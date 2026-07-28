@@ -207,7 +207,7 @@
       </div>
 
       <div class="catalog-filter-form__footer">
-        <button type="submit" class="btn btn--primary btn--block" data-filter-submit>
+        <button type="submit" class="btn btn--primary btn--block" data-filter-submit data-result-count="{{ result_count }}">
           Показати {{ result_count }} товарів
         </button>
       </div>
@@ -217,5 +217,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script type="module" src="{% static 'js/modules/catalog_filters.js' %}?v=20260713a"></script>
+<script type="module" src="{% static 'js/modules/catalog_filters.js' %}?v=20260728a"></script>
 {% endblock %}

@@ -1,6 +1,6 @@
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 
@@ -52,9 +52,15 @@ def _selected_attrs(params):
 
 def _product_list_context(request, base_qs, page_title, breadcrumbs, category=None, show_types=False):
     annotated = base_qs.annotate_rating()
+    filtered = ProductFilter(annotated, request.GET).apply()
+    count = filtered.count()
+
+    # Легкий JSON для кнопки «Показати N товарів» без повного рендеру сторінки
+    if request.GET.get('count_only') == '1':
+        return JsonResponse({'count': count})
+
     selected_attrs = _selected_attrs(request.GET)
     filter_sections = build_filter_sections(annotated, selected_attrs)
-    filtered = ProductFilter(annotated, request.GET).apply()
     per_page = resolve_per_page(request.GET)
     paginator = Paginator(filtered, per_page)
     page = paginator.get_page(request.GET.get('page'))
@@ -82,7 +88,7 @@ def _product_list_context(request, base_qs, page_title, breadcrumbs, category=No
         'current_sort': sort,
         'per_page': per_page,
         'per_page_choices': PER_PAGE_CHOICES,
-        'result_count': paginator.count,
+        'result_count': count,
         'show_types': show_types,
         'query_string': query_wo_page,
     }
