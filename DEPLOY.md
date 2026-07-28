@@ -95,6 +95,42 @@ bash deploy/docker/deploy.sh
 
 `deploy.sh` завжди виконує `--build` — без rebuild код у контейнері не оновиться.
 
+## 4.1 Синхронізація фото категорій (`media/` не в git)
+
+Файли лежать локально в `media/categories/`. На Droplet — Docker volume `media_volume`.
+Команди `scp` запускайте **з Mac**, не з сервера. Підставте реальний IP.
+
+### З Mac (локальна машина)
+
+```bash
+cd /Users/olegbonislavskyi/Sites/Oyra
+scp -r media/categories root@209.38.207.77:/tmp/oyra-categories
+```
+
+### На Droplet
+
+```bash
+cd /var/www/oyra
+
+# скопіювати файли ВСЕРЕДИНУ media volume контейнера web
+docker compose cp /tmp/oyra-categories/. web:/app/media/categories/
+
+# перевірити файли
+docker compose exec web ls -la /app/media/categories/
+
+# прив'язати шляхи до Category.image у БД
+docker compose exec web python manage.py assign_category_images
+
+# перевірка в БД
+docker compose exec web python manage.py shell -c "
+from src.catalog.models import Category
+for c in Category.objects.filter(parent=None, is_active=True).order_by('sort_order'):
+    print(c.slug, '→', c.image.name if c.image else 'NO')
+"
+```
+
+> Лише `mkdir` недостатньо: потрібні самі файли + запис у полі `Category.image`.
+
 ## 5. Локальна перевірка (розробка)
 
 ```bash
