@@ -187,7 +187,7 @@ class Command(BaseCommand):
                 cat = Category.objects.filter(slug=slug_base).first()
                 if cat is None:
                     cat = Category(name=item.name, slug=slug_base)
-                    # make_slug з allow_unicode у моделі — форсимо латинський slug
+                    # Латинський slugify (ASCII) для Django <slug:>
                     base = slug_base
                     slug = base
                     n = 1
