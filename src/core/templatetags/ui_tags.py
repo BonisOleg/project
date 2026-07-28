@@ -1,4 +1,7 @@
 from django import template
+from django.utils.safestring import mark_safe
+import html
+import re
 
 register = template.Library()
 
@@ -80,6 +83,35 @@ def format_price(value):
     if value is None:
         return ''
     return f'{value:,.2f}'.replace(',', ' ').replace('.', ',') + ' грн'
+
+
+_DANGEROUS_TAG_RE = re.compile(
+    r'<\s*(script|iframe|object|embed|form|link|meta|style)\b[^>]*>.*?</\s*\1\s*>|'
+    r'<\s*(script|iframe|object|embed|form|link|meta|style)\b[^>]*/?\s*>|'
+    r'\son\w+\s*=\s*([\'"]).*?\1|'
+    r'\s(href|src)\s*=\s*([\'"])\s*javascript:[^\'"]*\2',
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+@register.filter(name='product_richtext')
+def product_richtext(value):
+    """Показує HTML-опис товару (абзаци/жирний), без видимих сирих тегів."""
+    if not value:
+        return ''
+    text = str(value).strip()
+    # Якщо в БД залишився екранований HTML (&lt;p&gt;...) — розкодувати
+    for _ in range(3):
+        if '&lt;' in text or '&amp;lt;' in text:
+            text = html.unescape(text)
+        else:
+            break
+    text = _DANGEROUS_TAG_RE.sub('', text)
+    # Якщо після всього це все ще «голий» текст без тегів — зберегти переноси
+    if '<' not in text:
+        from django.template.defaultfilters import linebreaks
+        return linebreaks(text)
+    return mark_safe(text)
 
 
 CATEGORY_ACCENTS = {

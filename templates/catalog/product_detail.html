@@ -112,7 +112,7 @@
     <div class="product-tabs__panels">
       <div class="product-tabs__panel product-tabs__prose" data-panel="desc">
         {% if product.description %}
-          {{ product.description|linebreaks }}
+          {{ product.description|product_richtext }}
         {% else %}
           <p class="product-tabs__empty">Опис уточнюється.</p>
         {% endif %}
