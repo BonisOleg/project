@@ -81,7 +81,7 @@ class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, TinyMCEAdminMixin,
         ('parent', UkRelatedDropdownFilter),
         CategoryHasCardImageFilter,
     ]
-    list_select_related = ('parent', 'parent__parent'),
+    list_select_related = ('parent', 'parent__parent')
     ordering = ('sort_order', 'name')
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name', 'slug')
