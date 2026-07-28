@@ -1,6 +1,5 @@
 from django import forms
 from django.contrib import admin
-from django.db import models
 from django.template.loader import render_to_string
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -33,24 +32,6 @@ _CATEGORY_IMAGE_HINT = (
 )
 
 
-class CategoryHasCardImageFilter(admin.SimpleListFilter):
-    title = 'Фото картки'
-    parameter_name = 'has_card_image'
-
-    def lookups(self, request, model_admin):
-        return (
-            ('1', 'Є фото'),
-            ('0', 'Лише іконка (без фото)'),
-        )
-
-    def queryset(self, request, queryset):
-        if self.value() == '1':
-            return queryset.exclude(image='').exclude(image__isnull=True)
-        if self.value() == '0':
-            return queryset.filter(models.Q(image='') | models.Q(image__isnull=True))
-        return queryset
-
-
 class ProductAttributeInline(TabularInline):
     model = ProductAttribute
     extra = 1
@@ -79,7 +60,6 @@ class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, TinyMCEAdminMixin,
     list_filter = [
         ('is_active', UkBooleanDropdownFilter),
         ('parent', UkRelatedDropdownFilter),
-        CategoryHasCardImageFilter,
     ]
     list_select_related = ('parent', 'parent__parent')
     ordering = ('sort_order', 'name')
