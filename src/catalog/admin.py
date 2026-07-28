@@ -81,7 +81,7 @@ class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, TinyMCEAdminMixin,
         ('parent', UkRelatedDropdownFilter),
         CategoryHasCardImageFilter,
     ]
-    list_select_related = ('parent',)
+    list_select_related = ('parent', 'parent__parent'),
     ordering = ('sort_order', 'name')
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name', 'slug')
@@ -92,9 +92,11 @@ class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, TinyMCEAdminMixin,
         )}),
         ('Фото категорії', {
             'description': (
-                'Фото на картці категорії на головній і в каталозі. '
+                'Фото на картці категорії на головній і в каталозі '
+                '(показуються кореневі категорії). '
                 'JPG, PNG або WebP. Рекомендований розмір: 800×600 пікселів (4:3). '
-                'Максимальний розмір файлу: 1 МБ. Без фото на сайті показується іконка.'
+                'Макс. 1 МБ. Без власного фото на сайті — іконка; у превʼю адмінки '
+                'підтягнеться фото батьківської, якщо воно є.'
             ),
             'fields': ('image', 'get_form_card_preview'),
         }),
@@ -130,7 +132,7 @@ class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, TinyMCEAdminMixin,
         )
 
     @staticmethod
-    def _has_card_image(obj) -> bool:
+    def _has_own_card_image(obj) -> bool:
         return bool(obj and obj.pk and getattr(obj.image, 'name', None))
 
     def _icon_fallback_html(self, obj):
@@ -146,14 +148,17 @@ class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, TinyMCEAdminMixin,
 
     @admin.display(description='Превʼю картки')
     def get_list_card_preview(self, obj):
-        """Список: фото якщо є, інакше компактна іконка (як на сайті)."""
+        """Список: власне фото → фото предка → іконка."""
         if not obj or not obj.pk:
             return '—'
-        if self._has_card_image(obj):
+        image = obj.resolved_card_image()
+        if image:
+            title = 'Фото картки' if self._has_own_card_image(obj) else 'Фото батьківської категорії'
             return format_html(
                 '<img src="{}" alt="" class="category-admin-photo-preview '
-                'category-admin-photo-preview--list" title="Фото картки">',
-                obj.image.url,
+                'category-admin-photo-preview--list" title="{}">',
+                image.url,
+                title,
             )
         return format_html(
             '<div class="category-admin-photo-wrap category-admin-photo-wrap--list">'
@@ -165,27 +170,40 @@ class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, TinyMCEAdminMixin,
 
     @admin.display(description='Превʼю на сайті')
     def get_form_card_preview(self, obj):
-        """Форма: реальне фото або іконка-фолбек — як на вітрині."""
+        """Форма: власне фото → фото предка → іконка-фолбек."""
         if not obj or not obj.pk:
             return format_html(
                 '<span class="product-image-upload-hint">'
                 'Збережіть категорію, щоб побачити превʼю.</span>',
             )
-        if self._has_card_image(obj):
+        image = obj.resolved_card_image()
+        if image and self._has_own_card_image(obj):
             return format_html(
                 '<div class="category-admin-photo-wrap">'
                 '<img src="{}" alt="" class="category-admin-photo-preview">'
                 '<span class="product-image-upload-hint">'
                 'Поточне фото картки на сайті. Можна замінити полем вище.'
                 '</span></div>',
-                obj.image.url,
+                image.url,
+            )
+        if image:
+            return format_html(
+                '<div class="category-admin-photo-wrap">'
+                '<img src="{}" alt="" class="category-admin-photo-preview">'
+                '<span class="product-image-upload-hint">'
+                'Власного фото немає — показано фото батьківської «{}». '
+                'На головній в ряду карток показуються лише корені з власним фото. '
+                'Завантажте фото вище, щоб задати окреме зображення для цієї категорії.'
+                '</span></div>',
+                image.url,
+                obj.parent.name if obj.parent_id else '',
             )
         return format_html(
             '<div class="category-admin-photo-wrap">'
             '{}'
             '<span class="product-image-upload-hint">'
-            'Фото немає — на сайті показується іконка (фолбек). '
-            'Завантажте фото вище, щоб замінити іконку на зображення.'
+            'Фото немає ні в цієї, ні в батьківських категорій — '
+            'на сайті показується іконка. Завантажте фото вище.'
             '</span></div>',
             self._icon_fallback_html(obj),
         )

@@ -84,6 +84,17 @@ class Category(models.Model):
             return color
         return DEFAULT_CATEGORY_COLOR
 
+    def resolved_card_image(self):
+        """Власне фото картки або перше фото предка (для превʼю в адмінці)."""
+        node = self
+        seen: set[int] = set()
+        while node is not None and node.pk not in seen:
+            seen.add(node.pk)
+            if getattr(node.image, 'name', None):
+                return node.image
+            node = node.parent
+        return None
+
 
 class Brand(models.Model):
     name = models.CharField('Назва', max_length=120)
