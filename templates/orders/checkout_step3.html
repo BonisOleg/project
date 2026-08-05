@@ -4,7 +4,7 @@
 {% block body_class %}page-checkout{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/checkout.css' %}?v=20260713b">
+<link rel="stylesheet" href="{% static 'css/pages/checkout.css' %}?v=20260805c">
 {% endblock %}
 
 {% block content %}
@@ -17,25 +17,36 @@
     <form class="checkout-form" method="post" novalidate
           data-delivery-form
           data-np-configured="{{ np_configured|yesno:'1,0' }}"
-          data-up-configured="{{ up_configured|yesno:'1,0' }}"
           data-np-cities-url="{{ np_cities_url }}"
-          data-np-warehouses-url="{{ np_warehouses_url }}"
-          data-up-cities-url="{{ up_cities_url }}"
-          data-up-postoffices-url="{{ up_postoffices_url }}">
+          data-np-warehouses-url="{{ np_warehouses_url }}">
       {% csrf_token %}
       {% if form.non_field_errors %}
       <div class="field__errors">{{ form.non_field_errors }}</div>
       {% endif %}
 
-      <fieldset class="field">
+      <fieldset class="field field--radios">
         <legend class="field__label">Служба доставки</legend>
-        {{ form.delivery_service }}
+        <div class="delivery-option" role="radiogroup" aria-label="Служба доставки">
+          {% for radio in form.delivery_service %}
+          <label class="delivery-option-label">
+            {{ radio.tag }}
+            <span class="delivery-option-label__text">{{ radio.choice_label }}</span>
+          </label>
+          {% endfor %}
+        </div>
         {% if form.delivery_service.errors %}<div class="field__errors">{{ form.delivery_service.errors }}</div>{% endif %}
       </fieldset>
 
-      <div class="field" data-delivery-block="np">
-        <span class="field__label">Тип доставки НП</span>
-        {{ form.delivery_type }}
+      <div class="field field--radios" data-delivery-block="np">
+        <span class="field__label" id="np-type-label">Тип доставки Нової Пошти</span>
+        <div class="delivery-option" role="radiogroup" aria-labelledby="np-type-label">
+          {% for radio in form.delivery_type %}
+          <label class="delivery-option-label">
+            {{ radio.tag }}
+            <span class="delivery-option-label__text">{{ radio.choice_label }}</span>
+          </label>
+          {% endfor %}
+        </div>
         {% if form.delivery_type.errors %}<div class="field__errors">{{ form.delivery_type.errors }}</div>{% endif %}
       </div>
 
@@ -48,13 +59,10 @@
                  placeholder="Почніть вводити місто..."
                  data-city-input>
           <input type="hidden" name="city_ref" id="id_city_ref" value="" data-city-ref>
-          <input type="hidden" name="up_region_id" id="id_up_region_id" value="" data-up-region>
-          <input type="hidden" name="up_district_id" id="id_up_district_id" value="" data-up-district>
           <ul class="searchable-select__list" data-city-list hidden></ul>
         </div>
         {% if form.delivery_city.errors %}<div class="field__errors">{{ form.delivery_city.errors }}</div>{% endif %}
         <p class="checkout-note" data-np-fallback-note hidden>API Нової Пошти не налаштовано — введіть місто вручну.</p>
-        <p class="checkout-note" data-up-fallback-note hidden>API Укрпошти не налаштовано — введіть місто та відділення вручну.</p>
       </div>
 
       <div class="field searchable-field" data-address-field>
@@ -80,5 +88,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script type="module" src="{% static 'js/modules/checkout_delivery.js' %}?v=20260713b"></script>
+<script type="module" src="{% static 'js/modules/checkout_delivery.js' %}?v=20260805c"></script>
 {% endblock %}

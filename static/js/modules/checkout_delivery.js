@@ -12,23 +12,17 @@ function initCheckoutDelivery() {
   form.dataset.bound = '1';
 
   const npConfigured = form.dataset.npConfigured === '1';
-  const upConfigured = form.dataset.upConfigured === '1';
   const npCitiesUrl = form.dataset.npCitiesUrl;
   const npWarehousesUrl = form.dataset.npWarehousesUrl;
-  const upCitiesUrl = form.dataset.upCitiesUrl;
-  const upPostofficesUrl = form.dataset.upPostofficesUrl;
 
   const cityInput = form.querySelector('[data-city-input]');
   const cityRefInput = form.querySelector('[data-city-ref]');
-  const upRegionInput = form.querySelector('[data-up-region]');
-  const upDistrictInput = form.querySelector('[data-up-district]');
   const cityList = form.querySelector('[data-city-list]');
   const addressInput = form.querySelector('[data-address-input]');
   const addressList = form.querySelector('[data-address-list]');
   const addressLabel = form.querySelector('[data-address-label]');
   const npBlock = form.querySelector('[data-delivery-block="np"]');
   const npNote = form.querySelector('[data-np-fallback-note]');
-  const upNote = form.querySelector('[data-up-fallback-note]');
 
   function selectedService() {
     const checked = form.querySelector('input[name="delivery_service"]:checked');
@@ -42,32 +36,33 @@ function initCheckoutDelivery() {
 
   function clearCityMeta() {
     if (cityRefInput) cityRefInput.value = '';
-    if (upRegionInput) upRegionInput.value = '';
-    if (upDistrictInput) upDistrictInput.value = '';
   }
 
   function syncServiceUi() {
     const service = selectedService();
     const isNp = service === 'nova_poshta';
-    const isUp = service === 'ukrposhta';
+    const isCourier = service === 'courier_delivery';
+
     if (npBlock) npBlock.hidden = !isNp;
     if (npNote) npNote.hidden = !(isNp && !npConfigured);
-    if (upNote) upNote.hidden = !(isUp && !upConfigured);
 
-    if (addressLabel) {
-      if (isUp) {
-        addressLabel.textContent = 'Відділення Укрпошти';
-        addressInput.placeholder = 'Оберіть відділення зі списку';
-      } else if (selectedNpType() === 'courier') {
-        addressLabel.textContent = 'Адреса доставки';
-        addressInput.placeholder = 'Вулиця, будинок, квартира';
-      } else if (selectedNpType() === 'postomat') {
-        addressLabel.textContent = 'Поштомат';
-        addressInput.placeholder = 'Оберіть поштомат зі списку';
-      } else {
-        addressLabel.textContent = 'Відділення Нової Пошти';
-        addressInput.placeholder = 'Оберіть відділення зі списку';
-      }
+    if (!addressLabel || !addressInput) return;
+
+    if (isCourier) {
+      addressLabel.textContent = 'Адреса доставки';
+      addressInput.placeholder = 'Вулиця, будинок, квартира';
+      return;
+    }
+
+    if (selectedNpType() === 'courier') {
+      addressLabel.textContent = 'Адреса доставки';
+      addressInput.placeholder = 'Вулиця, будинок, квартира';
+    } else if (selectedNpType() === 'postomat') {
+      addressLabel.textContent = 'Поштомат';
+      addressInput.placeholder = 'Оберіть поштомат зі списку';
+    } else {
+      addressLabel.textContent = 'Відділення Нової Пошти';
+      addressInput.placeholder = 'Оберіть відділення зі списку';
     }
   }
 
@@ -111,17 +106,15 @@ function initCheckoutDelivery() {
   }
 
   function canSearchBranches() {
-    const service = selectedService();
-    if (service === 'ukrposhta') return upConfigured;
-    if (service === 'nova_poshta') {
-      return npConfigured && selectedNpType() !== 'courier';
-    }
-    return false;
+    return (
+      selectedService() === 'nova_poshta'
+      && npConfigured
+      && selectedNpType() !== 'courier'
+    );
   }
 
   const searchCities = debounce(async () => {
     const q = cityInput.value.trim();
-    const service = selectedService();
     hideList(addressList);
 
     if (q.length < 2) {
@@ -129,41 +122,11 @@ function initCheckoutDelivery() {
       return;
     }
 
-    if (service === 'ukrposhta') {
-      if (!upConfigured) {
-        hideList(cityList);
-        return;
-      }
-      try {
-        const data = await fetchJson(`${upCitiesUrl}?q=${encodeURIComponent(q)}`);
-        showOptions(
-          cityList,
-          (data.results || []).map((row) => ({
-            label: row.area ? `${row.name} (${row.area})` : row.name,
-            name: row.name,
-            ref: row.ref,
-            regionId: row.region_id || '',
-            districtId: row.district_id || '',
-          })),
-          (item) => {
-            cityInput.value = item.name;
-            if (cityRefInput) cityRefInput.value = item.ref || '';
-            if (upRegionInput) upRegionInput.value = item.regionId || '';
-            if (upDistrictInput) upDistrictInput.value = item.districtId || '';
-            addressInput.value = '';
-            searchBranches();
-          },
-        );
-      } catch {
-        hideList(cityList);
-      }
-      return;
-    }
-
-    if (!npConfigured) {
+    if (selectedService() !== 'nova_poshta' || !npConfigured) {
       hideList(cityList);
       return;
     }
+
     try {
       const data = await fetchJson(`${npCitiesUrl}?q=${encodeURIComponent(q)}`);
       showOptions(
@@ -176,10 +139,8 @@ function initCheckoutDelivery() {
         (item) => {
           cityInput.value = item.name;
           if (cityRefInput) cityRefInput.value = item.ref || '';
-          if (upRegionInput) upRegionInput.value = '';
-          if (upDistrictInput) upDistrictInput.value = '';
-          addressInput.value = '';
-          searchBranches();
+          hideList(cityList);
+          if (canSearchBranches()) searchBranches();
         },
       );
     } catch {
@@ -198,17 +159,9 @@ function initCheckoutDelivery() {
       return;
     }
     const q = addressInput.value.trim();
-    const service = selectedService();
     try {
-      let url;
-      if (service === 'ukrposhta') {
-        const region = upRegionInput?.value || '';
-        const district = upDistrictInput?.value || '';
-        url = `${upPostofficesUrl}?city_ref=${encodeURIComponent(cityRef)}&q=${encodeURIComponent(q)}&region_id=${encodeURIComponent(region)}&district_id=${encodeURIComponent(district)}`;
-      } else {
-        const npType = selectedNpType();
-        url = `${npWarehousesUrl}?city_ref=${encodeURIComponent(cityRef)}&type=${encodeURIComponent(npType)}&q=${encodeURIComponent(q)}`;
-      }
+      const npType = selectedNpType();
+      const url = `${npWarehousesUrl}?city_ref=${encodeURIComponent(cityRef)}&type=${encodeURIComponent(npType)}&q=${encodeURIComponent(q)}`;
       const data = await fetchJson(url);
       showOptions(
         addressList,

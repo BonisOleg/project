@@ -17,7 +17,13 @@ class CheckoutStep2Form(forms.ModelForm):
             'phone': forms.TelInput(attrs={'class': 'field__input', 'autocomplete': 'tel'}),
             'email': forms.EmailInput(attrs={'class': 'field__input', 'autocomplete': 'email'}),
             'comment': forms.Textarea(attrs={'class': 'field__input', 'rows': 3}),
-            'create_account': forms.CheckboxInput(attrs={'class': 'field__checkbox'}),
+            'create_account': forms.CheckboxInput(attrs={
+                'class': 'field__checkbox',
+                'id': 'id_create_account',
+            }),
+        }
+        labels = {
+            'create_account': 'Створити акаунт для швидших покупок',
         }
 
 
@@ -28,19 +34,23 @@ class CheckoutStep3Form(forms.ModelForm):
             'delivery_service', 'delivery_city', 'delivery_type', 'delivery_address',
         ]
         widgets = {
-            'delivery_service': forms.RadioSelect(attrs={'class': 'delivery-option'}),
+            'delivery_service': forms.RadioSelect(attrs={'class': 'delivery-option__input'}),
             'delivery_city': forms.TextInput(attrs={
                 'class': 'field__input',
                 'autocomplete': 'off',
                 'id': 'id_delivery_city',
             }),
-            'delivery_type': forms.RadioSelect(attrs={'class': 'delivery-option'}),
+            'delivery_type': forms.RadioSelect(attrs={'class': 'delivery-option__input'}),
             'delivery_address': forms.TextInput(attrs={
                 'class': 'field__input',
                 'autocomplete': 'off',
                 'id': 'id_delivery_address',
             }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['delivery_service'].choices = Order.DELIVERY_CHOICES_CHECKOUT
 
     def clean(self):
         cleaned = super().clean()
@@ -59,6 +69,10 @@ class CheckoutStep3Form(forms.ModelForm):
                 self.add_error('delivery_type', 'Оберіть тип доставки')
             elif delivery_type == Order.NP_COURIER and len(address) < 5:
                 self.add_error('delivery_address', 'Вкажіть повну адресу для курʼєра')
+        elif service == Order.DELIVERY_COURIER:
+            cleaned['delivery_type'] = ''
+            if len(address) < 5:
+                self.add_error('delivery_address', 'Вкажіть повну адресу для курʼєра')
         elif service == Order.DELIVERY_UP:
             cleaned['delivery_type'] = ''
 
@@ -72,7 +86,7 @@ class CheckoutPaymentForm(forms.ModelForm):
         model = Order
         fields = ['payment_method']
         widgets = {
-            'payment_method': forms.RadioSelect(attrs={'class': 'delivery-option'}),
+            'payment_method': forms.RadioSelect(attrs={'class': 'delivery-option__input'}),
         }
 
     def clean_payment_method(self):

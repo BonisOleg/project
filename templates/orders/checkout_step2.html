@@ -4,7 +4,7 @@
 {% block body_class %}page-checkout{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/checkout.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/checkout.css' %}?v=20260805c">
 {% endblock %}
 
 {% block content %}
@@ -17,11 +17,19 @@
     <form class="checkout-form" method="post" novalidate>
       {% csrf_token %}
       {% for field in form %}
+      {% if field.name == 'create_account' %}
+      <div class="field field--checkbox">
+        {{ field }}
+        <label class="field__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {% if field.errors %}<div class="field__error">{{ field.errors.0 }}</div>{% endif %}
+      </div>
+      {% else %}
       <div class="field">
         <label class="field__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
         {{ field }}
         {% if field.errors %}<div class="field__error">{{ field.errors.0 }}</div>{% endif %}
       </div>
+      {% endif %}
       {% endfor %}
       <div class="checkout-actions">
         <a href="{% url 'orders:checkout_step' step=1 %}" class="btn btn--secondary">Назад</a>

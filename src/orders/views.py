@@ -185,6 +185,8 @@ def checkout(request, step=1):
 
     if step == 2:
         form = CheckoutStep2Form(request.POST or None, instance=order)
+        if request.user.is_authenticated:
+            form.fields.pop('create_account', None)
         if request.method == 'POST' and form.is_valid():
             form.save()
             return redirect('orders:checkout_step', step=3)
@@ -200,17 +202,13 @@ def checkout(request, step=1):
             form.save()
             return redirect('orders:checkout_step', step=4)
         np_svc = NovaPoshtaService()
-        up_svc = UkrposhtaService()
         return render(request, 'orders/checkout_step3.html', {
             'form': form, 'order': order, 'step': step,
             'page_title': 'Оформлення — доставка',
             'breadcrumbs': _checkout_crumbs(step),
             'np_configured': np_svc.configured,
-            'up_configured': up_svc.configured,
             'np_cities_url': reverse('orders:np_cities'),
             'np_warehouses_url': reverse('orders:np_warehouses'),
-            'up_cities_url': reverse('orders:up_cities'),
-            'up_postoffices_url': reverse('orders:up_postoffices'),
         })
 
     liqpay = LiqPayService()

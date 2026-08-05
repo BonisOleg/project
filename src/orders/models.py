@@ -33,10 +33,16 @@ class Order(models.Model):
     ]
 
     DELIVERY_NP = 'nova_poshta'
-    DELIVERY_UP = 'ukrposhta'
+    DELIVERY_COURIER = 'courier_delivery'
+    DELIVERY_UP = 'ukrposhta'  # legacy (старі замовлення)
     DELIVERY_CHOICES = [
         (DELIVERY_NP, 'Нова Пошта'),
+        (DELIVERY_COURIER, 'Курʼєрська доставка'),
         (DELIVERY_UP, 'Укрпошта'),
+    ]
+    DELIVERY_CHOICES_CHECKOUT = [
+        (DELIVERY_NP, 'Нова Пошта'),
+        (DELIVERY_COURIER, 'Курʼєрська доставка'),
     ]
 
     NP_WAREHOUSE = 'warehouse'
@@ -80,7 +86,10 @@ class Order(models.Model):
     liqpay_transaction_id = models.CharField('LiqPay transaction', max_length=64, blank=True)
     tracking_number = models.CharField('ТТН', max_length=64, blank=True)
     idempotency_key = models.CharField(max_length=64, unique=True, editable=False)
-    create_account = models.BooleanField('Створити акаунт', default=False)
+    create_account = models.BooleanField(
+        'Створити акаунт для швидших покупок',
+        default=False,
+    )
     created_at = models.DateTimeField('Створено', auto_now_add=True)
     updated_at = models.DateTimeField('Оновлено', auto_now=True)
 

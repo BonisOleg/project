@@ -435,14 +435,14 @@
   border-bottom: 1px solid var(--c-border);
 }
 
-.catalog-dropdown { position: relative; }
+.catalog-dropdown { position: static; }
 
 .catalog-dropdown__menu {
   position: absolute;
   top: 100%;
-  left: 50%;
-  transform: translateX(-50%) translateY(8px);
-  min-width: 720px;
+  left: 0;
+  width: 100%;
+  transform: translateY(8px);
   padding: var(--sp-5);
   background: var(--c-surface);
   border: 1px solid var(--c-border);
@@ -451,12 +451,8 @@
   opacity: 0;
   visibility: hidden;
   transition: opacity var(--t-fast), transform var(--t-fast), visibility var(--t-fast);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--sp-4);
-  /* Обовʼязково: абсолютний прихований блок додає скрол сторінці,
-     а дерево категорій — понад 1700px заввишки. */
-  max-height: min(70vh, 34rem);
+  display: block;
+  max-height: calc(100dvh - var(--header-h) - var(--sp-6));
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -466,13 +462,23 @@
 .catalog-dropdown:focus-within .catalog-dropdown__menu {
   opacity: 1;
   visibility: visible;
-  transform: translateX(-50%) translateY(0);
+  transform: translateY(0);
+}
+
+.catalog-dropdown__col + .catalog-dropdown__col {
+  margin-top: var(--sp-5);
 }
 
 .catalog-dropdown__title {
   font-weight: 600;
-  margin-bottom: var(--sp-2);
+  margin-bottom: var(--sp-3);
   color: var(--c-brand-dark);
+}
+
+.catalog-dropdown__sub {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-3) var(--sp-5);
 }
 
 .catalog-dropdown__sub a {
@@ -496,6 +502,12 @@
 .catalog-dropdown__nested a {
   font-size: 0.8125rem;
   color: var(--c-text-secondary);
+}
+
+@media (min-width: 1440px) {
+  .catalog-dropdown__sub {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
 }
 
 .search-suggest {

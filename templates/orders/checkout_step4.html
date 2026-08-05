@@ -4,7 +4,7 @@
 {% block body_class %}page-checkout{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/checkout.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/checkout.css' %}?v=20260805c">
 {% endblock %}
 
 {% block content %}
@@ -38,7 +38,7 @@
         {% for radio in form.payment_method %}
         <label class="delivery-option-label">
           {{ radio.tag }}
-          <span>{{ radio.choice_label }}</span>
+          <span class="delivery-option-label__text">{{ radio.choice_label }}</span>
         </label>
         {% endfor %}
         {% if form.payment_method.errors %}

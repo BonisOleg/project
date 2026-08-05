@@ -837,6 +837,10 @@ body.catalog-filter-open {
   margin-bottom: var(--sp-3);
 }
 
+.catalog-filter-form--sidebar [data-filter-submit] {
+  margin-top: var(--sp-5);
+}
+
 .filter-price-slider__track {
   position: relative;
   height: 1.75rem;
