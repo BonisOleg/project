@@ -7,6 +7,7 @@ from .models import SiteBlock, SiteSettings, SocialLink
 
 SITE_BLOCKS_CACHE_KEY = 'oyra_site_blocks_v1'
 SITE_BLOCKS_CACHE_TTL = 60
+HIDDEN_CATALOG_MENU_NAMES = ('Трактори', 'Обладнання СТО')
 
 
 def _load_site_blocks() -> dict[str, SiteBlock]:
@@ -23,14 +24,13 @@ def site_context(request):
     settings_obj = SiteSettings.get_solo()
     social_links = list(SocialLink.objects.filter(is_active=True))
     youtube_link = next((item for item in social_links if item.network == 'youtube' and item.url), None)
-    child_qs = Category.objects.filter(is_active=True).order_by('sort_order').prefetch_related(
-        Prefetch(
-            'children',
-            queryset=Category.objects.filter(is_active=True).order_by('sort_order'),
-        ),
-    )
+    child_qs = Category.objects.filter(is_active=True).exclude(
+        name__in=HIDDEN_CATALOG_MENU_NAMES,
+    ).order_by('sort_order')
     categories_menu = Category.objects.filter(
         parent=None, is_active=True,
+    ).exclude(
+        name__in=HIDDEN_CATALOG_MENU_NAMES,
     ).prefetch_related(
         Prefetch('children', queryset=child_qs),
     ).order_by('sort_order')

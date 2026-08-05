@@ -34,24 +34,24 @@
         <div class="catalog-dropdown__menu" role="menu">
           {% for cat in categories_menu %}
           <div class="catalog-dropdown__col">
-            <div class="catalog-dropdown__title"><a href="{{ cat.get_absolute_url }}">{{ cat.name }}</a></div>
-            <div class="catalog-dropdown__sub">
-              {% for sub in cat.children.all %}
-              <div class="catalog-dropdown__item">
-                <a href="{{ sub.get_absolute_url }}">{{ sub.name }}</a>
-                {% if sub.children.all %}
-                <div class="catalog-dropdown__nested">
-                  {% for leaf in sub.children.all %}
-                  <a href="{{ leaf.get_absolute_url }}">{{ leaf.name }}</a>
-                  {% endfor %}
-                </div>
-                {% endif %}
-              </div>
-              {% endfor %}
+            <div class="catalog-dropdown__title">
+              <a href="{{ cat.get_absolute_url }}" role="menuitem">{{ cat.name }}</a>
             </div>
+            {% with children=cat.children.all %}
+            {% if children %}
+            <div class="catalog-dropdown__sub">
+              {% for sub in children|slice:":4" %}
+              <a href="{{ sub.get_absolute_url }}" role="menuitem">{{ sub.name }}</a>
+              {% endfor %}
+              {% if children|length > 4 %}
+              <a class="catalog-dropdown__all" href="{{ cat.get_absolute_url }}" role="menuitem">Показати все</a>
+              {% endif %}
+            </div>
+            {% endif %}
+            {% endwith %}
           </div>
           {% empty %}
-          <a href="{% url 'catalog:list' %}">Усі товари</a>
+          <a href="{% url 'catalog:list' %}" role="menuitem">Усі товари</a>
           {% endfor %}
         </div>
       </div>
