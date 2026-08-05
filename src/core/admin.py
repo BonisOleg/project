@@ -15,6 +15,19 @@ class SiteSettingsAdmin(ReadableUnfoldFieldsMixin, SingletonModelAdminMixin, Mod
     fieldsets = (
         ('Основне', {'fields': ('site_name', 'phone', 'email', 'address', 'work_hours')}),
         ('Маркетинг', {'fields': ('newsletter_discount', 'free_delivery_from', 'meta_description')}),
+        ('Сповіщення про замовлення', {
+            'description': (
+                'Глобальні контакти для дублюючих сповіщень про нові замовлення. '
+                'Також можна увімкнути сповіщення окремому адміну в картці користувача.'
+            ),
+            'fields': ('notify_emails', 'notify_phones'),
+        }),
+        ('Реквізити (безготівковий розрахунок)', {
+            'fields': (
+                'bank_recipient', 'bank_iban', 'bank_edrpou',
+                'bank_name', 'bank_details_note',
+            ),
+        }),
     )
 
 

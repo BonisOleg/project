@@ -258,7 +258,19 @@
   }
 
   .newsletter {
-    display: none;
+    display: grid;
+    gap: var(--sp-3);
+    margin-top: var(--sp-5);
+    padding: var(--sp-4);
+  }
+
+  .newsletter__form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .newsletter__form .btn {
+    width: 100%;
   }
 
   .site-footer__bottom {

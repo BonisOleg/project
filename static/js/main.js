@@ -9,6 +9,7 @@ import { initHomeTabs } from './modules/home_tabs.js';
 import { initProductScroll } from './modules/product_scroll.js';
 import { initCategoryScroll } from './modules/category_scroll.js';
 import { initToasts } from './modules/toast.js';
+import { initPasswordToggle } from './modules/password_toggle.js';
 
 function onReady(callback) {
   if (document.readyState === 'loading') {
@@ -30,6 +31,7 @@ onReady(() => {
   initProductScroll();
   initCategoryScroll();
   initToasts();
+  initPasswordToggle();
 });
 
 document.body.addEventListener('htmx:configRequest', (event) => {

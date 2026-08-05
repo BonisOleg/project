@@ -118,6 +118,48 @@ export function initCatalogFilters(root = document) {
   }
 
   bindToolbarNav(root);
+  bindPriceSliders(root);
+}
+
+function bindPriceSliders(root = document) {
+  root.querySelectorAll('[data-price-slider]').forEach((wrap) => {
+    if (wrap.dataset.bound === '1') return;
+    wrap.dataset.bound = '1';
+    const form = wrap.closest('form');
+    if (!form) return;
+    const minRange = wrap.querySelector('[data-price-range="min"]');
+    const maxRange = wrap.querySelector('[data-price-range="max"]');
+    const minInput = form.querySelector('[data-price-input="min"]');
+    const maxInput = form.querySelector('[data-price-input="max"]');
+    if (!minRange || !maxRange || !minInput || !maxInput) return;
+
+    function syncFromRange() {
+      let minVal = Number(minRange.value);
+      let maxVal = Number(maxRange.value);
+      if (minVal > maxVal) {
+        if (document.activeElement === minRange) maxVal = minVal;
+        else minVal = maxVal;
+        minRange.value = String(minVal);
+        maxRange.value = String(maxVal);
+      }
+      minInput.value = String(minVal);
+      maxInput.value = String(maxVal);
+      minInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function syncFromInputs() {
+      let minVal = Number(minInput.value || minRange.min);
+      let maxVal = Number(maxInput.value || maxRange.max);
+      if (minVal > maxVal) maxVal = minVal;
+      minRange.value = String(minVal);
+      maxRange.value = String(maxVal);
+    }
+
+    minRange.addEventListener('input', syncFromRange);
+    maxRange.addEventListener('input', syncFromRange);
+    minInput.addEventListener('change', syncFromInputs);
+    maxInput.addEventListener('change', syncFromInputs);
+  });
 }
 
 function bindToolbarNav(root = document) {

@@ -31,12 +31,89 @@
       </div>
     </div>
 
-    <form method="POST" action="{{ liqpay.checkout_url }}">
+    <form method="post" class="checkout-payment" novalidate>
+      {% csrf_token %}
+      <fieldset class="checkout-payment__methods">
+        <legend class="checkout-payment__legend">Спосіб оплати</legend>
+        {% for radio in form.payment_method %}
+        <label class="delivery-option-label">
+          {{ radio.tag }}
+          <span>{{ radio.choice_label }}</span>
+        </label>
+        {% endfor %}
+        {% if form.payment_method.errors %}
+        <p class="field__error">{{ form.payment_method.errors|striptags }}</p>
+        {% endif %}
+      </fieldset>
+
+      <div class="checkout-payment__bank" id="bank-details" hidden>
+        <h2 class="checkout-payment__bank-title">Реквізити для оплати</h2>
+        {% if site_settings.bank_recipient %}
+        <p><strong>Отримувач:</strong> {{ site_settings.bank_recipient }}</p>
+        {% endif %}
+        {% if site_settings.bank_iban %}
+        <p><strong>IBAN:</strong> {{ site_settings.bank_iban }}</p>
+        {% endif %}
+        {% if site_settings.bank_edrpou %}
+        <p><strong>ЄДРПОУ/ІПН:</strong> {{ site_settings.bank_edrpou }}</p>
+        {% endif %}
+        {% if site_settings.bank_name %}
+        <p><strong>Банк:</strong> {{ site_settings.bank_name }}</p>
+        {% endif %}
+        {% if site_settings.bank_details_note %}
+        <p class="checkout-note">{{ site_settings.bank_details_note }}</p>
+        {% endif %}
+        <p class="checkout-note">У призначенні платежу вкажіть номер замовлення {{ order.order_number }}.</p>
+      </div>
+
+      <div class="checkout-actions">
+        <a href="{% url 'orders:checkout_step' step=3 %}" class="btn btn--ghost">Назад</a>
+        <button type="submit" class="btn btn--primary" name="confirm_payment" value="1">Підтвердити</button>
+      </div>
+    </form>
+
+    {% if show_liqpay and liqpay %}
+    <form method="POST" action="{{ liqpay.checkout_url }}" class="checkout-liqpay">
       <input type="hidden" name="data" value="{{ liqpay.data }}">
       <input type="hidden" name="signature" value="{{ liqpay.signature }}">
       <button type="submit" class="btn btn--primary btn--block">Оплатити через LiqPay</button>
     </form>
     <p class="checkout-note">Visa, Mastercard, Apple Pay, Google Pay</p>
+    {% endif %}
   </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var form = document.querySelector('.checkout-payment');
+  if (!form) return;
+  var bank = document.getElementById('bank-details');
+  var liqpayForm = document.querySelector('.checkout-liqpay');
+
+  function sync() {
+    var checked = form.querySelector('input[name="payment_method"]:checked');
+    var value = checked ? checked.value : '';
+    if (bank) bank.hidden = value !== 'bank_transfer';
+  }
+
+  form.addEventListener('change', sync);
+  sync();
+
+  form.addEventListener('submit', function (e) {
+    var checked = form.querySelector('input[name="payment_method"]:checked');
+    if (checked && checked.value === 'liqpay') {
+      e.preventDefault();
+      var input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'proceed_liqpay';
+      input.value = '1';
+      form.appendChild(input);
+      // Зберігаємо метод через POST, далі рендер із кнопкою LiqPay
+      HTMLFormElement.prototype.submit.call(form);
+    }
+  });
+})();
+</script>
 {% endblock %}

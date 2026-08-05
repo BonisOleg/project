@@ -344,3 +344,41 @@
     min-height: 44px;
   }
 }
+
+.field--password .field__password-wrap {
+  position: relative;
+  display: block;
+}
+
+.field--password .field__input {
+  padding-right: 2.75rem;
+  width: 100%;
+}
+
+.field__password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.35rem;
+  transform: translateY(-50%);
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--c-text-secondary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.field__password-toggle:hover,
+.field__password-toggle:focus-visible {
+  color: var(--c-brand);
+}
+
+.field__hint {
+  margin-top: 0.4rem;
+  font-size: var(--fs-xs);
+  color: var(--c-text-secondary);
+  line-height: 1.4;
+}

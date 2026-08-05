@@ -65,3 +65,18 @@ class CheckoutStep3Form(forms.ModelForm):
         cleaned['delivery_city'] = city
         cleaned['delivery_address'] = address
         return cleaned
+
+
+class CheckoutPaymentForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['payment_method']
+        widgets = {
+            'payment_method': forms.RadioSelect(attrs={'class': 'delivery-option'}),
+        }
+
+    def clean_payment_method(self):
+        method = self.cleaned_data.get('payment_method')
+        if method not in dict(Order.PAYMENT_CHOICES):
+            raise forms.ValidationError('Оберіть спосіб оплати')
+        return method

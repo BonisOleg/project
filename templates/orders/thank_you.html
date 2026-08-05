@@ -32,6 +32,10 @@
       <p class="thank-you__lead">
         {% if order.status == 'paid' %}
           Ваше замовлення прийнято. Підтвердження надіслано на {{ order.email }}.
+        {% elif order.payment_method == 'cod' %}
+          Замовлення прийнято. Оплата при отриманні (накладений платіж).
+        {% elif order.payment_method == 'bank_transfer' %}
+          Замовлення очікує оплату на рахунок. Реквізити нижче.
         {% else %}
           Замовлення збережено. Завершіть оплату, щоб ми могли його обробити.
         {% endif %}
@@ -79,6 +83,36 @@
           <span class="thank-you__value">{{ order.delivery_address }}</span>
         </div>
       </div>
+    </section>
+
+    <section class="thank-you__section" aria-labelledby="thank-you-payment-title">
+      <h2 class="thank-you__section-title" id="thank-you-payment-title">Оплата</h2>
+      <div class="thank-you__delivery">
+        <div class="thank-you__row">
+          <span class="thank-you__label">Спосіб</span>
+          <span class="thank-you__value">{{ order.get_payment_method_display }}</span>
+        </div>
+      </div>
+      {% if order.payment_method == 'bank_transfer' %}
+      <div class="thank-you__delivery" style="margin-top:1rem">
+        {% if site_settings.bank_recipient %}
+        <div class="thank-you__row"><span class="thank-you__label">Отримувач</span><span class="thank-you__value">{{ site_settings.bank_recipient }}</span></div>
+        {% endif %}
+        {% if site_settings.bank_iban %}
+        <div class="thank-you__row"><span class="thank-you__label">IBAN</span><span class="thank-you__value">{{ site_settings.bank_iban }}</span></div>
+        {% endif %}
+        {% if site_settings.bank_edrpou %}
+        <div class="thank-you__row"><span class="thank-you__label">ЄДРПОУ</span><span class="thank-you__value">{{ site_settings.bank_edrpou }}</span></div>
+        {% endif %}
+        {% if site_settings.bank_name %}
+        <div class="thank-you__row"><span class="thank-you__label">Банк</span><span class="thank-you__value">{{ site_settings.bank_name }}</span></div>
+        {% endif %}
+        {% if site_settings.bank_details_note %}
+        <p class="checkout-note">{{ site_settings.bank_details_note }}</p>
+        {% endif %}
+        <p class="checkout-note">Призначення платежу: замовлення {{ order.order_number }}</p>
+      </div>
+      {% endif %}
     </section>
 
     <section class="thank-you__section" aria-labelledby="thank-you-summary-title">

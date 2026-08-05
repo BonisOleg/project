@@ -30,6 +30,7 @@
         {% if field.field.widget.input_type == 'checkbox' %}
         <label class="field__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
         {% endif %}
+        {% if field.help_text %}<p class="field__hint">{{ field.help_text }}</p>{% endif %}
         {% if field.errors %}<div class="field__error">{{ field.errors.0 }}</div>{% endif %}
       </div>
       {% endfor %}

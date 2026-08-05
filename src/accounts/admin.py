@@ -24,11 +24,21 @@ class UserAdmin(DropdownFiltersMixin, DjangoUserAdmin, ModelAdmin):
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Персональні', {'fields': ('first_name', 'last_name', 'phone', 'bonus_points')}),
+        ('Сповіщення про замовлення', {
+            'description': 'Працює лише для staff/адмінів.',
+            'fields': ('notify_email', 'notify_messenger'),
+        }),
         ('Права', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Дати', {'fields': ('last_login', 'date_joined')}),
     )
     add_fieldsets = (
-        (None, {'classes': ('wide',), 'fields': ('email', 'password1', 'password2')}),
+        (None, {
+            'classes': ('wide',),
+            'fields': (
+                'email', 'password1', 'password2',
+                'notify_email', 'notify_messenger',
+            ),
+        }),
     )
     filter_horizontal = ('groups', 'user_permissions')
 

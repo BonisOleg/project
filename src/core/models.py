@@ -16,6 +16,29 @@ class SiteSettings(models.Model):
     )
     meta_description = models.TextField('Meta description головної', blank=True)
 
+    # Сповіщення про нові замовлення (дублікати на глобальні контакти)
+    notify_emails = models.TextField(
+        'Email для сповіщень про замовлення',
+        blank=True,
+        help_text='Одна або кілька адрес через кому чи з нового рядка.',
+    )
+    notify_phones = models.TextField(
+        'Телефони для Viber/SMS (TurboSMS)',
+        blank=True,
+        help_text='Номери для дублюючих сповіщень. Через кому або з нового рядка.',
+    )
+
+    # Реквізити для безготівкового розрахунку
+    bank_recipient = models.CharField('Отримувач (ФОП/ТОВ)', max_length=255, blank=True)
+    bank_iban = models.CharField('IBAN', max_length=34, blank=True)
+    bank_edrpou = models.CharField('ЄДРПОУ / ІПН', max_length=20, blank=True)
+    bank_name = models.CharField('Банк', max_length=255, blank=True)
+    bank_details_note = models.TextField(
+        'Додаткова інструкція до оплати',
+        blank=True,
+        help_text='Текст, який побачить клієнт при виборі безготівкового розрахунку.',
+    )
+
     class Meta:
         verbose_name = 'Налаштування сайту'
         verbose_name_plural = 'Налаштування сайту'

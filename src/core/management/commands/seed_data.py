@@ -21,34 +21,17 @@ from src.reviews.models import Review
 
 
 CATEGORIES = [
+    # Канонічне дерево підтягується з YML Siker (sync_siker_categories / import_siker_yml).
+    # Seed лишає мінімальний каркас для порожньої БД без імпорту.
     ('dim-i-sad', 'Дім і сад', [
         ('skladni-mebli', 'Складні меблі'),
         ('sadovi-goydalky', 'Садові гойдалки'),
         ('paviljony', 'Садові павільйони, альтанки'),
         ('vulychni-mebli', 'Вуличні меблі'),
     ]),
-    ('valizy', 'Дорожні валізи', [
-        ('komplekty', 'Комплекти валіз'),
-        ('tkanynni', 'Тканинні валізи'),
+    ('valizy', 'Дорожні сумки та валізи', [
         ('plastikovi', 'Пластикові валізи'),
-    ]),
-    ('krisla', 'Крісла', [
-        ('ofisni', 'Офісні крісла'),
-        ('barni', 'Барні стільці'),
-        ('gejmerski', 'Геймерські крісла'),
-        ('kuxonni', 'Стільці для кухні'),
-    ]),
-    ('budivnytstvo', 'Будівництво і ремонт', [
-        ('stellazhi', 'Металеві стелажі'),
-        ('vizky', 'Складські візки'),
-        ('plitka', 'Плитка керамогранітна'),
-        ('vantazhne', 'Вантажне обладнання'),
-    ]),
-    ('dytiachi', 'Дитячі товари', [
-        ('elektromobili', 'Дитячі електромобілі'),
-        ('igrovi', 'Ігрові комплекси та гойдалки'),
-        ('kvadro', 'Дитячі електроквадроцикли'),
-        ('motocikly', 'Дитячі електромотоцикли'),
+        ('tkanynni', 'Тканинні валізи'),
     ]),
     ('sport', 'Спорт і відпочинок', [
         ('batuty', 'Батути'),
@@ -56,15 +39,9 @@ CATEGORIES = [
         ('sup', 'Sup-дошки'),
         ('trenazhery', 'Велотренажери та орбітреки'),
     ]),
-    ('traktory', 'Трактори', [('kolisni', 'Трактори колісні')]),
     ('zootovary', 'Зоотовари', [('igrashky', 'Іграшки для тварин')]),
     ('utsineni', 'Уцінений товар', []),
-    ('sto', 'Обладнання СТО', [
-        ('vantazhopidjomne', 'Вантажопідйомне обладнання'),
-        ('presy', 'Преси'),
-        ('roztjazhky', 'Розтяжки гідравлічні'),
-        ('stendy', 'Стенди для ремонту двигуна'),
-    ]),
+    # Приховані (можна повернути пізніше): Трактори, Обладнання СТО
 ]
 
 SAMPLE_PRODUCTS = [
@@ -129,9 +106,8 @@ class Command(BaseCommand):
         sort = 0
         cat_map = {}
         cat_colors = {
-            'dim-i-sad': '#2BBD7E', 'valizy': '#2453E0', 'krisla': '#FF6A3D',
-            'budivnytstvo': '#2453E0', 'dytiachi': '#FFC93C', 'sport': '#FF6A3D',
-            'traktory': '#2BBD7E', 'zootovary': '#C99200', 'utsineni': '#FF3B5C', 'sto': '#2453E0',
+            'dim-i-sad': '#2BBD7E', 'valizy': '#2453E0', 'sport': '#FF6A3D',
+            'zootovary': '#C99200', 'utsineni': '#FF3B5C',
         }
         for slug, name, children in CATEGORIES:
             sort += 1

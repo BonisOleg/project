@@ -23,10 +23,16 @@ def site_context(request):
     settings_obj = SiteSettings.get_solo()
     social_links = list(SocialLink.objects.filter(is_active=True))
     youtube_link = next((item for item in social_links if item.network == 'youtube' and item.url), None)
+    child_qs = Category.objects.filter(is_active=True).order_by('sort_order').prefetch_related(
+        Prefetch(
+            'children',
+            queryset=Category.objects.filter(is_active=True).order_by('sort_order'),
+        ),
+    )
     categories_menu = Category.objects.filter(
         parent=None, is_active=True,
     ).prefetch_related(
-        Prefetch('children', queryset=Category.objects.filter(is_active=True).order_by('sort_order')),
+        Prefetch('children', queryset=child_qs),
     ).order_by('sort_order')
     return {
         'site_settings': settings_obj,

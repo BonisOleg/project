@@ -1,0 +1,21 @@
+.oyra-quick-price,
+.oyra-quick-availability {
+  max-width: 8.5rem;
+  min-width: 5.5rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #d0d5dd;
+  border-radius: 0.4rem;
+  background: #fff;
+  font-size: 0.875rem;
+}
+
+.oyra-quick-status {
+  display: inline-block;
+  margin-left: 0.35rem;
+  min-width: 1rem;
+  font-size: 0.75rem;
+  color: #667085;
+}
+
+.oyra-quick-status.is-ok { color: #039855; }
+.oyra-quick-status.is-err { color: #d92d20; }

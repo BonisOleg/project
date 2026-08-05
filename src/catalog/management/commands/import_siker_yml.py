@@ -21,6 +21,10 @@ from src.catalog.models import (
     make_slug,
 )
 from src.catalog.signals import product_image_to_webp
+from src.catalog.siker_category_sync import (
+    build_category_tree,
+    deactivate_hidden_branches,
+)
 from src.catalog.siker_yml import (
     DEFAULT_EXPORT_URL,
     download_image,
@@ -169,48 +173,14 @@ class Command(BaseCommand):
         return archived
 
     def _import_categories(self, categories) -> dict[str, Category]:
-        by_ext: dict[str, Category] = {}
-        # Батьки раніше дітей: кілька проходів
-        pending = list(categories)
-        guard = 0
-        while pending and guard < 20:
-            guard += 1
-            next_pending = []
-            for item in pending:
-                parent = None
-                if item.parent_id:
-                    parent = by_ext.get(item.parent_id)
-                    if parent is None:
-                        next_pending.append(item)
-                        continue
-                slug_base = slugify(item.name) or f'cat-{item.external_id}'
-                # Унікальний slug у межах всього дерева
-                cat = Category.objects.filter(slug=slug_base).first()
-                if cat is None:
-                    cat = Category(name=item.name, slug=slug_base)
-                    # Латинський slugify (ASCII) для Django <slug:>
-                    base = slug_base
-                    slug = base
-                    n = 1
-                    while Category.objects.filter(slug=slug).exists():
-                        slug = f'{base}-{n}'
-                        n += 1
-                    cat.slug = slug
-                cat.name = item.name
-                cat.parent = parent
-                cat.is_active = True
-                lowered = item.name.lower()
-                if 'спорт' in lowered or 'батут' in lowered or 'atleto' in lowered:
-                    cat.icon_key = 'sport'
-                cat.save()
-                by_ext[item.external_id] = cat
-            pending = next_pending
-
-        if pending:
-            names = ', '.join(p.name for p in pending)
-            raise CommandError(f'Не вдалося збудувати дерево категорій: {names}')
-
-        self.stdout.write(f'Категорій у мапі: {len(by_ext)}')
+        try:
+            by_ext = build_category_tree(categories)
+        except ValueError as exc:
+            raise CommandError(str(exc)) from exc
+        hidden = deactivate_hidden_branches(by_ext)
+        self.stdout.write(
+            f'Категорій у мапі: {len(by_ext)} (приховано гілок: {hidden})'
+        )
         return by_ext
 
     def _get_brand(self, name: str) -> Brand | None:

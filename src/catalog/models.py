@@ -18,6 +18,14 @@ class CategoryQuerySet(models.QuerySet):
 class Category(models.Model):
     name = models.CharField('Назва', max_length=200)
     slug = models.SlugField('Слаг (URL)', max_length=220, unique=True)
+    external_id = models.CharField(
+        'ID у вигрузці Siker',
+        max_length=32,
+        blank=True,
+        default='',
+        db_index=True,
+        help_text='Стабільний id з YML (category id). Потрібен для коректної ієрархії.',
+    )
     parent = models.ForeignKey(
         'self', null=True, blank=True, on_delete=models.CASCADE,
         related_name='children', verbose_name='Батьківська категорія',

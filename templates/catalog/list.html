@@ -88,6 +88,25 @@
   </div>
 
   <div class="catalog-body">
+    <aside class="catalog-sidebar" aria-label="Фільтри">
+      <form class="catalog-filter-form catalog-filter-form--sidebar"
+            method="get"
+            action="{{ request.path }}"
+            hx-get="{{ request.path }}"
+            hx-target="#product-grid"
+            hx-push-url="true"
+            data-filter-form
+            data-filter-sidebar>
+        {% if request.GET.q %}<input type="hidden" name="q" value="{{ request.GET.q }}">{% endif %}
+        <input type="hidden" name="sort" value="{{ current_sort }}" data-filter-sort>
+        <input type="hidden" name="per_page" value="{{ per_page }}" data-filter-per-page>
+        {% include 'catalog/_filter_fields.html' with filter_id_suffix='_side' %}
+        <button type="submit" class="btn btn--primary btn--block" data-filter-submit>
+          Показати {{ result_count }} товарів
+        </button>
+      </form>
+    </aside>
+
     <div class="catalog-grid-wrap">
       <div id="product-grid"
            data-catalog-path="{{ request.path }}"
@@ -121,80 +140,7 @@
       <input type="hidden" name="per_page" value="{{ per_page }}" data-filter-per-page>
 
       <div class="catalog-filter-form__scroll">
-        {% for section in filter_sections %}
-        <details class="filter-acc"{% if section.open %} open{% endif %}>
-          <summary class="filter-acc__summary">{{ section.name }}</summary>
-
-          {% if section.filter_type == 'brand' %}
-          <div class="filter-acc__body">
-            {% for brand in brands %}
-            <label class="filter-check">
-              <input type="checkbox" name="brand" value="{{ brand.slug }}" {% if brand.slug in selected_brands %}checked{% endif %}>
-              <span>{{ brand.name }}</span>
-            </label>
-            {% empty %}
-            <p class="checkout-note">Брендів поки немає</p>
-            {% endfor %}
-          </div>
-
-          {% elif section.filter_type == 'price' %}
-          <div class="filter-acc__body filter-acc__body--row">
-            <div class="filter-group filter-group--inline">
-              <label class="field__label" for="price_min">Від</label>
-              <input class="field__input" id="price_min" type="number" name="price_min" value="{{ request.GET.price_min }}" min="0" inputmode="numeric">
-            </div>
-            <div class="filter-group filter-group--inline">
-              <label class="field__label" for="price_max">До</label>
-              <input class="field__input" id="price_max" type="number" name="price_max" value="{{ request.GET.price_max }}" min="0" inputmode="numeric">
-            </div>
-          </div>
-
-          {% elif section.filter_type == 'category' %}
-          <div class="filter-acc__body">
-            <label class="filter-check">
-              <input type="radio" name="category" value="" {% if not selected_category %}checked{% endif %}>
-              <span>Усі види</span>
-            </label>
-            {% for cat in vid_categories %}
-            <label class="filter-check">
-              <input type="radio" name="category" value="{{ cat.slug }}" {% if selected_category == cat.slug %}checked{% endif %}>
-              <span>{{ cat.name }}</span>
-            </label>
-            {% if not category %}
-            {% for sub in cat.children.all %}
-            <label class="filter-check filter-check--nested">
-              <input type="radio" name="category" value="{{ sub.slug }}" {% if selected_category == sub.slug %}checked{% endif %}>
-              <span>{{ sub.name }}</span>
-            </label>
-            {% endfor %}
-            {% endif %}
-            {% endfor %}
-          </div>
-
-          {% elif section.filter_type == 'in_stock' %}
-          <div class="filter-acc__body">
-            <label class="filter-check">
-              <input type="checkbox" name="in_stock" value="1" {% if request.GET.in_stock %}checked{% endif %}>
-              <span>В наявності</span>
-            </label>
-          </div>
-
-          {% elif section.filter_type == 'attribute' %}
-          <div class="filter-acc__body">
-            {% for item in section.values %}
-            <label class="filter-check">
-              <input type="checkbox" name="{{ section.param }}" value="{{ item.value }}" {% if item.selected %}checked{% endif %}>
-              <span>{{ item.value }}</span>
-            </label>
-            {% empty %}
-            <p class="checkout-note">Немає значень</p>
-            {% endfor %}
-          </div>
-          {% endif %}
-        </details>
-        {% empty %}
-        <p class="checkout-note">Фільтри не налаштовані в адмінці.</p>
-        {% endfor %}
+        {% include 'catalog/_filter_fields.html' with filter_id_suffix='_drawer' %}
       </div>
 
       <div class="catalog-filter-form__footer">

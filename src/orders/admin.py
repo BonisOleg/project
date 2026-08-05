@@ -15,9 +15,13 @@ class OrderItemInline(TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(DropdownFiltersMixin, ModelAdmin):
-    list_display = ('order_number', 'email', 'phone', 'total', 'status', 'created_at')
+    list_display = (
+        'order_number', 'email', 'phone', 'total',
+        'payment_method', 'status', 'created_at',
+    )
     list_filter = [
         ('status', UkChoicesDropdownFilter),
+        ('payment_method', UkChoicesDropdownFilter),
         ('delivery_service', UkChoicesDropdownFilter),
     ]
     search_fields = ('order_number', 'email', 'phone', 'first_name', 'last_name', 'tracking_number')
@@ -28,7 +32,9 @@ class OrderAdmin(DropdownFiltersMixin, ModelAdmin):
     autocomplete_fields = ('user',)
     inlines = [OrderItemInline]
     fieldsets = (
-        ('Замовлення', {'fields': ('order_number', 'status', 'user', 'promo_code', 'comment')}),
+        ('Замовлення', {
+            'fields': ('order_number', 'status', 'payment_method', 'user', 'promo_code', 'comment'),
+        }),
         ('Клієнт', {'fields': ('first_name', 'last_name', 'phone', 'email', 'create_account')}),
         ('Доставка', {
             'fields': (

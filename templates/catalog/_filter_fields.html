@@ -1,0 +1,90 @@
+{% for section in filter_sections %}
+<details class="filter-acc"{% if section.open %} open{% endif %}>
+  <summary class="filter-acc__summary">{{ section.name }}</summary>
+
+  {% if section.filter_type == 'brand' %}
+  <div class="filter-acc__body">
+    {% for brand in brands %}
+    <label class="filter-check">
+      <input type="checkbox" name="brand" value="{{ brand.slug }}" {% if brand.slug in selected_brands %}checked{% endif %}>
+      <span>{{ brand.name }}{% if brand.product_count %} <em>({{ brand.product_count }})</em>{% endif %}</span>
+    </label>
+    {% empty %}
+    <p class="checkout-note">Брендів поки немає</p>
+    {% endfor %}
+  </div>
+
+  {% elif section.filter_type == 'price' %}
+  <div class="filter-acc__body">
+    <div class="filter-price-slider" data-price-slider
+         data-min="{{ price_min_bound }}"
+         data-max="{{ price_max_bound }}">
+      <div class="filter-price-slider__track">
+        <input type="range" class="filter-price-slider__range" data-price-range="min"
+               min="{{ price_min_bound }}" max="{{ price_max_bound }}"
+               value="{{ price_min_value }}" aria-label="Ціна від">
+        <input type="range" class="filter-price-slider__range" data-price-range="max"
+               min="{{ price_min_bound }}" max="{{ price_max_bound }}"
+               value="{{ price_max_value }}" aria-label="Ціна до">
+      </div>
+    </div>
+    <div class="filter-acc__body--row">
+      <div class="filter-group filter-group--inline">
+        <label class="field__label" for="price_min{{ filter_id_suffix }}">Від</label>
+        <input class="field__input" id="price_min{{ filter_id_suffix }}" type="number" name="price_min"
+               value="{{ request.GET.price_min|default:price_min_value }}" min="0" inputmode="numeric" data-price-input="min">
+      </div>
+      <div class="filter-group filter-group--inline">
+        <label class="field__label" for="price_max{{ filter_id_suffix }}">До</label>
+        <input class="field__input" id="price_max{{ filter_id_suffix }}" type="number" name="price_max"
+               value="{{ request.GET.price_max|default:price_max_value }}" min="0" inputmode="numeric" data-price-input="max">
+      </div>
+    </div>
+  </div>
+
+  {% elif section.filter_type == 'category' %}
+  <div class="filter-acc__body">
+    <label class="filter-check">
+      <input type="radio" name="category" value="" {% if not selected_category %}checked{% endif %}>
+      <span>Усі види</span>
+    </label>
+    {% for cat in vid_categories %}
+    <label class="filter-check">
+      <input type="radio" name="category" value="{{ cat.slug }}" {% if selected_category == cat.slug %}checked{% endif %}>
+      <span>{{ cat.name }}</span>
+    </label>
+    {% if not category %}
+    {% for sub in cat.children.all %}
+    <label class="filter-check filter-check--nested">
+      <input type="radio" name="category" value="{{ sub.slug }}" {% if selected_category == sub.slug %}checked{% endif %}>
+      <span>{{ sub.name }}</span>
+    </label>
+    {% endfor %}
+    {% endif %}
+    {% endfor %}
+  </div>
+
+  {% elif section.filter_type == 'in_stock' %}
+  <div class="filter-acc__body">
+    <label class="filter-check">
+      <input type="checkbox" name="in_stock" value="1" {% if request.GET.in_stock %}checked{% endif %}>
+      <span>В наявності</span>
+    </label>
+  </div>
+
+  {% elif section.filter_type == 'attribute' %}
+  <div class="filter-acc__body">
+    {% for item in section.values %}
+    <label class="filter-check">
+      <input type="checkbox" name="{{ section.param }}" value="{{ item.value }}" {% if item.selected %}checked{% endif %}>
+      <span>{{ item.value }}</span>
+    </label>
+    {% empty %}
+    <p class="checkout-note">Немає значень</p>
+    {% endfor %}
+  </div>
+  {% endif %}
+</details>
+{% empty %}
+<p class="checkout-note">Фільтри не налаштовані в адмінці.</p>
+{% endfor %}

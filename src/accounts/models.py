@@ -23,6 +23,16 @@ class User(AbstractUser):
     email = models.EmailField('Email', unique=True)
     phone = models.CharField('Телефон', max_length=30, blank=True)
     bonus_points = models.PositiveIntegerField('Бонусні бали', default=0)
+    notify_email = models.BooleanField(
+        'Отримувати email-сповіщення про замовлення',
+        default=False,
+        help_text='Лише для staff/адмінів. На адресу облікового запису.',
+    )
+    notify_messenger = models.BooleanField(
+        'Отримувати сповіщення в месенджер (Viber/SMS)',
+        default=False,
+        help_text='Лише для staff/адмінів. На номер з поля «Телефон».',
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

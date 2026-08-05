@@ -7,18 +7,29 @@ from django.urls import reverse
 
 class Order(models.Model):
     STATUS_PENDING = 'pending'
+    STATUS_AWAITING_PAYMENT = 'awaiting_payment'
     STATUS_PAID = 'paid'
     STATUS_PROCESSING = 'processing'
     STATUS_SHIPPED = 'shipped'
     STATUS_DONE = 'done'
     STATUS_CANCELLED = 'cancelled'
     STATUS_CHOICES = [
-        (STATUS_PENDING, 'Очікує оплати'),
+        (STATUS_PENDING, 'Нове'),
+        (STATUS_AWAITING_PAYMENT, 'Очікує оплату'),
         (STATUS_PAID, 'Оплачено'),
         (STATUS_PROCESSING, 'В обробці'),
         (STATUS_SHIPPED, 'Відправлено'),
         (STATUS_DONE, 'Виконано'),
         (STATUS_CANCELLED, 'Скасовано'),
+    ]
+
+    PAYMENT_LIQPAY = 'liqpay'
+    PAYMENT_COD = 'cod'
+    PAYMENT_BANK = 'bank_transfer'
+    PAYMENT_CHOICES = [
+        (PAYMENT_LIQPAY, 'Онлайн оплата (LiqPay)'),
+        (PAYMENT_COD, 'Оплата при отриманні (накладений платіж)'),
+        (PAYMENT_BANK, 'Безготівковий розрахунок (на рахунок)'),
     ]
 
     DELIVERY_NP = 'nova_poshta'
@@ -53,6 +64,12 @@ class Order(models.Model):
         'Тип НП', max_length=20, choices=NP_TYPE_CHOICES, blank=True,
     )
     delivery_address = models.CharField('Адреса / відділення', max_length=255)
+    payment_method = models.CharField(
+        'Спосіб оплати',
+        max_length=20,
+        choices=PAYMENT_CHOICES,
+        default=PAYMENT_LIQPAY,
+    )
     subtotal = models.DecimalField('Сума товарів', max_digits=10, decimal_places=2)
     discount = models.DecimalField('Знижка', max_digits=10, decimal_places=2, default=0)
     delivery_cost = models.DecimalField('Доставка', max_digits=10, decimal_places=2, default=0)

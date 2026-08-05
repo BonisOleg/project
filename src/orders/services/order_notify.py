@@ -15,6 +15,9 @@ STATUS_MESSAGES = {
     Order.STATUS_PENDING: (
         'Oyra: замовлення {number} прийнято. Сума {total} грн. Дякуємо!'
     ),
+    Order.STATUS_AWAITING_PAYMENT: (
+        'Oyra: замовлення {number} очікує оплату. Сума {total} грн.'
+    ),
     Order.STATUS_PAID: (
         'Oyra: замовлення {number} оплачено. Сума {total} грн.'
     ),

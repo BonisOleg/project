@@ -1,7 +1,30 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm as BasePasswordResetForm, UserCreationForm
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordResetForm as BasePasswordResetForm,
+    UserCreationForm,
+)
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 from .models import DeliveryAddress, User
+
+PASSWORD_HINT = (
+    'Мінімум 8 символів, хоча б одна велика літера та одна цифра.'
+)
+
+
+def _password_rules_ok(password: str) -> None:
+    """Додаткові бізнес-правила до стандартних Django validators."""
+    errors = []
+    if len(password or '') < 8:
+        errors.append('Пароль має містити мінімум 8 символів.')
+    if not any(ch.isupper() for ch in (password or '')):
+        errors.append('Додайте хоча б одну велику літеру.')
+    if not any(ch.isdigit() for ch in (password or '')):
+        errors.append('Додайте хоча б одну цифру.')
+    if errors:
+        raise ValidationError(errors)
 
 
 class LoginForm(AuthenticationForm):
@@ -11,7 +34,11 @@ class LoginForm(AuthenticationForm):
     )
     password = forms.CharField(
         label='Пароль',
-        widget=forms.PasswordInput(attrs={'class': 'field__input', 'autocomplete': 'current-password'}),
+        widget=forms.PasswordInput(attrs={
+            'class': 'field__input',
+            'autocomplete': 'current-password',
+            'data-password-toggle': '1',
+        }),
     )
 
 
@@ -36,8 +63,23 @@ class RegisterForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['password1'].widget.attrs['class'] = 'field__input'
-        self.fields['password2'].widget.attrs['class'] = 'field__input'
+        self.fields['password1'].widget.attrs.update({
+            'class': 'field__input',
+            'data-password-toggle': '1',
+            'autocomplete': 'new-password',
+        })
+        self.fields['password1'].help_text = PASSWORD_HINT
+        self.fields['password2'].widget.attrs.update({
+            'class': 'field__input',
+            'data-password-toggle': '1',
+            'autocomplete': 'new-password',
+        })
+
+    def clean_password1(self):
+        password = self.cleaned_data.get('password1') or ''
+        _password_rules_ok(password)
+        validate_password(password, self.instance)
+        return password
 
 
 class ProfileForm(forms.ModelForm):

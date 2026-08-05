@@ -235,7 +235,8 @@ class ProductAdmin(
     ModelAdmin,
 ):
     list_display = (
-        'get_image_preview', 'name', 'sku', 'category', 'price', 'availability', 'is_active',
+        'get_image_preview', 'name', 'sku', 'category',
+        'quick_price', 'quick_availability', 'is_active',
     )
     list_filter = [
         ('is_active', UkBooleanDropdownFilter),
@@ -293,6 +294,32 @@ class ProductAdmin(
             mixin.image_field = 'image'
             return mixin.get_image_preview(image)
         return '—'
+
+    @admin.display(description='Ціна')
+    def quick_price(self, obj):
+        return format_html(
+            '<input type="number" step="0.01" min="0" class="oyra-quick-price" '
+            'data-product-id="{}" value="{}" aria-label="Ціна">'
+            '<span class="oyra-quick-status" aria-live="polite"></span>',
+            obj.pk,
+            obj.price,
+        )
+
+    @admin.display(description='Наявність')
+    def quick_availability(self, obj):
+        options = []
+        for value, label in Product.AVAILABILITY_CHOICES:
+            selected = ' selected' if obj.availability == value else ''
+            options.append(f'<option value="{value}"{selected}>{label}</option>')
+        return mark_safe(
+            f'<select class="oyra-quick-availability" data-product-id="{obj.pk}" '
+            f'aria-label="Наявність">{"".join(options)}</select>'
+            f'<span class="oyra-quick-status" aria-live="polite"></span>'
+        )
+
+    class Media:
+        js = ('js/admin/product_quick_edit.js',)
+        css = {'all': ('css/admin/product_quick_edit.css',)}
 
 
 @admin.register(AttributeGroup)

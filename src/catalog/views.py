@@ -1,5 +1,5 @@
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Count, Max, Min, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
@@ -73,15 +73,30 @@ def _product_list_context(request, base_qs, page_title, breadcrumbs, category=No
             vid_categories = category.parent.children.filter(is_active=True)
     else:
         vid_categories = root_categories
+
+    price_agg = annotated.aggregate(lo=Min('price'), hi=Max('price'))
+    brand_counts = {
+        row['brand__slug']: row['c']
+        for row in annotated.exclude(brand__isnull=True)
+        .values('brand__slug')
+        .annotate(c=Count('id'))
+        if row['brand__slug']
+    }
+    brands = list(
+        Brand.objects.filter(
+            is_active=True, products__is_active=True,
+        ).distinct().order_by('name')
+    )
+    for brand in brands:
+        brand.product_count = brand_counts.get(brand.slug, 0)
+
     context = {
         'products': page,
         'page_obj': page,
         'page_title': page_title,
         'breadcrumbs': breadcrumbs,
         'category': category,
-        'brands': Brand.objects.filter(
-            is_active=True, products__is_active=True,
-        ).distinct().order_by('name'),
+        'brands': brands,
         'root_categories': root_categories,
         'vid_categories': vid_categories,
         'filter_sections': filter_sections,
@@ -93,6 +108,10 @@ def _product_list_context(request, base_qs, page_title, breadcrumbs, category=No
         'result_count': count,
         'show_types': show_types,
         'query_string': query_wo_page,
+        'price_min_bound': int(price_agg['lo'] or 0),
+        'price_max_bound': int(price_agg['hi'] or 0) + 1,
+        'price_min_value': request.GET.get('price_min') or (price_agg['lo'] or 0),
+        'price_max_value': request.GET.get('price_max') or (price_agg['hi'] or 0),
     }
     if request.htmx:
         return render(request, 'catalog/_product_grid.html', context)
@@ -112,8 +131,13 @@ def category_detail(request, slug):
     ids = category.get_descendant_ids()
     qs = Product.objects.active().with_category().filter(category_id__in=ids)
     parts = [('Каталог', '/catalog/')]
-    if category.parent:
-        parts.append((category.parent.name, category.parent.get_absolute_url()))
+    chain = []
+    node = category
+    while node is not None:
+        chain.append(node)
+        node = node.parent
+    for ancestor in reversed(chain[:-1]):
+        parts.append((ancestor.name, ancestor.get_absolute_url()))
     parts.append((category.name, ''))
     return _product_list_context(
         request, qs, category.meta_title or category.name, make_breadcrumbs(*parts), category,
@@ -155,9 +179,11 @@ def search_suggest(request):
     q = request.GET.get('q', '').strip()
     products = []
     if len(q) >= 2:
-        products = Product.objects.active().filter(
-            Q(name__icontains=q) | Q(sku__icontains=q),
-        )[:6]
+        products = list(
+            Product.objects.active()
+            .filter(Q(name__icontains=q) | Q(sku__icontains=q))
+            .prefetch_related('images')[:6]
+        )
     html = render_to_string('partials/search_suggest.html', {'products': products, 'q': q})
     return HttpResponse(html)
 

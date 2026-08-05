@@ -1,7 +1,22 @@
+{% load ui_tags %}
 {% if products %}
 <ul class="search-suggest">
   {% for product in products %}
-  <li><a href="{{ product.get_absolute_url }}">{{ product.name }} — {{ product.price|format_price }}</a></li>
+  <li>
+    <a class="search-suggest__item" href="{{ product.get_absolute_url }}">
+      <span class="search-suggest__thumb">
+        {% if product.main_image %}
+        <img src="{{ product.main_image.image.url }}" alt="" width="48" height="48" loading="lazy">
+        {% endif %}
+      </span>
+      <span class="search-suggest__meta">
+        <span class="search-suggest__name">{{ product.name }}</span>
+        <span class="search-suggest__price">{{ product.price|format_price }}</span>
+      </span>
+    </a>
+  </li>
   {% endfor %}
 </ul>
+{% elif q %}
+<p class="search-suggest search-suggest--empty">Нічого не знайдено</p>
 {% endif %}
