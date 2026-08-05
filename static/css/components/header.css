@@ -454,6 +454,12 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--sp-4);
+  /* Обовʼязково: абсолютний прихований блок додає скрол сторінці,
+     а дерево категорій — понад 1700px заввишки. */
+  max-height: min(70vh, 34rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .catalog-dropdown:hover .catalog-dropdown__menu,

@@ -914,20 +914,3 @@ body.catalog-filter-open {
     display: none;
   }
 }
-
-/* Short pages: no beige strip under footer */
-body.page-cart,
-body.page-wishlist,
-body.page-compare,
-body.page-checkout,
-body.page-thank-you {
-  background: var(--c-surface);
-}
-
-body.page-cart #main,
-body.page-wishlist #main,
-body.page-compare #main,
-body.page-checkout #main,
-body.page-thank-you #main {
-  background: var(--c-surface);
-}
