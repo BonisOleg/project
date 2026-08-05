@@ -43,19 +43,20 @@ docker compose "${COMPOSE_FILES[@]}" up -d --build
 echo "==> Waiting for healthcheck..."
 sleep 5
 
-if curl -sf "http://127.0.0.1/healthz/" >/dev/null; then
-  echo "==> HTTP healthcheck OK"
-else
-  echo "WARN: HTTP healthcheck failed — check logs: docker compose logs web nginx"
-  exit 1
-fi
-
 if [ "${USE_HTTPS:-false}" = "true" ] && [ -d "/etc/letsencrypt/live/${DOMAIN}" ]; then
+  # У HTTPS-режимі порт 80 віддає 301 — перевіряємо одразу HTTPS
   if curl -sfk "https://127.0.0.1/healthz/" >/dev/null; then
     echo "==> HTTPS healthcheck OK"
   else
     echo "WARN: HTTPS healthcheck failed — check nginx SSL paths for DOMAIN=${DOMAIN}"
+    echo "     logs: docker compose logs web nginx"
+    exit 1
   fi
+elif curl -sf "http://127.0.0.1/healthz/" >/dev/null; then
+  echo "==> HTTP healthcheck OK"
+else
+  echo "WARN: HTTP healthcheck failed — check logs: docker compose logs web nginx"
+  exit 1
 fi
 
 docker compose "${COMPOSE_FILES[@]}" ps
