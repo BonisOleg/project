@@ -46,6 +46,7 @@
 }
 
 .site-header__inner {
+  position: relative;
   display: grid;
   align-items: center;
   gap: var(--sp-3) var(--sp-4);
@@ -57,6 +58,7 @@
     "search search";
   padding-top: var(--sp-3);
   padding-bottom: var(--sp-3);
+  overflow: visible;
 }
 
 .site-header__brand {
@@ -438,9 +440,8 @@
   border-bottom: 1px solid var(--c-border);
 }
 
-/* Flyout під кнопкою «Каталог» (як siker.ua), НЕ full-width mega-menu */
+/* Меню привʼязане до .site-header__inner (.container), НЕ до кнопки «Каталог» */
 .catalog-dropdown {
-  position: relative;
   display: inline-flex;
   align-items: center;
   width: max-content;
@@ -454,10 +455,10 @@
   right: auto;
   z-index: var(--z-dropdown);
   box-sizing: border-box;
-  width: min(48rem, calc(100vw - 2 * var(--container-pad)));
-  min-width: min(36rem, calc(100vw - 2 * var(--container-pad)));
-  max-width: min(48rem, calc(100vw - 2 * var(--container-pad)));
-  margin-top: 0.25rem;
+  width: max-content;
+  min-width: min(45rem, 100%);
+  max-width: 100%;
+  margin-top: 0.35rem;
   padding: var(--sp-5) var(--sp-6);
   background: var(--c-surface);
   border: 1px solid var(--c-border);
@@ -467,8 +468,10 @@
   visibility: hidden;
   pointer-events: none;
   transform: translateY(6px);
-  transition: opacity var(--t-fast), transform var(--t-fast), visibility var(--t-fast);
-  /* Masonry-потік у 3 колонки — без «дірок» як у CSS Grid rows */
+  transition:
+    opacity var(--t-fast),
+    transform var(--t-fast),
+    visibility 0s linear var(--t-fast);
   display: block;
   column-count: 3;
   column-gap: var(--sp-5);
@@ -479,22 +482,29 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Невидимий «міст» між лінком і меню, щоб hover не губився */
+/*
+  Hover-міст: смуга під усім хедером від лівого краю контейнера
+  до зони кнопки «Каталог», щоб курсор не губив :hover по дорозі в меню.
+*/
 .catalog-dropdown__menu::before {
   content: '';
   position: absolute;
-  left: 0;
-  right: 0;
   bottom: 100%;
-  height: 0.5rem;
+  left: 0;
+  width: 100vw;
+  max-width: none;
+  height: calc(0.35rem + 2px);
 }
 
 .catalog-dropdown:hover .catalog-dropdown__menu,
-.catalog-dropdown:focus-within .catalog-dropdown__menu {
+.catalog-dropdown:focus-within .catalog-dropdown__menu,
+.site-header__inner:has(.catalog-dropdown:hover) .catalog-dropdown__menu,
+.site-header__inner:has(.catalog-dropdown:focus-within) .catalog-dropdown__menu {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
   transform: translateY(0);
+  transition-delay: 0s;
 }
 
 .catalog-dropdown__group {
@@ -549,7 +559,6 @@
 }
 
 @media (max-width: 1023px) {
-  /* На планшеті/мобільному каталог у drawer — flyout не показуємо */
   .catalog-dropdown__menu {
     display: none;
   }
