@@ -15,9 +15,9 @@ def home(request):
     from .hero_slides import get_hero_slides
 
     tabs = {
-        'top': Product.objects.active().top_sales()[:12],
-        'new': Product.objects.active().new_arrivals()[:12],
-        'views': Product.objects.active().most_viewed()[:12],
+        'top': Product.objects.top_sales()[:12],
+        'new': Product.objects.new_arrivals()[:12],
+        'views': Product.objects.most_viewed()[:12],
     }
     tab = request.GET.get('tab', 'top')
     if tab not in tabs:

@@ -40,7 +40,7 @@ class CompareService:
             return []
         products = {
             p.pk: p
-            for p in Product.objects.active()
+            for p in Product.objects.on_storefront()
             .filter(pk__in=self.ids)
             .annotate_rating()
             .prefetch_related('images', 'attributes')

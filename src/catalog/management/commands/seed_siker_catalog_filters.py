@@ -8,7 +8,7 @@ from src.catalog.models import CatalogFilter
 
 
 class Command(BaseCommand):
-    help = 'Видаляє старі фільтри (Bonro) і створює Siker-набір: Ціна, Вид, Тип, Форма…'
+    help = 'Замінює CatalogFilter на набір з YML: Бренд, Ціна, Вид, Наявність.'
 
     def add_arguments(self, parser):
         parser.add_argument(

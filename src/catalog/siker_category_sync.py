@@ -10,7 +10,7 @@ from src.catalog.models import Category, Product
 from src.catalog.siker_website_layout import apply_siker_website_layout
 from src.catalog.siker_yml import YmlCategory, YmlOffer
 
-# Корені, які ховаємо (можна повернути пізніше через is_active=True).
+# Завжди ховаємо ці корені (і нащадків), навіть якщо в YML є товари.
 HIDDEN_ROOT_NAMES = frozenset({
     'трактори',
     'обладнання для сто',
@@ -71,11 +71,9 @@ def build_category_tree(
 
             cat = Category.objects.filter(external_id=item.external_id).first()
             slug_base = slugify(item.name) or f'cat-{item.external_id}'
-            # Зовнішній id у slug гарантує унікальність одноіменних гілок
             preferred = f'{slug_base}-{item.external_id}'[:220]
 
             if cat is None:
-                # Міграція зі старого імпорту: той самий slug без id
                 cat = Category.objects.filter(
                     external_id='',
                     name=item.name,
@@ -119,13 +117,26 @@ def build_category_tree(
     return by_ext
 
 
-def deactivate_hidden_branches(by_ext: dict[str, Category] | None = None) -> int:
-    """Приховує Трактори / Обладнання СТО та всіх нащадків (будь-який рівень)."""
+def _collect_descendant_ids(root: Category) -> list[int]:
+    stack = [root]
+    ids: list[int] = []
+    while stack:
+        node = stack.pop()
+        ids.append(node.pk)
+        stack.extend(list(node.children.all()))
+    return ids
+
+
+def deactivate_hidden_branches(
+    by_ext: dict[str, Category] | None = None,
+    offers: list[YmlOffer] | None = None,
+) -> int:
+    """Приховує Трактори / СТО / Сертифікат / АКБ та всіх нащадків."""
+    del by_ext, offers  # API сумісність з викликами sync/import
     matches = [
         cat for cat in Category.objects.all()
         if _is_hidden_root_name(cat.name)
     ]
-    # Спочатку корені гілок (без предка, який теж у matches)
     match_ids = {c.pk for c in matches}
     roots = []
     for cat in matches:
@@ -146,15 +157,6 @@ def deactivate_hidden_branches(by_ext: dict[str, Category] | None = None) -> int
         hidden += updated
     return hidden
 
-
-def _collect_descendant_ids(root: Category) -> list[int]:
-    stack = [root]
-    ids: list[int] = []
-    while stack:
-        node = stack.pop()
-        ids.append(node.pk)
-        stack.extend(list(node.children.all()))
-    return ids
 
 def remap_products_from_offers(
     offers: list[YmlOffer],
@@ -197,14 +199,11 @@ def sync_categories_and_products(
     stats = SyncStats()
     cat_map = build_category_tree(yml_categories)
     stats.categories_upserted = len(cat_map)
-    # YML parentId ≠ меню siker.ua — вирівнюємо дерево під сайт
     layout = apply_siker_website_layout(cat_map)
     stats.layout_reparented = layout.reparented
-    # Оновлюємо map після layout (нові oyra:* корені)
     for cat in Category.objects.exclude(external_id=''):
         cat_map[cat.external_id] = cat
-    stats.categories_hidden = deactivate_hidden_branches(cat_map)
-    # Seed без id — ховаємо; синтетичні oyra:* лишаємо
+    stats.categories_hidden = deactivate_hidden_branches(cat_map, offers)
     stale_qs = Category.objects.filter(external_id='')
     stale = stale_qs.update(is_active=False)
     stats.categories_hidden += stale

@@ -32,8 +32,9 @@ def attr_aliases(name: str) -> tuple[str, ...]:
     return SIKER_ATTR_ALIASES.get(name, (name,))
 
 
-# (назва у фільтрі, attribute_name, fallback-значення)
+# (назва у фільтрі, attribute_name, довідкові значення)
 # Порядок = пріоритет показу після Бренд / Ціна / Вид.
+# На вітрині показуємо лише атрибути з реальних значень у товарах (без фейкових fallback).
 SIKER_PRIORITY_ATTRS: list[tuple[str, str, list[str]]] = [
     (
         'Тип',

@@ -13,7 +13,7 @@ class ProductSitemap(Sitemap):
     priority = 0.8
 
     def items(self):
-        return Product.objects.active()
+        return Product.objects.on_storefront()
 
     def lastmod(self, obj):
         return obj.updated_at

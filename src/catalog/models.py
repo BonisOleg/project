@@ -143,17 +143,21 @@ class ProductQuerySet(models.QuerySet):
     def active(self):
         return self.filter(is_active=True)
 
+    def on_storefront(self):
+        """Активні товари у видимих (is_active) категоріях."""
+        return self.active().filter(category__is_active=True)
+
     def top_sales(self):
-        return self.active().filter(is_top_sale=True).order_by('-sort_order', '-created_at')
+        return self.on_storefront().filter(is_top_sale=True).order_by('-sort_order', '-created_at')
 
     def new_arrivals(self):
-        return self.active().filter(is_new=True).order_by('-created_at')
+        return self.on_storefront().filter(is_new=True).order_by('-created_at')
 
     def most_viewed(self):
-        return self.active().order_by('-views_count', '-created_at')
+        return self.on_storefront().order_by('-views_count', '-created_at')
 
     def on_sale(self):
-        return self.active().filter(old_price__isnull=False, old_price__gt=models.F('price'))
+        return self.on_storefront().filter(old_price__isnull=False, old_price__gt=models.F('price'))
 
     def with_category(self):
         return self.select_related('category', 'brand').prefetch_related('images')

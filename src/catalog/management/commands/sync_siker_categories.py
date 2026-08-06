@@ -10,7 +10,7 @@ from src.catalog.siker_yml import DEFAULT_EXPORT_URL, load_yml_bytes, parse_yml
 class Command(BaseCommand):
     help = (
         'Оновлює дерево категорій з YML Siker, вирівнює під меню siker.ua, '
-        'перепривʼязує товари за SKU, ховає Трактори/СТО.'
+        'перепривʼязує товари за SKU, ховає Трактори/СТО/Сертифікат/АКБ.'
     )
 
     def add_arguments(self, parser):

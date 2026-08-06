@@ -115,7 +115,7 @@ class Command(BaseCommand):
                 archived = self._purge_catalog(
                     keep_categories=options['keep_old_categories'],
                 )
-                cat_map = self._import_categories(catalog.categories)
+                cat_map = self._import_categories(catalog.categories, catalog.offers)
 
             stats = self._import_offers(
                 catalog.offers,
@@ -172,12 +172,12 @@ class Command(BaseCommand):
             self.stdout.write(f'Видалено порожніх категорій: {removed}')
         return archived
 
-    def _import_categories(self, categories) -> dict[str, Category]:
+    def _import_categories(self, categories, offers) -> dict[str, Category]:
         try:
             by_ext = build_category_tree(categories)
         except ValueError as exc:
             raise CommandError(str(exc)) from exc
-        hidden = deactivate_hidden_branches(by_ext)
+        hidden = deactivate_hidden_branches(by_ext, offers)
         self.stdout.write(
             f'Категорій у мапі: {len(by_ext)} (приховано гілок: {hidden})'
         )

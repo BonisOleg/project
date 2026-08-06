@@ -93,7 +93,7 @@ def _product_list_context(request, base_qs, page_title, breadcrumbs, category=No
     }
     brands = list(
         Brand.objects.filter(
-            is_active=True, products__is_active=True,
+            is_active=True, products__is_active=True, products__category__is_active=True,
         ).distinct().order_by('name')
     )
     for brand in brands:
@@ -130,7 +130,7 @@ def _product_list_context(request, base_qs, page_title, breadcrumbs, category=No
 
 
 def catalog_list(request):
-    qs = Product.objects.active().with_category()
+    qs = Product.objects.on_storefront().with_category()
     breadcrumbs = make_breadcrumbs(('Каталог', ''))
     return _product_list_context(
         request, qs, 'Усі товари', breadcrumbs, show_types=True,
@@ -140,7 +140,7 @@ def catalog_list(request):
 def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug, is_active=True)
     ids = category.get_descendant_ids()
-    qs = Product.objects.active().with_category().filter(category_id__in=ids)
+    qs = Product.objects.on_storefront().with_category().filter(category_id__in=ids)
     parts = [('Каталог', '/catalog/')]
     chain = []
     node = category
@@ -157,10 +157,10 @@ def category_detail(request, slug):
 
 def product_detail(request, slug):
     product = get_object_or_404(
-        Product.objects.active().with_category().annotate_rating(), slug=slug,
+        Product.objects.on_storefront().with_category().annotate_rating(), slug=slug,
     )
     product.increment_views()
-    similar = Product.objects.active().filter(
+    similar = Product.objects.on_storefront().filter(
         category=product.category,
     ).exclude(pk=product.pk)[:12]
     parts = [('Каталог', '/catalog/')]
@@ -178,7 +178,7 @@ def product_detail(request, slug):
 
 def search(request):
     q = request.GET.get('q', '').strip()
-    qs = Product.objects.active().with_category()
+    qs = Product.objects.on_storefront().with_category()
     if q:
         qs = qs.filter(Q(name__icontains=q) | Q(sku__icontains=q))
     label = f'Пошук: {q}' if q else 'Пошук'
@@ -191,7 +191,7 @@ def search_suggest(request):
     products = []
     if len(q) >= 2:
         products = list(
-            Product.objects.active()
+            Product.objects.on_storefront()
             .filter(Q(name__icontains=q) | Q(sku__icontains=q))
             .prefetch_related('images')[:6]
         )
@@ -200,7 +200,7 @@ def search_suggest(request):
 
 
 def sale_list(request):
-    qs = Product.objects.active().with_category().on_sale()
+    qs = Product.objects.on_storefront().with_category().on_sale()
     breadcrumbs = make_breadcrumbs(('Каталог', '/catalog/'), ('Акції', ''))
     return _product_list_context(request, qs, 'Акції', breadcrumbs)
 

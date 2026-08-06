@@ -12,7 +12,6 @@ from src.accounts.models import User
 from src.blog.models import Post
 from src.catalog.models import Brand, CatalogFilter, Category, Product, ProductAttribute
 from src.catalog.category_icons import SLUG_TO_ICON_KEY
-from src.catalog.filter_schema import SIKER_PRIORITY_ATTRS
 from src.core.models import SiteSettings, SocialLink
 from src.pages.models import FAQItem, StaticPage
 from src.pages.static_content import FAQ_ITEMS, STATIC_PAGES
@@ -139,15 +138,8 @@ class Command(BaseCommand):
                 ('Бренд', CatalogFilter.TYPE_BRAND, '', '', 10, False),
                 ('Ціна, грн', CatalogFilter.TYPE_PRICE, '', '', 20, True),
                 ('Вид', CatalogFilter.TYPE_CATEGORY, '', '', 30, False),
+                ('Наявність', CatalogFilter.TYPE_IN_STOCK, '', '', 200, False),
             ]
-            order = 40
-            for display, attr_name, values in SIKER_PRIORITY_ATTRS:
-                defaults.append((
-                    display, CatalogFilter.TYPE_ATTRIBUTE, attr_name,
-                    '\n'.join(values), order, False,
-                ))
-                order += 10
-            defaults.append(('Наявність', CatalogFilter.TYPE_IN_STOCK, '', '', 200, False))
             for name, ftype, attr, fallback, sord, opened in defaults:
                 CatalogFilter.objects.create(
                     name=name, filter_type=ftype, attribute_name=attr,
