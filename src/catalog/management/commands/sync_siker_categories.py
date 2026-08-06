@@ -46,3 +46,5 @@ class Command(BaseCommand):
             f'товарів перепривʼязано: {stats.products_remapped}; '
             f'пропуск offers: {stats.products_skipped}'
         ))
+        from django.core.management import call_command
+        call_command('assign_category_images')

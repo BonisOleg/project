@@ -18,6 +18,10 @@
     {% endif %}
 
     <nav class="site-nav" aria-label="Головне меню">
+      {% section_visible 'site' 'header_nav_home_visible' as show_home %}
+      {% if show_home %}
+      <a href="{% url 'core:home' %}" class="site-nav__link">{% block_plain 'site' 'header_nav_home_label' 'Головна' %}</a>
+      {% endif %}
       {% section_visible 'site' 'header_nav_catalog_visible' as show_catalog %}
       {% if show_catalog %}
       <div class="catalog-dropdown">
@@ -50,6 +54,10 @@
       {% section_visible 'site' 'header_nav_sale_visible' as show_sale %}
       {% if show_sale %}
       <a href="{% url 'catalog:sale' %}" class="site-nav__link">{% block_plain 'site' 'header_nav_sale_label' 'Акції' %}</a>
+      {% endif %}
+      {% section_visible 'site' 'header_nav_news_visible' as show_blog %}
+      {% if show_blog %}
+      <a href="{% url 'blog:list' %}" class="site-nav__link">{% block_plain 'site' 'header_nav_news_label' 'Блог' %}</a>
       {% endif %}
     </nav>
 

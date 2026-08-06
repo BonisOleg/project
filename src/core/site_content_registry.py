@@ -148,6 +148,8 @@ CONTENT_SECTIONS: tuple[ContentSection, ...] = (
         blocks=(
             ('site', 'header_search_placeholder'),
             ('site', 'header_search_visible'),
+            ('site', 'header_nav_home_label'),
+            ('site', 'header_nav_home_visible'),
             ('site', 'header_nav_catalog_label'),
             ('site', 'header_nav_catalog_visible'),
             ('site', 'header_nav_sale_label'),
@@ -164,9 +166,10 @@ CONTENT_SECTIONS: tuple[ContentSection, ...] = (
         ),
         field_groups=(
             FieldGroup('Пошук', ('header_search_placeholder', 'header_search_visible')),
+            FieldGroup('Головна', ('header_nav_home_label', 'header_nav_home_visible')),
             FieldGroup('Каталог', ('header_nav_catalog_label', 'header_nav_catalog_visible')),
             FieldGroup('Акції', ('header_nav_sale_label', 'header_nav_sale_visible')),
-            FieldGroup('Новини', ('header_nav_news_label', 'header_nav_news_visible')),
+            FieldGroup('Блог', ('header_nav_news_label', 'header_nav_news_visible')),
             FieldGroup('Іконки шапки', (
                 'header_action_phone_visible',
                 'header_action_wishlist_visible',

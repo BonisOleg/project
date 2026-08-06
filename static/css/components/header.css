@@ -261,18 +261,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--sp-4);
+    gap: var(--sp-3);
     min-width: 0;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     overflow: visible;
   }
 
   .site-nav__link {
-    font-size: var(--fs-md);
+    font-size: var(--fs-sm);
     font-weight: 500;
     letter-spacing: 0.02em;
     white-space: nowrap;
     transition: color var(--t-fast);
+    -webkit-tap-highlight-color: transparent;
   }
 
   .site-nav__link:hover { color: var(--c-brand); }
@@ -323,6 +324,8 @@
   }
 
   .site-nav { gap: var(--sp-5); }
+
+  .site-nav__link { font-size: var(--fs-md); }
 }
 
 @media (max-width: 1023px) {

@@ -35,6 +35,8 @@ class Command(BaseCommand):
                 f'renamed={layout.renamed}, synthetics={layout.synthetics}, '
                 f'sorted={layout.sorted}, hidden={hidden}'
             ))
+            from django.core.management import call_command
+            call_command('assign_category_images')
             return
 
         url = options['url']
@@ -55,3 +57,5 @@ class Command(BaseCommand):
             f'hidden={stats.categories_hidden}; '
             f'products_remapped={stats.products_remapped}'
         ))
+        from django.core.management import call_command
+        call_command('assign_category_images')

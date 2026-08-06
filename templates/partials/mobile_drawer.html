@@ -10,6 +10,10 @@
     </form>
     {% endif %}
     <nav class="mobile-drawer__nav">
+      {% section_visible 'site' 'header_nav_home_visible' as show_home %}
+      {% if show_home %}
+      <a class="mobile-drawer__link" href="{% url 'core:home' %}">{% block_plain 'site' 'header_nav_home_label' 'Головна' %}</a>
+      {% endif %}
       {% section_visible 'site' 'header_nav_catalog_visible' as show_catalog %}
       {% if show_catalog %}
       <a class="mobile-drawer__link" href="{% url 'catalog:list' %}">{% block_plain 'site' 'header_nav_catalog_label' 'Каталог' %}</a>
@@ -17,6 +21,10 @@
       {% section_visible 'site' 'header_nav_sale_visible' as show_sale %}
       {% if show_sale %}
       <a class="mobile-drawer__link" href="{% url 'catalog:sale' %}">{% block_plain 'site' 'header_nav_sale_label' 'Акції' %}</a>
+      {% endif %}
+      {% section_visible 'site' 'header_nav_news_visible' as show_blog %}
+      {% if show_blog %}
+      <a class="mobile-drawer__link" href="{% url 'blog:list' %}">{% block_plain 'site' 'header_nav_news_label' 'Блог' %}</a>
       {% endif %}
       {% section_visible 'site' 'header_action_wishlist_visible' as show_wishlist %}
       {% if show_wishlist %}

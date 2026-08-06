@@ -51,6 +51,10 @@ class CheckoutStep3Form(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['delivery_service'].choices = Order.DELIVERY_CHOICES_CHECKOUT
+        self.fields['delivery_type'].choices = Order.NP_TYPE_CHOICES
+        self.fields['delivery_type'].required = False
+        if not self.is_bound and not (self.initial.get('delivery_type') or getattr(self.instance, 'delivery_type', '')):
+            self.initial['delivery_type'] = Order.NP_WAREHOUSE
 
     def clean(self):
         cleaned = super().clean()

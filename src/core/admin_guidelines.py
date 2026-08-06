@@ -76,6 +76,7 @@ TEXT_LIMITS: dict[str, int] = {
     'about_section_lead': 280,
     'blog_section_title': 80,
     'header_search_placeholder': 50,
+    'header_nav_home_label': 30,
     'header_nav_catalog_label': 30,
     'header_nav_sale_label': 30,
     'header_nav_news_label': 30,
