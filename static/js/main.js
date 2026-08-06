@@ -10,6 +10,7 @@ import { initProductScroll } from './modules/product_scroll.js';
 import { initCategoryScroll } from './modules/category_scroll.js';
 import { initToasts } from './modules/toast.js';
 import { initPasswordToggle } from './modules/password_toggle.js';
+import { initCatalogDropdown } from './modules/catalog_dropdown.js';
 
 function onReady(callback) {
   if (document.readyState === 'loading') {
@@ -32,6 +33,7 @@ onReady(() => {
   initCategoryScroll();
   initToasts();
   initPasswordToggle();
+  initCatalogDropdown();
 });
 
 document.body.addEventListener('htmx:configRequest', (event) => {

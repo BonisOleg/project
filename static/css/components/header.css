@@ -458,7 +458,7 @@
   width: max-content;
   min-width: min(45rem, 100%);
   max-width: 100%;
-  margin-top: 0.35rem;
+  margin-top: 8px;
   padding: var(--sp-5) var(--sp-6);
   background: var(--c-surface);
   border: 1px solid var(--c-border);
@@ -482,29 +482,47 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/*
-  Hover-міст: смуга під усім хедером від лівого краю контейнера
-  до зони кнопки «Каталог», щоб курсор не губив :hover по дорозі в меню.
-*/
+/* Невидимий місток над меню: перекриває прогалину до хедера / кнопки */
 .catalog-dropdown__menu::before {
   content: '';
   position: absolute;
-  bottom: 100%;
+  top: -28px;
   left: 0;
   width: 100vw;
   max-width: none;
-  height: calc(0.35rem + 2px);
+  height: 28px;
+  background: transparent;
+  pointer-events: auto;
 }
 
-.catalog-dropdown:hover .catalog-dropdown__menu,
-.catalog-dropdown:focus-within .catalog-dropdown__menu,
-.site-header__inner:has(.catalog-dropdown:hover) .catalog-dropdown__menu,
-.site-header__inner:has(.catalog-dropdown:focus-within) .catalog-dropdown__menu {
+.catalog-dropdown.is-open .catalog-dropdown__menu,
+.catalog-dropdown:focus-within .catalog-dropdown__menu {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
   transform: translateY(0);
   transition-delay: 0s;
+}
+
+/* Fallback без JS */
+@supports not (selector(:has(*))) {
+  .catalog-dropdown:hover .catalog-dropdown__menu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+    transition-delay: 0s;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .catalog-dropdown:hover .catalog-dropdown__menu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+    transition-delay: 0s;
+  }
 }
 
 .catalog-dropdown__group {
