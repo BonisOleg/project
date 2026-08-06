@@ -24,10 +24,38 @@ function setFilterSubmitCount(btn, count) {
   btn.dataset.resultCount = String(n);
 }
 
+function syncToolbarToForm(form) {
+  if (!form) return;
+  const sortHidden = form.querySelector('[data-filter-sort]');
+  const viewHidden = form.querySelector('[data-filter-view]');
+  const perPageHidden = form.querySelector('[data-filter-per-page]');
+  const url = new URL(window.location.href);
+  if (sortHidden) {
+    sortHidden.value = url.searchParams.get('sort')
+      || document.querySelector('.catalog-sort__btn.is-active')?.dataset.navValue
+      || sortHidden.value
+      || 'popular';
+  }
+  if (viewHidden) {
+    viewHidden.value = url.searchParams.get('view')
+      || document.querySelector('.catalog-view__btn.is-active')?.dataset.navValue
+      || viewHidden.value
+      || 'grid';
+  }
+  if (perPageHidden) {
+    const grid = document.getElementById('product-grid');
+    perPageHidden.value = url.searchParams.get('per_page')
+      || grid?.dataset.perPage
+      || perPageHidden.value
+      || '12';
+  }
+}
+
 export function initCatalogFilters(root = document) {
   const drawer = root.querySelector('#catalog-filter-drawer') || document.getElementById('catalog-filter-drawer');
   if (!drawer || drawer.dataset.bound === '1') {
     bindToolbarNav(root);
+    bindPriceSliders(root);
     return;
   }
   drawer.dataset.bound = '1';
@@ -35,8 +63,6 @@ export function initCatalogFilters(root = document) {
   const openBtns = root.querySelectorAll('[data-filter-open]');
   const closeEls = drawer.querySelectorAll('[data-filter-close]');
   const form = drawer.querySelector('[data-filter-form]');
-  const sortHidden = form?.querySelector('[data-filter-sort]');
-  const perPageHidden = form?.querySelector('[data-filter-per-page]');
   const submitBtn = form?.querySelector('[data-filter-submit]');
 
   function setOpen(open) {
@@ -63,10 +89,7 @@ export function initCatalogFilters(root = document) {
     let countAbort = null;
 
     async function refreshResultCount() {
-      const sortSelect = document.getElementById('catalog-sort');
-      const perPageSelect = document.getElementById('catalog-per-page');
-      if (sortHidden && sortSelect) sortHidden.value = sortSelect.value;
-      if (perPageHidden && perPageSelect) perPageHidden.value = perPageSelect.value;
+      syncToolbarToForm(form);
 
       const params = new URLSearchParams(new FormData(form));
       params.delete('page');
@@ -110,11 +133,49 @@ export function initCatalogFilters(root = document) {
     });
 
     form.addEventListener('submit', () => {
-      const sortSelect = document.getElementById('catalog-sort');
-      const perPageSelect = document.getElementById('catalog-per-page');
-      if (sortHidden && sortSelect) sortHidden.value = sortSelect.value;
-      if (perPageHidden && perPageSelect) perPageHidden.value = perPageSelect.value;
+      syncToolbarToForm(form);
     });
+  }
+
+  const sidebarForm = root.querySelector('[data-filter-sidebar]');
+  if (sidebarForm && sidebarForm.dataset.countBound !== '1') {
+    sidebarForm.dataset.countBound = '1';
+    const sideSubmit = sidebarForm.querySelector('[data-filter-submit]');
+    let sideAbort = null;
+
+    async function refreshSideCount() {
+      syncToolbarToForm(sidebarForm);
+      const params = new URLSearchParams(new FormData(sidebarForm));
+      params.delete('page');
+      params.set('count_only', '1');
+      const action = sidebarForm.getAttribute('action') || window.location.pathname;
+      if (sideAbort) sideAbort.abort();
+      sideAbort = new AbortController();
+      try {
+        const res = await fetch(`${action}?${params.toString()}`, {
+          headers: { Accept: 'application/json' },
+          signal: sideAbort.signal,
+          credentials: 'same-origin',
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && typeof data.count === 'number') {
+          setFilterSubmitCount(sideSubmit, data.count);
+        }
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+      }
+    }
+
+    const scheduleSide = debounce(refreshSideCount, 250);
+    sidebarForm.addEventListener('change', scheduleSide);
+    sidebarForm.addEventListener('input', (event) => {
+      const t = event.target;
+      if (t && (t.name === 'price_min' || t.name === 'price_max')) {
+        scheduleSide();
+      }
+    });
+    sidebarForm.addEventListener('submit', () => syncToolbarToForm(sidebarForm));
   }
 
   bindToolbarNav(root);
@@ -163,17 +224,29 @@ function bindPriceSliders(root = document) {
 }
 
 function bindToolbarNav(root = document) {
-  const selects = root.querySelectorAll('[data-catalog-nav]');
-  selects.forEach((select) => {
-    if (select.dataset.navBound === '1') return;
-    select.dataset.navBound = '1';
-    select.addEventListener('change', () => {
+  const controls = root.querySelectorAll('[data-catalog-nav]');
+  controls.forEach((el) => {
+    if (el.dataset.navBound === '1') return;
+    el.dataset.navBound = '1';
+
+    const apply = () => {
       const url = new URL(window.location.href);
-      const param = select.dataset.navParam || 'sort';
-      url.searchParams.set(param, select.value);
+      const param = el.dataset.navParam || 'sort';
+      const value = el.dataset.navValue != null ? el.dataset.navValue : el.value;
+      url.searchParams.set(param, value);
       url.searchParams.delete('page');
       window.location.assign(url.toString());
-    });
+    };
+
+    if (el.tagName === 'SELECT') {
+      el.addEventListener('change', apply);
+    } else {
+      el.addEventListener('click', (event) => {
+        event.preventDefault();
+        if (el.classList.contains('is-active')) return;
+        apply();
+      });
+    }
   });
 }
 

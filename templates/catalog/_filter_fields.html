@@ -1,13 +1,15 @@
 {% for section in filter_sections %}
-<details class="filter-acc"{% if section.open %} open{% endif %}>
-  <summary class="filter-acc__summary">{{ section.name }}</summary>
+<section class="filter-section"{% if section.open %} data-open="1"{% endif %}>
+  <h3 class="filter-section__title">{{ section.name }}</h3>
 
   {% if section.filter_type == 'brand' %}
-  <div class="filter-acc__body">
+  <div class="filter-section__body{% if brands|length > 8 %} filter-section__body--scroll{% endif %}">
     {% for brand in brands %}
     <label class="filter-check">
       <input type="checkbox" name="brand" value="{{ brand.slug }}" {% if brand.slug in selected_brands %}checked{% endif %}>
-      <span>{{ brand.name }}{% if brand.product_count %} <em>({{ brand.product_count }})</em>{% endif %}</span>
+      <span class="filter-check__label">
+        {{ brand.name }}{% if brand.product_count %}<sup class="filter-check__count">{{ brand.product_count }}</sup>{% endif %}
+      </span>
     </label>
     {% empty %}
     <p class="checkout-note">Брендів поки немає</p>
@@ -15,7 +17,7 @@
   </div>
 
   {% elif section.filter_type == 'price' %}
-  <div class="filter-acc__body">
+  <div class="filter-section__body">
     <div class="filter-price-slider" data-price-slider
          data-min="{{ price_min_bound }}"
          data-max="{{ price_max_bound }}">
@@ -30,7 +32,7 @@
                value="{{ price_max_value }}" aria-label="Ціна до">
       </div>
     </div>
-    <div class="filter-acc__body--row">
+    <div class="filter-section__row">
       <div class="filter-group filter-group--inline">
         <label class="field__label" for="price_min{{ filter_id_suffix }}">Від</label>
         <input class="field__input" id="price_min{{ filter_id_suffix }}" type="number" name="price_min"
@@ -45,21 +47,21 @@
   </div>
 
   {% elif section.filter_type == 'category' %}
-  <div class="filter-acc__body">
+  <div class="filter-section__body{% if vid_categories|length > 8 %} filter-section__body--scroll{% endif %}">
     <label class="filter-check">
       <input type="radio" name="category" value="" {% if not selected_category %}checked{% endif %}>
-      <span>Усі види</span>
+      <span class="filter-check__label">Усі види</span>
     </label>
     {% for cat in vid_categories %}
     <label class="filter-check">
       <input type="radio" name="category" value="{{ cat.slug }}" {% if selected_category == cat.slug %}checked{% endif %}>
-      <span>{{ cat.name }}</span>
+      <span class="filter-check__label">{{ cat.name }}</span>
     </label>
     {% if not category %}
     {% for sub in cat.children.all %}
     <label class="filter-check filter-check--nested">
       <input type="radio" name="category" value="{{ sub.slug }}" {% if selected_category == sub.slug %}checked{% endif %}>
-      <span>{{ sub.name }}</span>
+      <span class="filter-check__label">{{ sub.name }}</span>
     </label>
     {% endfor %}
     {% endif %}
@@ -67,26 +69,28 @@
   </div>
 
   {% elif section.filter_type == 'in_stock' %}
-  <div class="filter-acc__body">
+  <div class="filter-section__body">
     <label class="filter-check">
       <input type="checkbox" name="in_stock" value="1" {% if request.GET.in_stock %}checked{% endif %}>
-      <span>В наявності</span>
+      <span class="filter-check__label">В наявності</span>
     </label>
   </div>
 
   {% elif section.filter_type == 'attribute' %}
-  <div class="filter-acc__body">
+  <div class="filter-section__body{% if section.values|length > 8 %} filter-section__body--scroll{% endif %}">
     {% for item in section.values %}
     <label class="filter-check">
       <input type="checkbox" name="{{ section.param }}" value="{{ item.value }}" {% if item.selected %}checked{% endif %}>
-      <span>{{ item.value }}</span>
+      <span class="filter-check__label">
+        {{ item.value }}{% if item.count %}<sup class="filter-check__count">{{ item.count }}</sup>{% endif %}
+      </span>
     </label>
     {% empty %}
     <p class="checkout-note">Немає значень</p>
     {% endfor %}
   </div>
   {% endif %}
-</details>
+</section>
 {% empty %}
 <p class="checkout-note">Фільтри не налаштовані в адмінці.</p>
 {% endfor %}

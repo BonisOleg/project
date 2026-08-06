@@ -11,6 +11,7 @@ from .filters import (
     ProductFilter,
     build_filter_sections,
     resolve_per_page,
+    resolve_view,
 )
 from .models import Brand, Category, Product
 
@@ -62,6 +63,7 @@ def _product_list_context(request, base_qs, page_title, breadcrumbs, category=No
     selected_attrs = _selected_attrs(request.GET)
     filter_sections = build_filter_sections(annotated, selected_attrs)
     per_page = resolve_per_page(request.GET)
+    current_view = resolve_view(request.GET)
     paginator = Paginator(filtered, per_page)
     page = paginator.get_page(request.GET.get('page'))
     sort = request.GET.get('sort', 'popular') or 'popular'
@@ -103,6 +105,7 @@ def _product_list_context(request, base_qs, page_title, breadcrumbs, category=No
         'selected_brands': _selected_brands(request.GET),
         'selected_category': request.GET.get('category', ''),
         'current_sort': sort,
+        'current_view': current_view,
         'per_page': per_page,
         'per_page_choices': PER_PAGE_CHOICES,
         'result_count': count,

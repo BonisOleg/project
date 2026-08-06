@@ -1,4 +1,4 @@
-<div class="product-grid">
+<div class="product-grid{% if current_view == 'list' %} product-grid--list{% endif %}">
   {% for product in products %}
     {% include 'partials/product_card.html' %}
   {% empty %}

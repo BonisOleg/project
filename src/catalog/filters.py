@@ -1,7 +1,7 @@
 from collections import defaultdict
 from decimal import Decimal, InvalidOperation
 
-from django.db.models import Q
+from django.db.models import Count, Q
 
 from .filter_schema import BONRO_ATTR_FACETS, BONRO_ATTR_FALLBACKS
 from .models import CatalogFilter, ProductAttribute
@@ -100,17 +100,21 @@ def _attr_values_map(queryset, names, limit_values=30):
     rows = (
         ProductAttribute.objects
         .filter(product_id__in=queryset.values('pk'), name__in=names)
-        .values_list('name', 'value')
-        .distinct()
+        .values('name', 'value')
+        .annotate(c=Count('product_id', distinct=True))
         .order_by('name', 'value')
     )
     grouped = defaultdict(list)
-    for name, value in rows:
+    seen = defaultdict(set)
+    for row in rows:
+        name = row.get('name')
+        value = row.get('value')
         if not name or not value:
             continue
-        bucket = grouped[name]
-        if value not in bucket and len(bucket) < limit_values:
-            bucket.append(value)
+        if value in seen[name] or len(grouped[name]) >= limit_values:
+            continue
+        seen[name].add(value)
+        grouped[name].append({'value': value, 'count': int(row.get('c') or 0)})
     return grouped
 
 
@@ -147,17 +151,61 @@ def get_active_catalog_filters():
 
 
 def build_filter_sections(queryset, selected_attrs, limit_values=30):
-    """Секції drawer-фільтра з адмінки (або fallback)."""
+    """Секції drawer-фільтра з адмінки (або fallback) + фактичні атрибути товарів."""
     definitions = get_active_catalog_filters()
-    attr_names = [
+    configured_attr_names = [
         f.attribute_name or f.name
         for f in definitions
         if f.filter_type == CatalogFilter.TYPE_ATTRIBUTE and (f.attribute_name or f.name)
     ]
+    discovered = list(
+        ProductAttribute.objects
+        .filter(product_id__in=queryset.values('pk'))
+        .exclude(name='')
+        .values_list('name', flat=True)
+        .distinct()
+        .order_by('name')
+    )
+    attr_names = list(dict.fromkeys([*configured_attr_names, *discovered]))
     values_map = _attr_values_map(queryset, attr_names, limit_values)
 
     sections = []
+    seen_attrs = set()
+    stock_section = None
+
+    def make_attr_section(attr_name, display_name=None, section_id=None, open_default=True):
+        values = list(values_map.get(attr_name) or [])
+        if not values:
+            return None
+        selected = selected_attrs.get(attr_name, set())
+        seen_attrs.add(attr_name)
+        return {
+            'id': section_id or f'auto-attr-{attr_name}',
+            'name': display_name or attr_name,
+            'filter_type': CatalogFilter.TYPE_ATTRIBUTE,
+            'open': open_default,
+            'attr_name': attr_name,
+            'param': attr_param_key(attr_name),
+            'values': [
+                {
+                    'value': item['value'],
+                    'count': item.get('count', 0),
+                    'selected': item['value'] in selected,
+                }
+                for item in values
+            ],
+        }
+
     for filt in definitions:
+        if filt.filter_type == CatalogFilter.TYPE_IN_STOCK:
+            stock_section = {
+                'id': filt.pk or f'fallback-{filt.filter_type}-{filt.name}',
+                'name': filt.name,
+                'filter_type': filt.filter_type,
+                'open': bool(filt.open_by_default),
+            }
+            continue
+
         section = {
             'id': filt.pk or f'fallback-{filt.filter_type}-{filt.name}',
             'name': filt.name,
@@ -166,21 +214,27 @@ def build_filter_sections(queryset, selected_attrs, limit_values=30):
         }
         if filt.filter_type == CatalogFilter.TYPE_ATTRIBUTE:
             attr_name = filt.attribute_name or filt.name
-            values = list(values_map.get(attr_name) or [])
-            # Не підставляємо seed-fallback (Bonro): інакше в UI є «244/Кругла»,
-            # а в товарів Siker таких атрибутів немає → count завжди 0.
-            if not values:
+            attr_section = make_attr_section(
+                attr_name,
+                display_name=filt.name,
+                section_id=filt.pk or f'fallback-attribute-{attr_name}',
+                open_default=bool(filt.open_by_default),
+            )
+            if not attr_section:
                 continue
-            selected = selected_attrs.get(attr_name, set())
-            section.update({
-                'attr_name': attr_name,
-                'param': attr_param_key(attr_name),
-                'values': [
-                    {'value': value, 'selected': value in selected}
-                    for value in values
-                ],
-            })
+            sections.append(attr_section)
+            continue
         sections.append(section)
+
+    for attr_name in discovered:
+        if attr_name in seen_attrs:
+            continue
+        attr_section = make_attr_section(attr_name)
+        if attr_section:
+            sections.append(attr_section)
+
+    if stock_section is not None:
+        sections.append(stock_section)
     return sections
 
 
@@ -215,6 +269,8 @@ def mark_attr_facets(facets, selected_attrs):
 
 PER_PAGE_CHOICES = (12, 24, 48)
 DEFAULT_PER_PAGE = 12
+VIEW_CHOICES = ('grid', 'list')
+DEFAULT_VIEW = 'grid'
 
 
 def resolve_per_page(params):
@@ -223,3 +279,8 @@ def resolve_per_page(params):
     except (TypeError, ValueError):
         return DEFAULT_PER_PAGE
     return value if value in PER_PAGE_CHOICES else DEFAULT_PER_PAGE
+
+
+def resolve_view(params):
+    value = (params.get('view') or DEFAULT_VIEW).strip().lower()
+    return value if value in VIEW_CHOICES else DEFAULT_VIEW

@@ -141,65 +141,26 @@
 }
 
 .catalog-toolbar {
+  /* стилі в components/catalog_toolbar.css */
   display: flex;
   align-items: center;
   gap: var(--sp-2);
   flex-wrap: wrap;
   margin: var(--sp-4) 0 var(--sp-3);
-  padding: var(--sp-2) 0;
+  padding: 0;
 }
 
 .catalog-toolbar__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  min-height: 44px;
-  padding: 0 var(--sp-3);
-  border: 1px solid var(--c-border);
-  border-radius: var(--r-md);
-  background: var(--c-surface);
-  color: var(--c-text);
-  font: inherit;
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-
-.catalog-toolbar__btn:hover,
-.catalog-toolbar__btn:focus-visible {
-  border-color: var(--c-brand);
-  color: var(--c-brand-dark);
+  display: none;
 }
 
 .catalog-toolbar__sort,
 .catalog-toolbar__per-page {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.catalog-toolbar__per-page {
-  flex: 0 0 auto;
-  max-width: 5.5rem;
+  display: none;
 }
 
 .catalog-toolbar__select {
-  width: 100%;
-  min-height: 44px;
-  padding: 0 var(--sp-3);
-  border: 1px solid var(--c-border);
-  border-radius: var(--r-md);
-  background: var(--c-surface);
-  color: var(--c-text);
-  font: inherit;
-  font-size: var(--fs-sm);
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  padding-right: 2rem;
-  -webkit-appearance: none;
+  display: none;
 }
 
 .catalog-pagination {
@@ -789,10 +750,6 @@ body.catalog-filter-open {
   .catalog-page {
     padding-bottom: calc(var(--sp-8) + var(--bottom-nav-h));
   }
-
-  .catalog-toolbar__sort {
-    flex: 1 1 9rem;
-  }
 }
 
 @media (min-width: 768px) {
@@ -969,7 +926,7 @@ body.catalog-filter-open {
     border-radius: var(--r-lg);
   }
 
-  .catalog-toolbar__btn[data-filter-open] {
+  .catalog-toolbar__filter {
     display: none;
   }
 }

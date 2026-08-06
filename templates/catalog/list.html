@@ -2,8 +2,9 @@
 {% load static ui_tags %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/catalog.css' %}?v=20260805c">
+<link rel="stylesheet" href="{% static 'css/pages/catalog.css' %}?v=20260806a">
 <link rel="stylesheet" href="{% static 'css/components/category_scroll.css' %}?v=20260728a">
+<link rel="stylesheet" href="{% static 'css/components/catalog_toolbar.css' %}?v=20260806a">
 {% endblock %}
 
 {% block content %}
@@ -59,31 +60,48 @@
   {% endif %}
 
   <div class="catalog-toolbar reveal">
-    <button type="button" class="catalog-toolbar__btn" data-filter-open aria-controls="catalog-filter-drawer" aria-expanded="false">
+    <button type="button" class="catalog-toolbar__filter" data-filter-open aria-controls="catalog-filter-drawer" aria-expanded="false">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="M4 6h16M7 12h10M10 18h4"/>
       </svg>
       <span>Фільтр</span>
     </button>
 
-    <div class="catalog-toolbar__sort">
-      <label class="visually-hidden" for="catalog-sort">Сортування</label>
-      <select id="catalog-sort" class="catalog-toolbar__select" data-catalog-nav data-nav-param="sort">
-        <option value="popular" {% if current_sort == 'popular' %}selected{% endif %}>За популярністю</option>
-        <option value="price_asc" {% if current_sort == 'price_asc' %}selected{% endif %}>Спочатку дешевше</option>
-        <option value="price_desc" {% if current_sort == 'price_desc' %}selected{% endif %}>Спочатку дорожче</option>
-        <option value="name" {% if current_sort == 'name' %}selected{% endif %}>За назвою</option>
-        <option value="new" {% if current_sort == 'new' %}selected{% endif %}>Новинки</option>
-      </select>
+    <div class="catalog-sort" role="group" aria-label="Сортування">
+      <span class="catalog-sort__label">Сортування:</span>
+      <div class="catalog-sort__options">
+        <button type="button" class="catalog-sort__btn{% if current_sort == 'popular' %} is-active{% endif %}"
+                data-catalog-nav data-nav-param="sort" data-nav-value="popular">за популярністю</button>
+        <button type="button" class="catalog-sort__btn{% if current_sort == 'price_asc' %} is-active{% endif %}"
+                data-catalog-nav data-nav-param="sort" data-nav-value="price_asc">спочатку дешевше</button>
+        <button type="button" class="catalog-sort__btn{% if current_sort == 'price_desc' %} is-active{% endif %}"
+                data-catalog-nav data-nav-param="sort" data-nav-value="price_desc">спочатку дорожче</button>
+        <button type="button" class="catalog-sort__btn{% if current_sort == 'name' %} is-active{% endif %}"
+                data-catalog-nav data-nav-param="sort" data-nav-value="name">за назвою</button>
+      </div>
     </div>
 
-    <div class="catalog-toolbar__per-page">
-      <label class="visually-hidden" for="catalog-per-page">На сторінці</label>
-      <select id="catalog-per-page" class="catalog-toolbar__select" data-catalog-nav data-nav-param="per_page" aria-label="Кількість на сторінці">
-        {% for n in per_page_choices %}
-        <option value="{{ n }}" {% if per_page == n %}selected{% endif %}>{{ n }}</option>
-        {% endfor %}
-      </select>
+    <div class="catalog-view" role="group" aria-label="Відображення">
+      <span class="catalog-view__label">Відображення:</span>
+      <div class="catalog-view__options">
+        <button type="button"
+                class="catalog-view__btn{% if current_view != 'list' %} is-active{% endif %}"
+                data-catalog-nav data-nav-param="view" data-nav-value="grid"
+                aria-label="Сітка" aria-pressed="{% if current_view != 'list' %}true{% else %}false{% endif %}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+          </svg>
+        </button>
+        <button type="button"
+                class="catalog-view__btn{% if current_view == 'list' %} is-active{% endif %}"
+                data-catalog-nav data-nav-param="view" data-nav-value="list"
+                aria-label="Список" aria-pressed="{% if current_view == 'list' %}true{% else %}false{% endif %}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -99,6 +117,7 @@
             data-filter-sidebar>
         {% if request.GET.q %}<input type="hidden" name="q" value="{{ request.GET.q }}">{% endif %}
         <input type="hidden" name="sort" value="{{ current_sort }}" data-filter-sort>
+        <input type="hidden" name="view" value="{{ current_view }}" data-filter-view>
         <input type="hidden" name="per_page" value="{{ per_page }}" data-filter-per-page>
         {% include 'catalog/_filter_fields.html' with filter_id_suffix='_side' %}
         <button type="submit" class="btn btn--primary btn--block" data-filter-submit>
@@ -111,6 +130,7 @@
       <div id="product-grid"
            data-catalog-path="{{ request.path }}"
            data-sort="{{ current_sort }}"
+           data-view="{{ current_view }}"
            data-per-page="{{ per_page }}">
         {% include 'catalog/_product_grid.html' %}
       </div>
@@ -137,6 +157,7 @@
           data-filter-form>
       {% if request.GET.q %}<input type="hidden" name="q" value="{{ request.GET.q }}">{% endif %}
       <input type="hidden" name="sort" value="{{ current_sort }}" data-filter-sort>
+      <input type="hidden" name="view" value="{{ current_view }}" data-filter-view>
       <input type="hidden" name="per_page" value="{{ per_page }}" data-filter-per-page>
 
       <div class="catalog-filter-form__scroll">
@@ -154,5 +175,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script type="module" src="{% static 'js/modules/catalog_filters.js' %}?v=20260728b"></script>
+<script type="module" src="{% static 'js/modules/catalog_filters.js' %}?v=20260806a"></script>
 {% endblock %}
