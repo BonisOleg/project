@@ -441,17 +441,22 @@
 /* Flyout під кнопкою «Каталог» (як siker.ua), НЕ full-width mega-menu */
 .catalog-dropdown {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  max-width: 100%;
 }
 
 .catalog-dropdown__menu {
   position: absolute;
   top: 100%;
   left: 0;
+  right: auto;
   z-index: var(--z-dropdown);
   box-sizing: border-box;
-  width: max-content;
-  min-width: min(42rem, 90vw);
-  max-width: min(52rem, 90vw);
+  width: min(48rem, calc(100vw - 2 * var(--container-pad)));
+  min-width: min(36rem, calc(100vw - 2 * var(--container-pad)));
+  max-width: min(48rem, calc(100vw - 2 * var(--container-pad)));
   margin-top: 0.25rem;
   padding: var(--sp-5) var(--sp-6);
   background: var(--c-surface);
@@ -463,12 +468,10 @@
   pointer-events: none;
   transform: translateY(6px);
   transition: opacity var(--t-fast), transform var(--t-fast), visibility var(--t-fast);
-  display: grid;
-  grid-template-columns: repeat(3, minmax(10.5rem, 13.5rem));
-  align-content: start;
-  align-items: start;
+  /* Masonry-потік у 3 колонки — без «дірок» як у CSS Grid rows */
+  display: block;
+  column-count: 3;
   column-gap: var(--sp-5);
-  row-gap: var(--sp-5);
   max-height: min(70vh, calc(100dvh - var(--header-h) - var(--sp-8)));
   overflow-x: hidden;
   overflow-y: auto;
@@ -494,9 +497,17 @@
   transform: translateY(0);
 }
 
-.catalog-dropdown__col {
-  min-width: 0;
+.catalog-dropdown__group {
+  display: block;
+  width: 100%;
+  margin: 0 0 var(--sp-5);
   break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.catalog-dropdown__group:last-child {
+  margin-bottom: 0;
 }
 
 .catalog-dropdown__title {

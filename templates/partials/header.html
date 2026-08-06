@@ -33,11 +33,11 @@
         <a href="{% url 'catalog:list' %}" class="site-nav__link">{% block_plain 'site' 'header_nav_catalog_label' 'Каталог' %}</a>
         <div class="catalog-dropdown__menu" role="menu">
           {% for cat in categories_menu %}
-          <div class="catalog-dropdown__col">
+          <div class="catalog-dropdown__group">
             <div class="catalog-dropdown__title">
               <a href="{{ cat.get_absolute_url }}" role="menuitem">{{ cat.name }}</a>
             </div>
-            {% with children=cat.children.all %}
+            {% with children=cat.menu_children %}
             {% if children %}
             <div class="catalog-dropdown__sub">
               {% for sub in children|slice:":4" %}
