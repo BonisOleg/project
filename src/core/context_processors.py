@@ -10,7 +10,12 @@ SITE_BLOCKS_CACHE_KEY = 'oyra_site_blocks_v1'
 SITE_BLOCKS_CACHE_TTL = 60
 CATEGORIES_MENU_CACHE_KEY = 'oyra_categories_menu_v2'
 CATEGORIES_MENU_CACHE_TTL = 60
-HIDDEN_CATALOG_MENU_NAMES = ('Трактори', 'Обладнання СТО')
+HIDDEN_CATALOG_MENU_NAMES = (
+    'Трактори',
+    'Обладнання СТО',
+    'Акумуляторні батареї',
+    'Сертифікат',
+)
 
 
 def _load_site_blocks() -> dict[str, SiteBlock]:

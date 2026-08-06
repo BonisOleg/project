@@ -7,6 +7,7 @@ from django.db import transaction
 from slugify import slugify
 
 from src.catalog.models import Category, Product
+from src.catalog.siker_website_layout import apply_siker_website_layout
 from src.catalog.siker_yml import YmlCategory, YmlOffer
 
 # Корені, які ховаємо (можна повернути пізніше через is_active=True).
@@ -14,6 +15,8 @@ HIDDEN_ROOT_NAMES = frozenset({
     'трактори',
     'обладнання для сто',
     'обладнання сто',
+    'акумуляторні батареї',
+    'сертифікат',
 })
 
 
@@ -21,6 +24,7 @@ HIDDEN_ROOT_NAMES = frozenset({
 class SyncStats:
     categories_upserted: int = 0
     categories_hidden: int = 0
+    layout_reparented: int = 0
     products_remapped: int = 0
     products_skipped: int = 0
 
@@ -193,9 +197,16 @@ def sync_categories_and_products(
     stats = SyncStats()
     cat_map = build_category_tree(yml_categories)
     stats.categories_upserted = len(cat_map)
+    # YML parentId ≠ меню siker.ua — вирівнюємо дерево під сайт
+    layout = apply_siker_website_layout(cat_map)
+    stats.layout_reparented = layout.reparented
+    # Оновлюємо map після layout (нові oyra:* корені)
+    for cat in Category.objects.exclude(external_id=''):
+        cat_map[cat.external_id] = cat
     stats.categories_hidden = deactivate_hidden_branches(cat_map)
-    # Seed/застарілі гілки без Siker id — ховаємо (товари вже перепривʼязані)
-    stale = Category.objects.filter(external_id='').update(is_active=False)
+    # Seed без id — ховаємо; синтетичні oyra:* лишаємо
+    stale_qs = Category.objects.filter(external_id='')
+    stale = stale_qs.update(is_active=False)
     stats.categories_hidden += stale
     remapped, skipped = remap_products_from_offers(offers, cat_map)
     stats.products_remapped = remapped

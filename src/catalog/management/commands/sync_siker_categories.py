@@ -9,7 +9,7 @@ from src.catalog.siker_yml import DEFAULT_EXPORT_URL, load_yml_bytes, parse_yml
 
 class Command(BaseCommand):
     help = (
-        'Оновлює дерево категорій (parentId) з YML Siker, '
+        'Оновлює дерево категорій з YML Siker, вирівнює під меню siker.ua, '
         'перепривʼязує товари за SKU, ховає Трактори/СТО.'
     )
 
@@ -41,6 +41,7 @@ class Command(BaseCommand):
         stats = sync_categories_and_products(catalog.categories, catalog.offers)
         self.stdout.write(self.style.SUCCESS(
             f'Категорій upsert: {stats.categories_upserted}; '
+            f'layout reparent: {stats.layout_reparented}; '
             f'приховано: {stats.categories_hidden}; '
             f'товарів перепривʼязано: {stats.products_remapped}; '
             f'пропуск offers: {stats.products_skipped}'

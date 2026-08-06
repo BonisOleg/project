@@ -10,7 +10,7 @@ from typing import Iterable
 from urllib.request import Request, urlopen
 
 DEFAULT_EXPORT_URL = (
-    'https://partner.siker.ua/export/255/export_2106_6a685812363f9.yml'
+    'https://partner.siker.ua/export/255/export_2106_6a70ba8b6c8ab.yml'
 )
 
 _CDATA_RE = re.compile(
