@@ -1,0 +1,37 @@
+{# Опції фільтра «Вид»: корені + підкатегорії (акордеон якщо дітей > 5) #}
+<label class="filter-check">
+  <input type="radio" name="category" value="" {% if not selected_category %}checked{% endif %}>
+  <span class="filter-check__label">Усі види</span>
+</label>
+{% for cat in vid_categories %}
+<label class="filter-check">
+  <input type="radio" name="category" value="{{ cat.slug }}" {% if selected_category == cat.slug %}checked{% endif %}>
+  <span class="filter-check__label">{{ cat.name }}</span>
+</label>
+{% if not category %}
+{% with kids=cat.children.all %}
+{% with kids_count=kids|length %}
+{% if kids_count > 5 %}
+<details class="filter-acc filter-acc--nested"{% for sub in kids %}{% if selected_category == sub.slug %} open{% endif %}{% endfor %}>
+  <summary class="filter-acc__summary">Підкатегорії ({{ kids_count }})</summary>
+  <div class="filter-acc__body">
+    {% for sub in kids %}
+    <label class="filter-check filter-check--nested">
+      <input type="radio" name="category" value="{{ sub.slug }}" {% if selected_category == sub.slug %}checked{% endif %}>
+      <span class="filter-check__label">{{ sub.name }}</span>
+    </label>
+    {% endfor %}
+  </div>
+</details>
+{% elif kids_count %}
+  {% for sub in kids %}
+  <label class="filter-check filter-check--nested">
+    <input type="radio" name="category" value="{{ sub.slug }}" {% if selected_category == sub.slug %}checked{% endif %}>
+    <span class="filter-check__label">{{ sub.name }}</span>
+  </label>
+  {% endfor %}
+{% endif %}
+{% endwith %}
+{% endwith %}
+{% endif %}
+{% endfor %}

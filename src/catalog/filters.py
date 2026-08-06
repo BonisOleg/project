@@ -183,7 +183,7 @@ def build_filter_sections(queryset, selected_attrs, limit_values=30):
             'id': section_id or f'auto-attr-{attr_name}',
             'name': display_name or attr_name,
             'filter_type': CatalogFilter.TYPE_ATTRIBUTE,
-            'open': open_default,
+            'open': open_default or bool(selected),
             'attr_name': attr_name,
             'param': attr_param_key(attr_name),
             'values': [

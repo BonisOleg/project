@@ -1,5 +1,5 @@
 from django.core.paginator import Paginator
-from django.db.models import Count, Max, Min, Q
+from django.db.models import Count, Max, Min, Prefetch, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
@@ -68,13 +68,20 @@ def _product_list_context(request, base_qs, page_title, breadcrumbs, category=No
     page = paginator.get_page(request.GET.get('page'))
     sort = request.GET.get('sort', 'popular') or 'popular'
     query_wo_page = _query_without_page(request.GET)
-    root_categories = Category.objects.filter(parent=None, is_active=True).prefetch_related('children')
+    root_categories = Category.objects.filter(parent=None, is_active=True).prefetch_related(
+        Prefetch('children', queryset=Category.objects.filter(is_active=True).order_by('sort_order', 'name')),
+    )
     if category:
-        vid_categories = category.children.filter(is_active=True)
+        vid_categories = category.children.filter(is_active=True).order_by('sort_order', 'name')
         if not vid_categories.exists() and category.parent_id:
-            vid_categories = category.parent.children.filter(is_active=True)
+            vid_categories = category.parent.children.filter(is_active=True).order_by('sort_order', 'name')
+        # «Усі види» + плоский список дітей поточної категорії
+        vid_option_count = 1 + vid_categories.count()
     else:
         vid_categories = root_categories
+        vid_option_count = 1
+        for root in vid_categories:
+            vid_option_count += 1 + len(root.children.all())
 
     price_agg = annotated.aggregate(lo=Min('price'), hi=Max('price'))
     brand_counts = {
@@ -101,6 +108,7 @@ def _product_list_context(request, base_qs, page_title, breadcrumbs, category=No
         'brands': brands,
         'root_categories': root_categories,
         'vid_categories': vid_categories,
+        'vid_option_count': vid_option_count,
         'filter_sections': filter_sections,
         'selected_brands': _selected_brands(request.GET),
         'selected_category': request.GET.get('category', ''),

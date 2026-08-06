@@ -286,6 +286,7 @@ body.catalog-filter-open {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--sp-2);
   min-height: 3rem;
   padding: var(--sp-3) 0;
   font-weight: 600;
@@ -293,6 +294,8 @@ body.catalog-filter-open {
   cursor: pointer;
   list-style: none;
   -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .filter-acc__summary::-webkit-details-marker {
@@ -324,6 +327,30 @@ body.catalog-filter-open {
 .filter-acc__body--row {
   flex-direction: row;
   gap: var(--sp-3);
+}
+
+.filter-acc--nested {
+  margin: 0 0 var(--sp-1) var(--sp-4);
+  border-bottom: none;
+}
+
+.filter-acc--nested > .filter-acc__summary {
+  min-height: 2.75rem;
+  padding: var(--sp-2) 0;
+  font-weight: 500;
+  color: var(--c-text-muted, var(--c-text-secondary));
+}
+
+.filter-acc--nested > .filter-acc__body {
+  gap: 0.125rem;
+  padding-bottom: var(--sp-2);
+}
+
+@supports (-webkit-touch-callout: none) {
+  .filter-acc__summary,
+  .filter-acc--nested > .filter-acc__summary {
+    min-height: 44px;
+  }
 }
 
 .filter-group {
