@@ -342,8 +342,12 @@ body.catalog-filter-open {
 }
 
 .filter-acc--nested > .filter-acc__body {
-  gap: 0.125rem;
+  gap: 0;
   padding-bottom: var(--sp-2);
+}
+
+.filter-check--nested + .filter-check--nested {
+  border-top: 1px solid var(--c-border);
 }
 
 @supports (-webkit-touch-callout: none) {
