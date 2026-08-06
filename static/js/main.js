@@ -11,6 +11,7 @@ import { initCategoryScroll } from './modules/category_scroll.js';
 import { initToasts } from './modules/toast.js';
 import { initPasswordToggle } from './modules/password_toggle.js';
 import { initCatalogDropdown } from './modules/catalog_dropdown.js';
+import { initPhoneTooltip } from './modules/phone_tooltip.js';
 
 function onReady(callback) {
   if (document.readyState === 'loading') {
@@ -34,6 +35,7 @@ onReady(() => {
   initToasts();
   initPasswordToggle();
   initCatalogDropdown();
+  initPhoneTooltip();
 });
 
 document.body.addEventListener('htmx:configRequest', (event) => {
