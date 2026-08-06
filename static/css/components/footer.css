@@ -259,18 +259,36 @@
 
   .newsletter {
     display: grid;
-    gap: var(--sp-3);
-    margin-top: var(--sp-5);
-    padding: var(--sp-4);
+    gap: var(--sp-2);
+    margin-top: var(--sp-4);
+    padding: var(--sp-3);
+  }
+
+  .newsletter__title {
+    font-size: var(--fs-md);
+    line-height: 1.25;
   }
 
   .newsletter__form {
     flex-direction: column;
     align-items: stretch;
+    gap: var(--sp-2);
+    max-width: none;
+    margin-left: 0;
+  }
+
+  .newsletter__form .field__input {
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 2.75rem;
+    height: 2.75rem;
+    padding-block: 0;
+    box-sizing: border-box;
   }
 
   .newsletter__form .btn {
     width: 100%;
+    min-height: 2.75rem;
   }
 
   .site-footer__bottom {
