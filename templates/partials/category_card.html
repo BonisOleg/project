@@ -1,11 +1,12 @@
 {% load ui_tags %}
 {# Єдина картка категорії: фото на всю media-зону, іконка як fallback, підпис під фото #}
+{% with card_image=cat.resolved_card_image %}
 <a href="{{ cat.get_absolute_url }}" class="category-card category-scroll__item">
   <span class="category-card__media" aria-hidden="true">
-    {% if cat.image %}
+    {% if card_image %}
       <img
         class="category-card__img"
-        src="{{ cat.image.url }}"
+        src="{{ card_image.url }}"
         alt=""
         width="400"
         height="300"
@@ -24,3 +25,4 @@
   </span>
   <span class="category-card__name">{{ cat.name }}</span>
 </a>
+{% endwith %}
