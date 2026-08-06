@@ -15,36 +15,6 @@
   overflow: visible;
 }
 
-.site-topbar {
-  display: none;
-  background: var(--c-brand);
-  color: #fff;
-  font-size: var(--fs-xs);
-}
-
-.site-topbar__inner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2) var(--sp-4);
-  min-height: 2rem;
-  padding-top: 0.35rem;
-  padding-bottom: 0.35rem;
-}
-
-.site-topbar a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.site-topbar a:hover {
-  text-decoration: underline;
-}
-
-.site-topbar__hours {
-  opacity: 0.85;
-}
-
 .site-header__inner {
   position: relative;
   display: grid;
@@ -331,10 +301,6 @@
     top: 0.1rem;
     right: 0.15rem;
     transform: none;
-  }
-
-  .site-topbar {
-    display: block;
   }
 
   .site-header {

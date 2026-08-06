@@ -1,13 +1,4 @@
 {% load oyra_content %}
-<div class="site-topbar" aria-label="Контакти">
-  <div class="container site-topbar__inner">
-    <a class="site-topbar__phone" href="tel:{{ site_settings.phone }}">{{ site_settings.phone }}</a>
-    {% if site_settings.work_hours %}
-    <span class="site-topbar__hours">{{ site_settings.work_hours }}</span>
-    {% endif %}
-    <a class="site-topbar__email" href="mailto:{{ site_settings.email }}">{{ site_settings.email }}</a>
-  </div>
-</div>
 <header class="site-header">
   <div class="container site-header__inner">
     <div class="site-header__brand">
