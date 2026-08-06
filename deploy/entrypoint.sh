@@ -36,6 +36,7 @@ echo "==> Django check + migrate + collectstatic"
 python manage.py check --deploy
 python manage.py migrate --noinput
 python manage.py seed_hero_slides
+python manage.py seed_siker_catalog_filters || echo "WARN: seed_siker_catalog_filters failed"
 python manage.py assign_category_images || echo "WARN: assign_category_images failed"
 python manage.py collectstatic --noinput
 

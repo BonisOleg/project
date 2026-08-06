@@ -3,7 +3,11 @@ from decimal import Decimal, InvalidOperation
 
 from django.db.models import Count, Q
 
-from .filter_schema import BONRO_ATTR_FACETS, BONRO_ATTR_FALLBACKS
+from .filter_schema import (
+    SIKER_ATTR_EXCLUDE,
+    SIKER_PRIORITY_ATTRS,
+    attr_aliases,
+)
 from .models import CatalogFilter, ProductAttribute
 
 
@@ -81,7 +85,8 @@ class ProductFilter:
             values = [v.strip() for v in values if v and str(v).strip()]
             if not values:
                 continue
-            qs = qs.filter(attributes__name=name, attributes__value__in=values)
+            names = list(attr_aliases(name))
+            qs = qs.filter(attributes__name__in=names, attributes__value__in=values)
 
         sort = self.params.get('sort', 'popular')
         sort_map = {
@@ -94,12 +99,21 @@ class ProductFilter:
         return qs.distinct().order_by(*sort_map.get(sort, sort_map['popular']))
 
 
-def _attr_values_map(queryset, names, limit_values=30):
-    if not names:
+def _attr_values_map(queryset, canonical_names, limit_values=30):
+    """Збирає значення атрибутів; aliases зливаються під канонічним імʼям."""
+    if not canonical_names:
         return {}
+    lookup_names: list[str] = []
+    alias_to_canonical: dict[str, str] = {}
+    for canonical in canonical_names:
+        for alias in attr_aliases(canonical):
+            alias_to_canonical[alias] = canonical
+            if alias not in lookup_names:
+                lookup_names.append(alias)
+
     rows = (
         ProductAttribute.objects
-        .filter(product_id__in=queryset.values('pk'), name__in=names)
+        .filter(product_id__in=queryset.values('pk'), name__in=lookup_names)
         .values('name', 'value')
         .annotate(c=Count('product_id', distinct=True))
         .order_by('name', 'value')
@@ -107,10 +121,11 @@ def _attr_values_map(queryset, names, limit_values=30):
     grouped = defaultdict(list)
     seen = defaultdict(set)
     for row in rows:
-        name = row.get('name')
+        raw_name = row.get('name')
         value = row.get('value')
-        if not name or not value:
+        if not raw_name or not value:
             continue
+        name = alias_to_canonical.get(raw_name, raw_name)
         if value in seen[name] or len(grouped[name]) >= limit_values:
             continue
         seen[name].add(value)
@@ -118,54 +133,72 @@ def _attr_values_map(queryset, names, limit_values=30):
     return grouped
 
 
-def get_active_catalog_filters():
-    qs = CatalogFilter.objects.filter(is_active=True).order_by('sort_order', 'name')
-    if qs.exists():
-        return list(qs)
-    # Fallback на хардкод Bonro, якщо в БД ще немає записів
-    filters = []
-    filters.append(CatalogFilter(
-        name='Бренд', filter_type=CatalogFilter.TYPE_BRAND, sort_order=10, is_active=True,
-    ))
-    filters.append(CatalogFilter(
-        name='Ціна, грн', filter_type=CatalogFilter.TYPE_PRICE, sort_order=20,
-        is_active=True, open_by_default=True,
-    ))
-    filters.append(CatalogFilter(
-        name='Вид', filter_type=CatalogFilter.TYPE_CATEGORY, sort_order=30, is_active=True,
-    ))
-    for i, name in enumerate(BONRO_ATTR_FACETS, start=1):
-        fallback = '\n'.join(BONRO_ATTR_FALLBACKS.get(name, []))
+def siker_catalog_filter_definitions():
+    """Дефолтний набір CatalogFilter як на siker.ua (без запису в БД)."""
+    filters = [
+        CatalogFilter(
+            name='Бренд', filter_type=CatalogFilter.TYPE_BRAND,
+            sort_order=10, is_active=True,
+        ),
+        CatalogFilter(
+            name='Ціна, грн', filter_type=CatalogFilter.TYPE_PRICE,
+            sort_order=20, is_active=True, open_by_default=True,
+        ),
+        CatalogFilter(
+            name='Вид', filter_type=CatalogFilter.TYPE_CATEGORY,
+            sort_order=30, is_active=True,
+        ),
+    ]
+    for i, (display, attr_name, values) in enumerate(SIKER_PRIORITY_ATTRS, start=1):
         filters.append(CatalogFilter(
-            name=name,
+            name=display,
             filter_type=CatalogFilter.TYPE_ATTRIBUTE,
-            attribute_name=name,
-            fallback_values=fallback,
+            attribute_name=attr_name,
+            fallback_values='\n'.join(values),
             sort_order=30 + i * 10,
             is_active=True,
+            open_by_default=False,
         ))
     filters.append(CatalogFilter(
-        name='Наявність', filter_type=CatalogFilter.TYPE_IN_STOCK, sort_order=200, is_active=True,
+        name='Наявність', filter_type=CatalogFilter.TYPE_IN_STOCK,
+        sort_order=200, is_active=True,
     ))
     return filters
 
 
+def get_active_catalog_filters():
+    qs = CatalogFilter.objects.filter(is_active=True).order_by('sort_order', 'name')
+    if qs.exists():
+        return list(qs)
+    return siker_catalog_filter_definitions()
+
+
 def build_filter_sections(queryset, selected_attrs, limit_values=30):
-    """Секції drawer-фільтра з адмінки (або fallback) + фактичні атрибути товарів."""
+    """Секції drawer-фільтра: пріоритет Siker + решта атрибутів згорнуті."""
     definitions = get_active_catalog_filters()
     configured_attr_names = [
         f.attribute_name or f.name
         for f in definitions
         if f.filter_type == CatalogFilter.TYPE_ATTRIBUTE and (f.attribute_name or f.name)
     ]
-    discovered = list(
-        ProductAttribute.objects
-        .filter(product_id__in=queryset.values('pk'))
-        .exclude(name='')
-        .values_list('name', flat=True)
-        .distinct()
-        .order_by('name')
-    )
+    discovered = [
+        name for name in (
+            ProductAttribute.objects
+            .filter(product_id__in=queryset.values('pk'))
+            .exclude(name='')
+            .exclude(name__in=SIKER_ATTR_EXCLUDE)
+            .values_list('name', flat=True)
+            .distinct()
+            .order_by('name')
+        )
+        if name not in SIKER_ATTR_EXCLUDE
+    ]
+    # aliases пріоритетних не дублюємо окремими секціями
+    configured_alias_set = {
+        alias
+        for canonical in configured_attr_names
+        for alias in attr_aliases(canonical)
+    }
     attr_names = list(dict.fromkeys([*configured_attr_names, *discovered]))
     values_map = _attr_values_map(queryset, attr_names, limit_values)
 
@@ -173,12 +206,26 @@ def build_filter_sections(queryset, selected_attrs, limit_values=30):
     seen_attrs = set()
     stock_section = None
 
-    def make_attr_section(attr_name, display_name=None, section_id=None, open_default=True):
+    def make_attr_section(
+        attr_name,
+        display_name=None,
+        section_id=None,
+        open_default=False,
+        fallbacks=None,
+    ):
         values = list(values_map.get(attr_name) or [])
+        if not values and fallbacks:
+            values = [{'value': v, 'count': 0} for v in fallbacks if v]
         if not values:
             return None
-        selected = selected_attrs.get(attr_name, set())
+        # selected може прийти і за display, і за canonical
+        selected = set()
+        selected |= selected_attrs.get(attr_name, set())
+        if display_name:
+            selected |= selected_attrs.get(display_name, set())
         seen_attrs.add(attr_name)
+        for alias in attr_aliases(attr_name):
+            seen_attrs.add(alias)
         return {
             'id': section_id or f'auto-attr-{attr_name}',
             'name': display_name or attr_name,
@@ -206,30 +253,39 @@ def build_filter_sections(queryset, selected_attrs, limit_values=30):
             }
             continue
 
+        if filt.filter_type == CatalogFilter.TYPE_ATTRIBUTE:
+            attr_name = filt.attribute_name or filt.name
+            fallbacks = filt.fallback_list() if hasattr(filt, 'fallback_list') else []
+            if not fallbacks and filt.fallback_values:
+                fallbacks = [
+                    line.strip()
+                    for line in filt.fallback_values.splitlines()
+                    if line.strip()
+                ]
+            attr_section = make_attr_section(
+                attr_name,
+                display_name=filt.name,
+                section_id=filt.pk or f'fallback-attribute-{attr_name}',
+                open_default=bool(filt.open_by_default),
+                fallbacks=fallbacks,
+            )
+            if not attr_section:
+                continue
+            sections.append(attr_section)
+            continue
+
         section = {
             'id': filt.pk or f'fallback-{filt.filter_type}-{filt.name}',
             'name': filt.name,
             'filter_type': filt.filter_type,
             'open': bool(filt.open_by_default),
         }
-        if filt.filter_type == CatalogFilter.TYPE_ATTRIBUTE:
-            attr_name = filt.attribute_name or filt.name
-            attr_section = make_attr_section(
-                attr_name,
-                display_name=filt.name,
-                section_id=filt.pk or f'fallback-attribute-{attr_name}',
-                open_default=bool(filt.open_by_default),
-            )
-            if not attr_section:
-                continue
-            sections.append(attr_section)
-            continue
         sections.append(section)
 
     for attr_name in discovered:
-        if attr_name in seen_attrs:
+        if attr_name in seen_attrs or attr_name in configured_alias_set:
             continue
-        attr_section = make_attr_section(attr_name)
+        attr_section = make_attr_section(attr_name, open_default=False)
         if attr_section:
             sections.append(attr_section)
 
