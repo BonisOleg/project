@@ -268,7 +268,8 @@ body.catalog-filter-open {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding: 0 var(--sp-4);
+  scroll-padding-bottom: var(--sp-4);
+  padding: 0 var(--sp-4) var(--sp-4);
 }
 
 .catalog-filter-form__footer {
@@ -282,6 +283,10 @@ body.catalog-filter-open {
   border-bottom: 1px solid var(--c-border);
 }
 
+.filter-acc:last-of-type {
+  border-bottom: none;
+}
+
 .filter-acc__summary {
   display: flex;
   align-items: center;
@@ -291,6 +296,7 @@ body.catalog-filter-open {
   padding: var(--sp-3) 0;
   font-weight: 600;
   font-size: var(--fs-sm);
+  line-height: 1.35;
   cursor: pointer;
   list-style: none;
   -webkit-tap-highlight-color: transparent;
@@ -830,6 +836,12 @@ body.catalog-filter-open {
 
 .catalog-filter-form--sidebar [data-filter-submit] {
   margin-top: var(--sp-5);
+  margin-bottom: var(--sp-1);
+}
+
+.catalog-filter-form--sidebar .filter-section:last-of-type,
+.catalog-filter-form--sidebar .filter-acc:last-of-type {
+  margin-bottom: var(--sp-2);
 }
 
 .filter-price-slider__track {
@@ -949,9 +961,13 @@ body.catalog-filter-open {
     position: sticky;
     top: calc(var(--header-h) + var(--sp-4));
     max-height: calc(100dvh - var(--header-h) - var(--sp-6));
+    overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: var(--sp-4);
+    overscroll-behavior: contain;
+    scroll-padding-top: var(--sp-2);
+    scroll-padding-bottom: var(--sp-5);
+    padding: var(--sp-4) var(--sp-4) var(--sp-6);
     background: var(--c-surface);
     border: 1px solid var(--c-border);
     border-radius: var(--r-lg);
