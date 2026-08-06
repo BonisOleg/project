@@ -12,6 +12,7 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--c-border);
+  overflow: visible;
 }
 
 .site-topbar {
@@ -280,6 +281,7 @@
     gap: var(--sp-3) var(--sp-4);
     padding-top: 0;
     padding-bottom: 0;
+    overflow: visible;
   }
 
   .site-nav {
@@ -290,6 +292,7 @@
     gap: var(--sp-4);
     min-width: 0;
     flex-wrap: wrap;
+    overflow: visible;
   }
 
   .site-nav__link {
@@ -435,44 +438,73 @@
   border-bottom: 1px solid var(--c-border);
 }
 
-.catalog-dropdown { position: static; }
+/* Flyout під кнопкою «Каталог» (як siker.ua), НЕ full-width mega-menu */
+.catalog-dropdown {
+  position: relative;
+}
 
 .catalog-dropdown__menu {
   position: absolute;
   top: 100%;
   left: 0;
-  width: 100%;
-  transform: translateY(8px);
-  padding: var(--sp-5);
+  z-index: var(--z-dropdown);
+  box-sizing: border-box;
+  width: max-content;
+  min-width: min(42rem, 90vw);
+  max-width: min(52rem, 90vw);
+  margin-top: 0.25rem;
+  padding: var(--sp-5) var(--sp-6);
   background: var(--c-surface);
   border: 1px solid var(--c-border);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-md);
   box-shadow: var(--shadow-lg);
   opacity: 0;
   visibility: hidden;
+  pointer-events: none;
+  transform: translateY(6px);
   transition: opacity var(--t-fast), transform var(--t-fast), visibility var(--t-fast);
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(10.5rem, 13.5rem));
+  align-content: start;
   align-items: start;
-  gap: var(--sp-8) clamp(var(--sp-6), 5vw, var(--sp-12));
-  max-height: calc(100dvh - var(--header-h) - var(--sp-6));
+  column-gap: var(--sp-5);
+  row-gap: var(--sp-5);
+  max-height: min(70vh, calc(100dvh - var(--header-h) - var(--sp-8)));
+  overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Невидимий «міст» між лінком і меню, щоб hover не губився */
+.catalog-dropdown__menu::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 0.5rem;
 }
 
 .catalog-dropdown:hover .catalog-dropdown__menu,
 .catalog-dropdown:focus-within .catalog-dropdown__menu {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
   transform: translateY(0);
+}
+
+.catalog-dropdown__col {
+  min-width: 0;
+  break-inside: avoid;
 }
 
 .catalog-dropdown__title {
   margin-bottom: var(--sp-2);
-  font-size: var(--fs-md);
+  font-size: var(--fs-sm);
   font-weight: 700;
   line-height: 1.3;
+  letter-spacing: 0.02em;
   color: var(--c-brand);
   text-transform: uppercase;
 }
@@ -480,13 +512,13 @@
 .catalog-dropdown__sub {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-1);
+  gap: 0.15rem;
 }
 
 .catalog-dropdown__sub a {
   display: block;
-  padding: 0.15rem 0;
-  font-size: var(--fs-md);
+  padding: 0.1rem 0;
+  font-size: var(--fs-sm);
   line-height: 1.4;
   color: var(--c-text);
 }
@@ -495,13 +527,21 @@
 .catalog-dropdown__title a:focus-visible,
 .catalog-dropdown__sub a:hover,
 .catalog-dropdown__sub a:focus-visible {
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
+  color: var(--c-brand);
+  text-decoration: none;
 }
 
 .catalog-dropdown__sub .catalog-dropdown__all {
+  margin-top: 0.15rem;
   color: var(--c-brand);
   font-weight: 500;
+}
+
+@media (max-width: 1023px) {
+  /* На планшеті/мобільному каталог у drawer — flyout не показуємо */
+  .catalog-dropdown__menu {
+    display: none;
+  }
 }
 
 .search-suggest {
