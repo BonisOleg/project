@@ -289,6 +289,115 @@ html.dark .supplier-import__cancel:hover {
   white-space: nowrap;
 }
 
+.supplier-import__errors-panel {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(180, 35, 24, 0.28);
+  border-radius: 0.5rem;
+  background: rgba(180, 35, 24, 0.05);
+}
+
+.supplier-import__errors-title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #b42318;
+}
+
+.supplier-import__report--has-errors {
+  border-color: rgba(180, 35, 24, 0.35);
+}
+
+.supplier-import__progress {
+  margin: 1.25rem 0 0;
+  padding: 1.25rem;
+  border: 1px solid rgba(36, 83, 224, 0.28);
+  border-radius: 0.5rem;
+  background: rgba(36, 83, 224, 0.06);
+  box-sizing: border-box;
+}
+
+.supplier-import__progress[hidden] {
+  display: none;
+}
+
+.supplier-import__progress-title {
+  margin: 0 0 0.4rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+
+.supplier-import__progress-text {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  opacity: 0.85;
+}
+
+.supplier-import__progress-track {
+  position: relative;
+  height: 0.55rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(36, 83, 224, 0.15);
+}
+
+.supplier-import__progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 100%;
+  border-radius: 999px;
+  background: #2453e0;
+  animation: supplier-import-indeterminate 1.2s ease-in-out infinite;
+}
+
+.supplier-import__progress-elapsed {
+  margin: 0.75rem 0 0;
+  font-size: 0.875rem;
+}
+
+body.supplier-import-busy {
+  cursor: progress;
+}
+
+body.supplier-import-busy .supplier-import__form {
+  pointer-events: none;
+  opacity: 0.72;
+}
+
+@keyframes supplier-import-indeterminate {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+html.dark .supplier-import__progress {
+  border-color: rgba(139, 171, 255, 0.35);
+  background: rgba(59, 110, 245, 0.12);
+}
+
+html.dark .supplier-import__progress-track {
+  background: rgba(139, 171, 255, 0.18);
+}
+
+html.dark .supplier-import__progress-bar {
+  background: #8babff;
+}
+
+html.dark .supplier-import__errors-panel {
+  border-color: rgba(248, 113, 113, 0.35);
+  background: rgba(248, 113, 113, 0.08);
+}
+
+html.dark .supplier-import__errors-title {
+  color: #fca5a5;
+}
+
 @media (min-width: 768px) {
   .supplier-import {
     padding: 0 1rem;

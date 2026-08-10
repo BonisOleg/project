@@ -6,6 +6,11 @@
 <link rel="stylesheet" href="{% static 'css/admin/supplier_import.css' %}">
 {% endblock %}
 
+{% block extrahead %}
+{{ block.super }}
+<script src="{% static 'js/admin/supplier_import.js' %}" defer></script>
+{% endblock %}
+
 {% block title %}{{ title }} · {{ site_title|default:_('Django site admin') }}{% endblock %}
 
 {% block content %}
@@ -22,6 +27,7 @@
             Оберіть файл вигрузки і мову назв. Категорії з файлу підставляються
             автоматично. Якщо збігу немає — нові товари потрапляють у
             «Імпорт / Без категорії» (їх не видно на сайті, доки не перенесете).
+            Великий файл (сотні товарів) може оброблятись 1–2 хвилини — не закривайте сторінку.
         </p>
     </div>
 
@@ -32,6 +38,8 @@
         {% endfor %}
     </ul>
     {% endif %}
+
+    <p id="supplier-import-client-error" class="supplier-import__field-error" hidden></p>
 
     <form method="post" enctype="multipart/form-data" class="supplier-import__form" novalidate>
         {% csrf_token %}
@@ -63,8 +71,28 @@
         </div>
     </form>
 
+    <div
+        id="supplier-import-progress"
+        class="supplier-import__progress"
+        hidden
+        role="status"
+        aria-live="polite"
+        aria-busy="false"
+    >
+        <p class="supplier-import__progress-title">Триває імпорт файлу…</p>
+        <p class="supplier-import__progress-text">
+            Не закривайте й не оновлюйте сторінку. Для великої вигрузки це може зайняти хвилину або більше.
+        </p>
+        <div class="supplier-import__progress-track" aria-hidden="true">
+            <div class="supplier-import__progress-bar"></div>
+        </div>
+        <p class="supplier-import__progress-elapsed">
+            Минуло: <strong id="supplier-import-elapsed">0</strong> с
+        </p>
+    </div>
+
     {% if report %}
-    <section class="supplier-import__report" aria-live="polite">
+    <section id="supplier-import-report" class="supplier-import__report{% if report.error_count %} supplier-import__report--has-errors{% endif %}" aria-live="polite">
         <h2>Результат імпорту</h2>
         <ul class="supplier-import__stats">
             <li>Створено: <strong>{{ report.created }}</strong></li>
@@ -84,30 +112,39 @@
         {% endif %}
 
         {% if report.errors %}
-        <div class="supplier-import__errors-table-wrap">
-            <table class="supplier-import__errors-table">
-                <thead>
-                    <tr>
-                        <th>Рядок</th>
-                        <th>SKU</th>
-                        <th>Помилка</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for err in report.errors|slice:":50" %}
-                    <tr>
-                        <td>{{ err.row }}</td>
-                        <td>{{ err.sku|default:"—" }}</td>
-                        <td>{{ err.message }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% if report.error_count > max_error_rows %}
+        <div class="supplier-import__errors-panel">
+            <h3 class="supplier-import__errors-title">Що пішло не так і як виправити</h3>
             <p class="supplier-import__help">
-                Показано перші {{ max_error_rows }} з {{ report.error_count }} помилок.
+                Рядки з помилками не збережено. Виправте їх у файлі і імпортуйте знову
+                (успішні рядки вже оновлені — повторний імпорт їх просто оновить ще раз).
             </p>
-            {% endif %}
+            <div class="supplier-import__errors-table-wrap">
+                <table class="supplier-import__errors-table">
+                    <thead>
+                        <tr>
+                            <th>Рядок</th>
+                            <th>Артикул</th>
+                            <th>Проблема</th>
+                            <th>Як виправити</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for err in report.errors|slice:":50" %}
+                        <tr>
+                            <td>{{ err.row }}</td>
+                            <td>{{ err.sku|default:"—" }}</td>
+                            <td>{{ err.message }}</td>
+                            <td>{{ err.hint|default:"Перевірте дані в цьому рядку файлу." }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if report.error_count > max_error_rows %}
+                <p class="supplier-import__help">
+                    Показано перші {{ max_error_rows }} з {{ report.error_count }} помилок.
+                </p>
+                {% endif %}
+            </div>
         </div>
         {% endif %}
     </section>

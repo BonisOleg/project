@@ -27,6 +27,7 @@ class ImportRowError:
     row: int
     sku: str
     message: str
+    hint: str = ''
 
 
 @dataclass
@@ -51,6 +52,15 @@ class ImportReport:
                 f'. Потрібно розкласти по категоріях: {self.fallback_category_used}'
             )
         return text
+
+
+def _row_error(
+    row: int,
+    sku: str,
+    message: str,
+    hint: str = '',
+) -> ImportRowError:
+    return ImportRowError(row=row, sku=sku, message=message, hint=hint)
 
 
 @dataclass
@@ -91,11 +101,11 @@ def get_import_fallback_category() -> Category:
 def _parse_price(raw: str) -> Decimal:
     text = (raw or '').strip().replace(' ', '').replace(',', '.')
     if not text:
-        raise ValueError('Ціна обовʼязкова')
+        raise ValueError('Немає ціни')
     try:
         value = Decimal(text)
     except InvalidOperation as exc:
-        raise ValueError(f'Некоректна ціна: {raw!r}') from exc
+        raise ValueError(f'Ціна має бути числом (зараз: «{raw}»)') from exc
     if value < 0:
         raise ValueError('Ціна не може бути відʼємною')
     return value.quantize(Decimal('0.01'))
@@ -109,11 +119,15 @@ def _parse_stock(raw: str) -> int | None:
     try:
         as_decimal = Decimal(text)
     except InvalidOperation as exc:
-        raise ValueError(f'Некоректний залишок: {raw!r}') from exc
+        raise ValueError(
+            f'Залишок (Наличие) має бути цілим числом (зараз: «{raw}»)',
+        ) from exc
     if as_decimal < 0:
         raise ValueError('Залишок не може бути відʼємним')
     if as_decimal != as_decimal.to_integral_value():
-        raise ValueError('Залишок має бути цілим числом')
+        raise ValueError(
+            f'Залишок має бути цілим числом без дробової частини (зараз: «{raw}»)',
+        )
     return int(as_decimal)
 
 
@@ -163,15 +177,23 @@ def _validate_rows(
         description_raw = (raw.get('description') or '').strip()
 
         if not sku:
-            report.errors.append(ImportRowError(index, '', 'Відсутній SKU'))
+            report.errors.append(
+                _row_error(
+                    index,
+                    '',
+                    'У рядку немає артикула (SKU / Код_товара).',
+                    'Додайте код товару в колонку «Код_товара» або видаліть порожній рядок.',
+                ),
+            )
             continue
 
         if sku in seen_skus:
             report.errors.append(
-                ImportRowError(
+                _row_error(
                     index,
                     sku,
-                    f'Дублікат SKU у файлі (перший рядок {seen_skus[sku]})',
+                    f'Цей артикул уже є в файлі вище (рядок {seen_skus[sku]}).',
+                    'Залиште лише один рядок з цим кодом або змініть дублікат.',
                 ),
             )
             continue
@@ -183,7 +205,13 @@ def _validate_rows(
         name: str | None = name_raw or None
         if is_create and not name:
             report.errors.append(
-                ImportRowError(index, sku, 'Для нового товару потрібна назва'),
+                _row_error(
+                    index,
+                    sku,
+                    'Новий товар без назви.',
+                    'Заповніть «Название_позиции_укр» (або перемкніть мову імпорту) '
+                    'і спробуйте знову.',
+                ),
             )
             continue
 
@@ -192,14 +220,28 @@ def _validate_rows(
             try:
                 price = _parse_price(price_raw)
             except (InvalidOperation, ValueError) as exc:
-                report.errors.append(ImportRowError(index, sku, str(exc)))
+                report.errors.append(
+                    _row_error(
+                        index,
+                        sku,
+                        str(exc),
+                        'Виправте колонку «Цена»: лише число, наприклад 1999 або 1999.50.',
+                    ),
+                )
                 continue
 
         stock: int | None
         try:
             stock = _parse_stock(stock_raw)
         except ValueError as exc:
-            report.errors.append(ImportRowError(index, sku, str(exc)))
+            report.errors.append(
+                _row_error(
+                    index,
+                    sku,
+                    str(exc),
+                    'Виправте колонку «Наличие»: ціле число на кшталт 0, 1, 10.',
+                ),
+            )
             continue
         if is_create and stock is None:
             stock = 0
@@ -314,29 +356,41 @@ def import_supplier_file(
             try:
                 with transaction.atomic():
                     action = _persist_row(row, supplier)
-            except IntegrityError as exc:
+            except IntegrityError:
                 logger.exception(
                     'IntegrityError on sku=%s row=%s',
                     row.sku,
                     row.row_number,
                 )
                 report.errors.append(
-                    ImportRowError(row.row_number, row.sku, f'Помилка БД: {exc}'),
+                    _row_error(
+                        row.row_number,
+                        row.sku,
+                        'Не вдалося зберегти товар у базі (конфлікт даних).',
+                        'Перевірте, чи немає іншого товару з таким самим артикулом '
+                        'або схожою назвою/посиланням. Збережіть файл і зверніться '
+                        'до адміністратора, якщо помилка повториться.',
+                    ),
                 )
                 report.skipped += 1
                 continue
-            except Exception as exc:  # noqa: BLE001 — звіт по рядку, без крашу імпорту
+            except Exception:  # noqa: BLE001 — звіт по рядку, без крашу імпорту
                 logger.exception(
                     'Unexpected error on sku=%s row=%s',
                     row.sku,
                     row.row_number,
                 )
                 report.errors.append(
-                    ImportRowError(row.row_number, row.sku, f'Помилка: {exc}'),
+                    _row_error(
+                        row.row_number,
+                        row.sku,
+                        'Неочікувана помилка під час збереження рядка.',
+                        'Спробуйте імпортувати файл ще раз. Якщо не допоможе — '
+                        'надішліть файл адміністратору.',
+                    ),
                 )
                 report.skipped += 1
                 continue
-
             if action == 'created':
                 report.created += 1
                 if row.used_fallback:

@@ -185,7 +185,8 @@ def _map_rows(
     column_map = _build_column_map(headers, name_locale=name_locale)
     if 'sku' not in column_map:
         raise SupplierImportParseError(
-            'Не знайдено колонку SKU (sku / артикул / код_товара).',
+            'Не знайдено колонку з артикулом. У файлі має бути колонка '
+            '«Код_товара» (або sku / артикул). Перевірте перший рядок файлу.',
         )
     logger.info(
         'Supplier parse column_map=%s name_locale=%s',
@@ -194,7 +195,10 @@ def _map_rows(
     )
     rows = _rows_from_mappings(raw_rows, column_map)
     if not rows:
-        raise SupplierImportParseError('Файл порожній або не містить даних.')
+        raise SupplierImportParseError(
+            'У файлі немає рядків з товарами. Перевірте, що це повна вигрузка, '
+            'а не лише заголовки.',
+        )
     return rows
 
 
@@ -352,5 +356,6 @@ def parse_supplier_file(
         return parse_json(file_obj, name_locale=name_locale)
 
     raise SupplierImportParseError(
-        'Підтримуються лише файли .csv, .xlsx або .json.',
+        'Непідтримуваний формат файлу. Збережіть вигрузку як .xlsx, .csv або .json '
+        'і спробуйте знову.',
     )

@@ -48,7 +48,8 @@ class SupplierImportForm(forms.Form):
         name = (getattr(uploaded, 'name', '') or '').lower()
         if not name.endswith(ALLOWED_EXTENSIONS):
             raise forms.ValidationError(
-                'Дозволені лише файли з розширенням .csv, .xlsx або .json.',
+                'Цей формат не підходить. Збережіть вигрузку як файл .xlsx, .csv '
+                'або .json і оберіть його знову.',
             )
         return uploaded
 
@@ -87,7 +88,10 @@ class SupplierImportAdminMixin:
                     name_locale=form.cleaned_data['name_locale'],
                 )
             except SupplierImportParseError as exc:
-                form.add_error('file', str(exc))
+                form.add_error(
+                    'file',
+                    f'{exc} Якщо не зрозуміло — надішліть цей файл адміністратору.',
+                )
                 logger.warning(
                     'Supplier import parse failed supplier_id=%s: %s',
                     supplier.pk,
@@ -107,8 +111,10 @@ class SupplierImportAdminMixin:
                 if report.error_count:
                     messages.warning(
                         request,
-                        f'Частина рядків не імпортована ({report.error_count}). '
-                        'Деталі нижче.',
+                        (
+                            f'Імпорт завершено з помилками в {report.error_count} рядках. '
+                            'Нижче в таблиці — що саме не так і як виправити файл.'
+                        ),
                     )
 
         context = {
