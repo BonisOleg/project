@@ -1,0 +1,108 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/admin/supplier_import.css' %}">
+{% endblock %}
+
+{% block title %}{{ title }} · {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block content %}
+<div class="supplier-import">
+    <div class="supplier-import__head">
+        <p class="supplier-import__eyebrow">
+            <a href="{{ changelist_url }}">Постачальники</a>
+            →
+            <a href="{{ change_url }}">{{ supplier.name }}</a>
+            → Імпорт
+        </p>
+        <h1 class="supplier-import__title">Імпорт файлу постачальника</h1>
+        <p class="supplier-import__hint">
+            Колонки: <code>sku</code> (обовʼязково), <code>name</code>/<code>title</code>,
+            <code>price</code>, <code>stock</code>, <code>category</code>
+            (допускаються також UA/RU синоніми заголовків).
+            Формати: CSV, XLSX, JSON.
+            Українську та російську версії прайсу потрібно завантажувати окремо.
+        </p>
+    </div>
+
+    {% if form.non_field_errors %}
+    <ul class="supplier-import__errors">
+        {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="supplier-import__form" novalidate>
+        {% csrf_token %}
+        <div class="supplier-import__fields">
+            <div class="supplier-import__field">
+                <label for="{{ form.file.id_for_label }}">{{ form.file.label }}</label>
+                {{ form.file }}
+                {% if form.file.help_text %}
+                <p class="supplier-import__help">{{ form.file.help_text }}</p>
+                {% endif %}
+                {% for error in form.file.errors %}
+                <p class="supplier-import__field-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+            <div class="supplier-import__field">
+                <label for="{{ form.default_category.id_for_label }}">{{ form.default_category.label }}</label>
+                {{ form.default_category }}
+                {% if form.default_category.help_text %}
+                <p class="supplier-import__help">{{ form.default_category.help_text }}</p>
+                {% endif %}
+                {% for error in form.default_category.errors %}
+                <p class="supplier-import__field-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="supplier-import__actions">
+            <button type="submit" class="supplier-import__submit">Завантажити та імпортувати</button>
+            <a href="{{ change_url }}" class="supplier-import__cancel">Назад до постачальника</a>
+        </div>
+    </form>
+
+    {% if report %}
+    <section class="supplier-import__report" aria-live="polite">
+        <h2>Результат імпорту</h2>
+        <ul class="supplier-import__stats">
+            <li>Створено: <strong>{{ report.created }}</strong></li>
+            <li>Оновлено: <strong>{{ report.updated }}</strong></li>
+            <li>Пропущено: <strong>{{ report.skipped }}</strong></li>
+            <li>Помилок: <strong>{{ report.error_count }}</strong></li>
+        </ul>
+
+        {% if report.errors %}
+        <div class="supplier-import__errors-table-wrap">
+            <table class="supplier-import__errors-table">
+                <thead>
+                    <tr>
+                        <th>Рядок</th>
+                        <th>SKU</th>
+                        <th>Помилка</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for err in report.errors|slice:":50" %}
+                    <tr>
+                        <td>{{ err.row }}</td>
+                        <td>{{ err.sku|default:"—" }}</td>
+                        <td>{{ err.message }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if report.error_count > max_error_rows %}
+            <p class="supplier-import__help">
+                Показано перші {{ max_error_rows }} з {{ report.error_count }} помилок.
+            </p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

@@ -139,6 +139,39 @@ class Brand(models.Model):
         return self.name
 
 
+class Supplier(models.Model):
+    """Постачальник товарів для імпорту прайсів і привʼязки до Product."""
+
+    name = models.CharField('Назва', max_length=200)
+    slug = models.SlugField('Слаг (URL)', max_length=220, unique=True)
+    code = models.CharField(
+        'Код',
+        max_length=64,
+        blank=True,
+        null=True,
+        unique=True,
+        help_text='Опційний унікальний код постачальника.',
+    )
+    is_active = models.BooleanField('Активний', default=True)
+    created_at = models.DateTimeField('Створено', auto_now_add=True)
+    updated_at = models.DateTimeField('Оновлено', auto_now=True)
+
+    class Meta:
+        verbose_name = 'Постачальник'
+        verbose_name_plural = 'Постачальники'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if self.code == '':
+            self.code = None
+        if not self.slug:
+            self.slug = make_slug(self)
+        super().save(*args, **kwargs)
+
+
 class ProductQuerySet(models.QuerySet):
     def active(self):
         return self.filter(is_active=True)
@@ -160,7 +193,7 @@ class ProductQuerySet(models.QuerySet):
         return self.on_storefront().filter(old_price__isnull=False, old_price__gt=models.F('price'))
 
     def with_category(self):
-        return self.select_related('category', 'brand').prefetch_related('images')
+        return self.select_related('category', 'brand', 'supplier').prefetch_related('images')
 
     def annotate_rating(self):
         return self.annotate(
@@ -186,6 +219,14 @@ class Product(models.Model):
         Brand, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='products', verbose_name='Бренд',
     )
+    supplier = models.ForeignKey(
+        Supplier,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='products',
+        verbose_name='Постачальник',
+    )
     name = models.CharField('Назва', max_length=300)
     slug = models.SlugField('Слаг (URL)', max_length=320, unique=True)
     sku = models.CharField('Артикул', max_length=80, unique=True)
@@ -193,6 +234,7 @@ class Product(models.Model):
     description = models.TextField('Опис', blank=True)
     price = models.DecimalField('Ціна', max_digits=10, decimal_places=2)
     old_price = models.DecimalField('Стара ціна', max_digits=10, decimal_places=2, null=True, blank=True)
+    stock_quantity = models.PositiveIntegerField('Залишок', default=0)
     availability = models.CharField(
         'Наявність', max_length=20, choices=AVAILABILITY_CHOICES, default=AVAIL_IN_STOCK,
     )
@@ -224,6 +266,17 @@ class Product(models.Model):
 
     def get_absolute_url(self):
         return reverse('catalog:product', kwargs={'slug': self.slug})
+
+    def sync_availability_from_stock(self) -> None:
+        """Джерело правди для availability — stock_quantity."""
+        if self.stock_quantity > 0:
+            self.availability = self.AVAIL_IN_STOCK
+        else:
+            self.availability = self.AVAIL_OUT
+
+    def save(self, *args, **kwargs):
+        self.sync_availability_from_stock()
+        super().save(*args, **kwargs)
 
     @property
     def is_available(self):

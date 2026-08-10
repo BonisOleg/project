@@ -16,6 +16,7 @@ from src.core.admin_guidelines import get_image_hint
 from src.core.admin_utils import ImagePreviewMixin, TinyMCEAdminMixin
 
 from .admin_product_images import ProductImageInline, ProductImagesAdminMixin
+from .admin_supplier_import import SupplierImportAdminMixin
 from .models import (
     AttributeGroup,
     Brand,
@@ -23,6 +24,7 @@ from .models import (
     Category,
     Product,
     ProductAttribute,
+    Supplier,
 )
 from . import admin_tabs  # noqa: F401
 
@@ -226,6 +228,21 @@ class BrandAdmin(DropdownFiltersMixin, ModelAdmin):
     search_fields = ('name',)
 
 
+@admin.register(Supplier)
+class SupplierAdmin(SupplierImportAdminMixin, DropdownFiltersMixin, ModelAdmin):
+    list_display = ('name', 'code', 'is_active', 'products_count', 'updated_at')
+    list_filter = [
+        ('is_active', UkBooleanDropdownFilter),
+    ]
+    search_fields = ('name', 'code')
+    prepopulated_fields = {'slug': ('name',)}
+    readonly_fields = ('created_at', 'updated_at')
+
+    @admin.display(description='Товарів')
+    def products_count(self, obj):
+        return obj.products.count()
+
+
 @admin.register(Product)
 class ProductAdmin(
     ProductImagesAdminMixin,
@@ -236,26 +253,27 @@ class ProductAdmin(
 ):
     list_display = (
         'get_image_preview', 'name', 'sku', 'category',
-        'quick_price', 'quick_availability', 'is_active',
+        'quick_price', 'stock_quantity', 'quick_availability', 'is_active',
     )
     list_filter = [
         ('is_active', UkBooleanDropdownFilter),
         ('availability', UkChoicesDropdownFilter),
         ('category', UkRelatedDropdownFilter),
         ('brand', UkRelatedDropdownFilter),
+        ('supplier', UkRelatedDropdownFilter),
         ('is_top_sale', UkBooleanDropdownFilter),
         ('is_new', UkBooleanDropdownFilter),
         ('is_on_sale', UkBooleanDropdownFilter),
     ]
     search_fields = ('name', 'sku')
     prepopulated_fields = {'slug': ('name',)}
-    autocomplete_fields = ('category', 'brand')
+    autocomplete_fields = ('category', 'brand', 'supplier')
     readonly_fields = ('get_image_preview', 'views_count', 'created_at', 'updated_at')
     inlines = [ProductImageInline, ProductAttributeInline]
     fieldsets = (
         ('Основне', {
             'fields': (
-                'name', 'slug', 'sku', 'category', 'brand',
+                'name', 'slug', 'sku', 'category', 'brand', 'supplier',
                 'short_description', 'description',
             ),
         }),
@@ -263,7 +281,9 @@ class ProductAdmin(
             'fields': ('get_image_preview',),
         }),
         ('Ціни та наявність', {
-            'fields': ('price', 'old_price', 'availability', 'sale_ends_at'),
+            'fields': (
+                'price', 'old_price', 'stock_quantity', 'availability', 'sale_ends_at',
+            ),
         }),
         ('Мітки', {
             'fields': (

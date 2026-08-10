@@ -1,0 +1,13 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block object-tools-items %}
+    {% if original and original.pk %}
+    <li>
+        <a href="{% url 'admin:catalog_supplier_import' original.pk %}" class="historylink">
+            Імпорт файлу
+        </a>
+    </li>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}

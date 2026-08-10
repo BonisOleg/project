@@ -258,6 +258,11 @@ UNFOLD = {
                         'link': reverse_lazy('admin:catalog_brand_changelist'),
                     },
                     {
+                        'title': 'Постачальники',
+                        'icon': 'local_shipping',
+                        'link': reverse_lazy('admin:catalog_supplier_changelist'),
+                    },
+                    {
                         'title': 'Характеристики',
                         'icon': 'tune',
                         'link': reverse_lazy('admin:catalog_attributegroup_changelist'),
