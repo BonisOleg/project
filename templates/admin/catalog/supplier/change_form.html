@@ -1,10 +1,15 @@
 {% extends "admin/change_form.html" %}
-{% load i18n %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/admin/supplier_import.css' %}">
+{% endblock %}
 
 {% block object-tools-items %}
     {% if original and original.pk %}
-    <li>
-        <a href="{% url 'admin:catalog_supplier_import' original.pk %}" class="historylink">
+    <li class="supplier-change-tools__item">
+        <a href="{% url 'admin:catalog_supplier_import' original.pk %}" class="supplier-change-import-btn">
             Імпорт файлу
         </a>
     </li>
