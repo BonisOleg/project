@@ -19,15 +19,9 @@
         </p>
         <h1 class="supplier-import__title">Імпорт файлу постачальника</h1>
         <p class="supplier-import__hint">
-            Підтримка вигрузки Prom/Siker:
-            <code>Код_товара</code>,
-            <code>Название_позиции</code> / <code>Название_позиции_укр</code>,
-            <code>Цена</code>,
-            <code>Наличие</code>,
-            <code>Название_группы</code>,
-            <code>Описание</code> / <code>Описание_укр</code>.
-            Формати: CSV, XLSX, JSON.
-            Мову назви обери нижче — UA і RU з одного файлу імпортуються окремими прогонами.
+            Оберіть файл вигрузки і мову назв. Категорії з файлу підставляються
+            автоматично. Якщо збігу немає — нові товари потрапляють у
+            «Імпорт / Без категорії» (їх не видно на сайті, доки не перенесете).
         </p>
     </div>
 
@@ -62,16 +56,6 @@
                 <p class="supplier-import__field-error">{{ error }}</p>
                 {% endfor %}
             </div>
-            <div class="supplier-import__field">
-                <label for="{{ form.default_category.id_for_label }}">{{ form.default_category.label }}</label>
-                {{ form.default_category }}
-                {% if form.default_category.help_text %}
-                <p class="supplier-import__help">{{ form.default_category.help_text }}</p>
-                {% endif %}
-                {% for error in form.default_category.errors %}
-                <p class="supplier-import__field-error">{{ error }}</p>
-                {% endfor %}
-            </div>
         </div>
         <div class="supplier-import__actions">
             <button type="submit" class="supplier-import__submit">Завантажити та імпортувати</button>
@@ -87,7 +71,17 @@
             <li>Оновлено: <strong>{{ report.updated }}</strong></li>
             <li>Пропущено: <strong>{{ report.skipped }}</strong></li>
             <li>Помилок: <strong>{{ report.error_count }}</strong></li>
+            {% if report.fallback_category_used %}
+            <li>Потрібно розкласти по категоріях: <strong>{{ report.fallback_category_used }}</strong></li>
+            {% endif %}
         </ul>
+
+        {% if report.fallback_category_used %}
+        <p class="supplier-import__help">
+            Відкрийте Каталог → Товари, відфільтруйте категорію
+            «Імпорт / Без категорії» і перенесіть товари в потрібні розділи.
+        </p>
+        {% endif %}
 
         {% if report.errors %}
         <div class="supplier-import__errors-table-wrap">

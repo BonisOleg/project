@@ -10,7 +10,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import path, reverse
 
-from src.catalog.models import Category, Supplier
+from src.catalog.models import Supplier
 from src.catalog.services.supplier_import import import_supplier_file
 from src.catalog.services.supplier_import_parsers import SupplierImportParseError
 
@@ -26,29 +26,20 @@ class SupplierImportForm(forms.Form):
     file = forms.FileField(
         label='Файл постачальника',
         help_text=(
-            'Підтримується вигрузка Prom/Siker: Код_товара, Название_позиции[_укр], '
-            'Цена, Наличие, Название_группы. Також .csv / .xlsx / .json.'
+            'Завантажте вигрузку Prom/Siker (.xlsx) або CSV/JSON. '
+            'Категорії з файлу підставляються самі.'
         ),
     )
     name_locale = forms.ChoiceField(
-        label='Мова назви / опису',
+        label='Мова назви та опису',
         choices=(
-            ('uk', 'Українська (Название_позиции_укр / Описание_укр)'),
-            ('ru', 'Російська (Название_позиции / Описание)'),
+            ('uk', 'Українська'),
+            ('ru', 'Російська'),
         ),
         initial='uk',
         help_text=(
-            'Якщо у файлі є обидві колонки — обери, яку мову записати в товар. '
-            'Для повного UA і RU каталогу імпортуй двічі з різним вибором мови '
-            '(або окремими файлами).'
-        ),
-    )
-    default_category = forms.ModelChoiceField(
-        label='Категорія за замовчуванням',
-        queryset=Category.objects.all().order_by('name'),
-        help_text=(
-            'Для нових товарів, якщо «Название_группы» не збігається з категорією '
-            'в каталозі Oyra.'
+            'Яку колонку взяти з файлу. Зазвичай українська. '
+            'Щоб оновити російські назви — імпортуйте ще раз з вибором «Російська».'
         ),
     )
 
@@ -93,7 +84,6 @@ class SupplierImportAdminMixin:
                     supplier=supplier,
                     file_obj=uploaded,
                     filename=uploaded.name,
-                    default_category=form.cleaned_data['default_category'],
                     name_locale=form.cleaned_data['name_locale'],
                 )
             except SupplierImportParseError as exc:
@@ -105,6 +95,15 @@ class SupplierImportAdminMixin:
                 )
             else:
                 messages.success(request, report.summary())
+                if report.fallback_category_used:
+                    messages.info(
+                        request,
+                        (
+                            f'{report.fallback_category_used} нових товарів потрапили в '
+                            '«Імпорт / Без категорії». Відкрийте Каталог → Товари, '
+                            'відфільтруйте цю категорію і перенесіть товари.'
+                        ),
+                    )
                 if report.error_count:
                     messages.warning(
                         request,

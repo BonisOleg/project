@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
-from typing import Any, BinaryIO
+from typing import BinaryIO
 
 from django.db import IntegrityError, transaction
 
@@ -16,6 +16,10 @@ from src.catalog.services.supplier_import_parsers import (
 )
 
 logger = logging.getLogger('catalog.supplier_import')
+
+IMPORT_FALLBACK_SLUG = 'import-bez-kategorii'
+IMPORT_FALLBACK_NAME = 'Імпорт / Без категорії'
+IMPORT_FALLBACK_EXTERNAL_ID = 'oyra:import-fallback'
 
 
 @dataclass
@@ -30,6 +34,7 @@ class ImportReport:
     created: int = 0
     updated: int = 0
     skipped: int = 0
+    fallback_category_used: int = 0
     errors: list[ImportRowError] = field(default_factory=list)
 
     @property
@@ -37,10 +42,15 @@ class ImportReport:
         return len(self.errors)
 
     def summary(self) -> str:
-        return (
+        text = (
             f'Створено: {self.created}, оновлено: {self.updated}, '
             f'пропущено: {self.skipped}, помилок: {self.error_count}'
         )
+        if self.fallback_category_used:
+            text += (
+                f'. Потрібно розкласти по категоріях: {self.fallback_category_used}'
+            )
+        return text
 
 
 @dataclass
@@ -53,6 +63,29 @@ class _ValidatedRow:
     category: Category | None
     category_provided: bool
     description: str | None
+    used_fallback: bool = False
+
+
+def get_import_fallback_category() -> Category:
+    """
+    Службова категорія для нових товарів без збігу з каталогом.
+
+    is_active=False — товари не показуються на вітрині, доки менеджер
+    не перенесе їх у звичайну категорію.
+    """
+    category, created = Category.objects.get_or_create(
+        slug=IMPORT_FALLBACK_SLUG,
+        defaults={
+            'name': IMPORT_FALLBACK_NAME,
+            'parent': None,
+            'is_active': False,
+            'external_id': IMPORT_FALLBACK_EXTERNAL_ID,
+            'sort_order': 9999,
+        },
+    )
+    if created:
+        logger.info('Created import fallback category id=%s', category.pk)
+    return category
 
 
 def _parse_price(raw: str) -> Decimal:
@@ -85,13 +118,26 @@ def _parse_stock(raw: str) -> int | None:
 
 
 def _resolve_category(raw: str) -> Category | None:
+    """Спочатку активні категорії (уникаємо дублів зі старих імпортів)."""
     text = (raw or '').strip()
     if not text:
         return None
-    category = Category.objects.filter(name__iexact=text).first()
+
+    active = Category.objects.filter(is_active=True)
+    category = active.filter(name__iexact=text).first()
     if category:
         return category
-    return Category.objects.filter(slug__iexact=text).first()
+    category = active.filter(slug__iexact=text).first()
+    if category:
+        return category
+
+    inactive = Category.objects.filter(is_active=False).exclude(
+        slug=IMPORT_FALLBACK_SLUG,
+    )
+    category = inactive.filter(name__iexact=text).first()
+    if category:
+        return category
+    return inactive.filter(slug__iexact=text).first()
 
 
 def _unique_product_slug(name: str, exclude_pk: int | None = None) -> str:
@@ -102,7 +148,7 @@ def _unique_product_slug(name: str, exclude_pk: int | None = None) -> str:
 def _validate_rows(
     raw_rows: list[dict[str, str]],
     *,
-    default_category: Category | None,
+    fallback_category: Category,
 ) -> tuple[list[_ValidatedRow], ImportReport]:
     report = ImportReport()
     validated: list[_ValidatedRow] = []
@@ -158,40 +204,21 @@ def _validate_rows(
         if is_create and stock is None:
             stock = 0
 
-        # Prom «Название_группы» часто бренд/група, не категорія Oyra —
-        # якщо не знайшли, не валимо рядок, а беремо default на create.
         category: Category | None = None
         category_provided = False
+        used_fallback = False
+
         if category_raw:
             resolved = _resolve_category(category_raw)
             if resolved is not None:
                 category = resolved
                 category_provided = True
             elif is_create:
-                if default_category is None:
-                    report.errors.append(
-                        ImportRowError(
-                            index,
-                            sku,
-                            (
-                                f'Категорію «{category_raw}» не знайдено і не задано '
-                                'категорію за замовчуванням'
-                            ),
-                        ),
-                    )
-                    continue
-                category = default_category
+                category = fallback_category
+                used_fallback = True
         elif is_create:
-            if default_category is None:
-                report.errors.append(
-                    ImportRowError(
-                        index,
-                        sku,
-                        'Немає категорії в рядку і не задано категорію за замовчуванням',
-                    ),
-                )
-                continue
-            category = default_category
+            category = fallback_category
+            used_fallback = True
 
         validated.append(
             _ValidatedRow(
@@ -203,6 +230,7 @@ def _validate_rows(
                 category=category,
                 category_provided=category_provided,
                 description=description_raw or None,
+                used_fallback=used_fallback,
             ),
         )
 
@@ -250,14 +278,13 @@ def import_supplier_file(
     supplier: Supplier,
     file_obj: BinaryIO,
     filename: str,
-    default_category: Category | None = None,
     name_locale: str = 'uk',
 ) -> ImportReport:
     """
     Парсить файл постачальника, валідує рядки і зберігає товари.
 
-    Кожен валідний рядок зберігається у власному savepoint всередині atomic(),
-    тож помилка одного рядка не відкочує успішні.
+    Категорія з файлу матчиться автоматично; якщо збігу немає —
+    новий товар потрапляє в «Імпорт / Без категорії».
     """
     locale = 'ru' if name_locale == 'ru' else 'uk'
     logger.info(
@@ -276,7 +303,11 @@ def import_supplier_file(
     except SupplierImportParseError:
         raise
 
-    validated, report = _validate_rows(raw_rows, default_category=default_category)
+    fallback_category = get_import_fallback_category()
+    validated, report = _validate_rows(
+        raw_rows,
+        fallback_category=fallback_category,
+    )
 
     with transaction.atomic():
         for row in validated:
@@ -308,6 +339,8 @@ def import_supplier_file(
 
             if action == 'created':
                 report.created += 1
+                if row.used_fallback:
+                    report.fallback_category_used += 1
             else:
                 report.updated += 1
 
