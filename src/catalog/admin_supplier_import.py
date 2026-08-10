@@ -26,17 +26,29 @@ class SupplierImportForm(forms.Form):
     file = forms.FileField(
         label='Файл постачальника',
         help_text=(
-            'Колонки: sku (обовʼязково), name/title, price, stock, category. '
-            'Формати: .csv, .xlsx, .json. '
-            'Українську та російську версії потрібно завантажувати окремо.'
+            'Підтримується вигрузка Prom/Siker: Код_товара, Название_позиции[_укр], '
+            'Цена, Наличие, Название_группы. Також .csv / .xlsx / .json.'
+        ),
+    )
+    name_locale = forms.ChoiceField(
+        label='Мова назви / опису',
+        choices=(
+            ('uk', 'Українська (Название_позиции_укр / Описание_укр)'),
+            ('ru', 'Російська (Название_позиции / Описание)'),
+        ),
+        initial='uk',
+        help_text=(
+            'Якщо у файлі є обидві колонки — обери, яку мову записати в товар. '
+            'Для повного UA і RU каталогу імпортуй двічі з різним вибором мови '
+            '(або окремими файлами).'
         ),
     )
     default_category = forms.ModelChoiceField(
         label='Категорія за замовчуванням',
         queryset=Category.objects.all().order_by('name'),
         help_text=(
-            'Використовується для нових товарів, якщо в рядку немає категорії '
-            'або її не вдалося зіставити.'
+            'Для нових товарів, якщо «Название_группы» не збігається з категорією '
+            'в каталозі Oyra.'
         ),
     )
 
@@ -74,7 +86,6 @@ class SupplierImportAdminMixin:
 
         if request.method == 'POST' and form.is_valid():
             uploaded = form.cleaned_data['file']
-            default_category = form.cleaned_data['default_category']
             try:
                 if hasattr(uploaded, 'seek'):
                     uploaded.seek(0)
@@ -82,7 +93,8 @@ class SupplierImportAdminMixin:
                     supplier=supplier,
                     file_obj=uploaded,
                     filename=uploaded.name,
-                    default_category=default_category,
+                    default_category=form.cleaned_data['default_category'],
+                    name_locale=form.cleaned_data['name_locale'],
                 )
             except SupplierImportParseError as exc:
                 form.add_error('file', str(exc))

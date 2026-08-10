@@ -52,6 +52,7 @@ class _ValidatedRow:
     stock: int | None
     category: Category | None
     category_provided: bool
+    description: str | None
 
 
 def _parse_price(raw: str) -> Decimal:
@@ -113,6 +114,7 @@ def _validate_rows(
         price_raw = (raw.get('price') or '').strip()
         stock_raw = (raw.get('stock') or '').strip()
         category_raw = (raw.get('category') or '').strip()
+        description_raw = (raw.get('description') or '').strip()
 
         if not sku:
             report.errors.append(ImportRowError(index, '', 'Відсутній SKU'))
@@ -156,19 +158,29 @@ def _validate_rows(
         if is_create and stock is None:
             stock = 0
 
+        # Prom «Название_группы» часто бренд/група, не категорія Oyra —
+        # якщо не знайшли, не валимо рядок, а беремо default на create.
         category: Category | None = None
-        category_provided = bool(category_raw)
-        if category_provided:
-            category = _resolve_category(category_raw)
-            if category is None:
-                report.errors.append(
-                    ImportRowError(
-                        index,
-                        sku,
-                        f'Категорію не знайдено: {category_raw!r}',
-                    ),
-                )
-                continue
+        category_provided = False
+        if category_raw:
+            resolved = _resolve_category(category_raw)
+            if resolved is not None:
+                category = resolved
+                category_provided = True
+            elif is_create:
+                if default_category is None:
+                    report.errors.append(
+                        ImportRowError(
+                            index,
+                            sku,
+                            (
+                                f'Категорію «{category_raw}» не знайдено і не задано '
+                                'категорію за замовчуванням'
+                            ),
+                        ),
+                    )
+                    continue
+                category = default_category
         elif is_create:
             if default_category is None:
                 report.errors.append(
@@ -190,6 +202,7 @@ def _validate_rows(
                 stock=stock,
                 category=category,
                 category_provided=category_provided,
+                description=description_raw or None,
             ),
         )
 
@@ -211,6 +224,7 @@ def _persist_row(row: _ValidatedRow, supplier: Supplier) -> str:
             category=row.category,
             supplier=supplier,
             stock_quantity=row.stock if row.stock is not None else 0,
+            description=row.description or '',
             is_active=True,
         )
         product.save()
@@ -224,6 +238,8 @@ def _persist_row(row: _ValidatedRow, supplier: Supplier) -> str:
         product.stock_quantity = row.stock
     if row.category_provided and row.category is not None:
         product.category = row.category
+    if row.description:
+        product.description = row.description
     product.supplier = supplier
     product.save()
     return 'updated'
@@ -235,6 +251,7 @@ def import_supplier_file(
     file_obj: BinaryIO,
     filename: str,
     default_category: Category | None = None,
+    name_locale: str = 'uk',
 ) -> ImportReport:
     """
     Парсить файл постачальника, валідує рядки і зберігає товари.
@@ -242,14 +259,20 @@ def import_supplier_file(
     Кожен валідний рядок зберігається у власному savepoint всередині atomic(),
     тож помилка одного рядка не відкочує успішні.
     """
+    locale = 'ru' if name_locale == 'ru' else 'uk'
     logger.info(
-        'Supplier import start supplier_id=%s file=%s',
+        'Supplier import start supplier_id=%s file=%s locale=%s',
         supplier.pk,
         filename,
+        locale,
     )
 
     try:
-        raw_rows = parse_supplier_file(file_obj, filename)
+        raw_rows = parse_supplier_file(
+            file_obj,
+            filename,
+            name_locale=locale,  # type: ignore[arg-type]
+        )
     except SupplierImportParseError:
         raise
 

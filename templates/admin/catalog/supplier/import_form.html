@@ -19,11 +19,15 @@
         </p>
         <h1 class="supplier-import__title">Імпорт файлу постачальника</h1>
         <p class="supplier-import__hint">
-            Колонки: <code>sku</code> (обовʼязково), <code>name</code>/<code>title</code>,
-            <code>price</code>, <code>stock</code>, <code>category</code>
-            (допускаються також UA/RU синоніми заголовків).
+            Підтримка вигрузки Prom/Siker:
+            <code>Код_товара</code>,
+            <code>Название_позиции</code> / <code>Название_позиции_укр</code>,
+            <code>Цена</code>,
+            <code>Наличие</code>,
+            <code>Название_группы</code>,
+            <code>Описание</code> / <code>Описание_укр</code>.
             Формати: CSV, XLSX, JSON.
-            Українську та російську версії прайсу потрібно завантажувати окремо.
+            Мову назви обери нижче — UA і RU з одного файлу імпортуються окремими прогонами.
         </p>
     </div>
 
@@ -45,6 +49,16 @@
                 <p class="supplier-import__help">{{ form.file.help_text }}</p>
                 {% endif %}
                 {% for error in form.file.errors %}
+                <p class="supplier-import__field-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+            <div class="supplier-import__field">
+                <label for="{{ form.name_locale.id_for_label }}">{{ form.name_locale.label }}</label>
+                {{ form.name_locale }}
+                {% if form.name_locale.help_text %}
+                <p class="supplier-import__help">{{ form.name_locale.help_text }}</p>
+                {% endif %}
+                {% for error in form.name_locale.errors %}
                 <p class="supplier-import__field-error">{{ error }}</p>
                 {% endfor %}
             </div>
