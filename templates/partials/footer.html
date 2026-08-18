@@ -72,13 +72,16 @@
 
     <div class="site-footer__bottom">
       <span class="site-footer__credit">
-        Сайт від
+        {% if request.path == '/' %}
         <a
           class="site-footer__credit-link"
-          href="https://www.prometeylabs.com/"
+          href="https://www.prometeylabs.com/internet-shop-v2/"
           target="_blank"
-          rel="noopener noreferrer"
-        >PrometeyLabs</a>
+          rel="nofollow noopener noreferrer"
+        >Розроблено командою PrometeyLabs</a>
+        {% else %}
+        <span>Розроблено командою PrometeyLabs</span>
+        {% endif %}
       </span>
       © {% now "Y" %} Oyra
       <a href="{% url 'pages:static' slug='privacy' %}">Конфіденційність</a>
