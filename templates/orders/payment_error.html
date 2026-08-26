@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static oyra_content %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/content.css' %}">
@@ -16,9 +16,9 @@
   <p class="content-page__meta">
     Питання?
     {% for phone in site_phones %}
-    <a href="tel:{{ phone }}">{{ phone }}</a>{% if not forloop.last %} · {% endif %}
+    <a href="tel:{{ phone|tel_uri }}">{{ phone }}</a>{% if not forloop.last %} · {% endif %}
     {% empty %}
-    {% if site_settings.phone %}{{ site_settings.phone }} · {% endif %}
+    {% if site_settings.phone %}<a href="tel:{{ site_settings.phone|tel_uri }}">{{ site_settings.phone }}</a> · {% endif %}
     {% endfor %}
     {{ site_settings.email }}
   </p>

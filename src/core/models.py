@@ -5,6 +5,12 @@ class SiteSettings(models.Model):
     site_name = models.CharField('Назва сайту', max_length=100, default='Oyra')
     email = models.EmailField('Email', default='info@oyra.ua')
     address = models.CharField('Адреса', max_length=255, default='м. Львів, Україна')
+    legal_address = models.CharField(
+        'Юридична адреса',
+        max_length=255,
+        default='Львів, вул. Генерала Юнаківа, 9',
+        blank=True,
+    )
     work_hours = models.CharField('Години роботи', max_length=255, default='Пн–Пт: 9:00–18:00')
     facebook_url = models.URLField('Facebook', blank=True)
     youtube_url = models.URLField('YouTube', blank=True)

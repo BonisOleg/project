@@ -1,6 +1,6 @@
 HERO_LEAD_DEFAULT = (
     'Якість, доступні ціни та швидка доставка по всій Україні. '
-    'Оплата через LiqPay — карткою або Apple Pay.'
+    'Оплата через LiqPay — карткою Visa або Mastercard.'
 )
 
 BLOCK_FIELD_LABELS: dict[tuple[str, str], str] = {
@@ -61,7 +61,7 @@ BLOCK_DEFAULTS: dict[tuple[str, str], str] = {
     ('home', 'benefit_1_title'): 'Краща ціна на ринку',
     ('home', 'benefit_1_text'): 'Працюємо напряму з виробниками — без зайвих націнок.',
     ('home', 'benefit_2_title'): 'Доставка 1–3 дні',
-    ('home', 'benefit_2_text'): 'Нова Пошта та Укрпошта по всій Україні.',
+    ('home', 'benefit_2_text'): 'Нова Пошта по всій Україні.',
     ('home', 'benefit_3_title'): 'Система знижок',
     ('home', 'benefit_3_text'): 'Промокоди та знижка {discount}% за підписку.',
     ('home', 'benefit_4_title'): 'Повернення 14 днів',

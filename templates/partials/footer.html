@@ -1,17 +1,21 @@
+{% load oyra_content %}
 <footer class="site-footer">
   <div class="container site-footer__inner">
     <div class="site-footer__grid">
       <div class="site-footer__brand">
         <div class="site-footer__title">Oyra</div>
         <p class="site-footer__contacts">
+          {% if site_settings.legal_address %}
+          <span class="site-footer__address">{{ site_settings.legal_address }}</span>
+          {% endif %}
           {% for phone in site_phones %}
-          <a href="tel:{{ phone }}">{{ phone }}</a>
+          <a class="site-footer__phone" href="tel:{{ phone|tel_uri }}">{{ phone }}</a>
           {% empty %}
           {% if site_settings.phone %}
-          <a href="tel:{{ site_settings.phone }}">{{ site_settings.phone }}</a>
+          <a class="site-footer__phone" href="tel:{{ site_settings.phone|tel_uri }}">{{ site_settings.phone }}</a>
           {% endif %}
           {% endfor %}
-          <a href="mailto:{{ site_settings.email }}">{{ site_settings.email }}</a>
+          <a class="site-footer__email" href="mailto:{{ site_settings.email }}">{{ site_settings.email }}</a>
         </p>
       </div>
       <div>

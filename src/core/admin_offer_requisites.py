@@ -11,7 +11,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from src.core.admin_site_content_widgets import CmsAdminTextInputWidget
+from src.core.admin_site_content_widgets import CmsAdminTextInputWidget, CmsAdminTextareaWidget
 from src.core.models import SiteSettings
 
 
@@ -33,6 +33,7 @@ OFFER_REQUISITES_FIELDS: tuple[tuple[str, str], ...] = (
     ('bank_iban', 'Рахунок отримувача (IBAN)'),
     ('bank_edrpou', 'ЄДРПОУ / ІПН'),
     ('bank_name', 'Банк'),
+    ('legal_address', 'Юридична адреса'),
 )
 
 
@@ -44,12 +45,13 @@ class OfferRequisitesForm(forms.Form):
                 'bank_iban': 34,
                 'bank_edrpou': 20,
             }
+            widget = CmsAdminTextareaWidget(attrs={'rows': 2}) if field_name == 'legal_address' else CmsAdminTextInputWidget()
             self.fields[field_name] = forms.CharField(
                 label=label,
                 initial=getattr(settings_obj, field_name, ''),
                 required=False,
                 max_length=max_lengths.get(field_name, 255),
-                widget=CmsAdminTextInputWidget(),
+                widget=widget,
             )
 
     def save(self, settings_obj: SiteSettings) -> None:

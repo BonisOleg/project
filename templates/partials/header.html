@@ -64,7 +64,7 @@
     <div class="site-header__actions">
       {% section_visible 'site' 'header_action_phone_visible' as show_phone %}
       {% if show_phone and site_settings.phone %}
-      <a href="tel:{{ site_settings.phone }}"
+      <a href="tel:{{ site_settings.phone|tel_uri }}"
          class="header-icon header-icon--phone"
          aria-label="{% if site_phones|length > 1 %}Телефони: {{ site_phones|join:', ' }}{% else %}Зателефонувати{% endif %}"
          data-tooltip="{% if site_phones|length > 1 %}{{ site_phones|join:', ' }}{% else %}Зателефонувати{% endif %}"

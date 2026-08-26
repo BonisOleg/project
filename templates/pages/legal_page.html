@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static oyra_content %}
 
 {% block title %}{{ page.title }} — Oyra{% endblock %}
 
@@ -59,9 +59,31 @@
           <dd class="legal-page__requisites-value">{{ site_settings.bank_name }}</dd>
         </div>
         {% endif %}
+        {% if site_settings.legal_address %}
+        <div class="legal-page__requisites-row">
+          <dt class="legal-page__requisites-term">Юридична адреса</dt>
+          <dd class="legal-page__requisites-value">{{ site_settings.legal_address }}</dd>
+        </div>
+        {% endif %}
+        {% for phone in site_phones %}
+        <div class="legal-page__requisites-row">
+          <dt class="legal-page__requisites-term">Телефон</dt>
+          <dd class="legal-page__requisites-value">
+            <a class="legal-page__phone-link" href="tel:{{ phone|tel_uri }}">{{ phone }}</a>
+          </dd>
+        </div>
+        {% endfor %}
+        {% if site_settings.email %}
+        <div class="legal-page__requisites-row">
+          <dt class="legal-page__requisites-term">Email</dt>
+          <dd class="legal-page__requisites-value">
+            <a class="legal-page__phone-link" href="mailto:{{ site_settings.email }}">{{ site_settings.email }}</a>
+          </dd>
+        </div>
+        {% endif %}
       </dl>
       <p class="legal-page__text legal-page__text--after-requisites">
-        Актуальні контакти продавця зазначені у футері сайту. З питань договору звертайтесь на email підтримки.
+        З питань договору звертайтесь на email підтримки або за телефонами вище.
       </p>
       {% endif %}
       {% if section.items %}

@@ -5,8 +5,14 @@ from django.utils.safestring import mark_safe
 
 from src.core.block_defaults import BLOCK_DEFAULTS
 from src.core.utils.block_render import get_block_text, is_section_visible, render_block_html
+from src.core.utils.phone_format import phone_to_tel_uri
 
 register = template.Library()
+
+
+@register.filter
+def tel_uri(phone: str) -> str:
+    return phone_to_tel_uri(phone)
 
 
 @register.simple_tag(takes_context=True)

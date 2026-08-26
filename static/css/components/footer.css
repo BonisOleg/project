@@ -148,6 +148,26 @@
   color: rgba(207, 210, 224, 0.72);
 }
 
+.site-footer__address {
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.site-footer__phone,
+.site-footer__email {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  line-height: 1.45;
+  color: rgba(207, 210, 224, 0.72);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
 .site-footer__contacts a:hover { color: var(--c-accent-light); }
 
 .newsletter {

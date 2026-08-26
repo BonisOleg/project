@@ -92,6 +92,20 @@
   font-size: var(--fs-sm);
 }
 
+.legal-page__phone-link {
+  color: var(--c-text);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.legal-page__phone-link:hover {
+  color: var(--c-brand-dark);
+  text-decoration: underline;
+}
+
 .legal-page__list {
   margin: 0;
   padding: 0 0 0 1.15rem;
