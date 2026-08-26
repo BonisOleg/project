@@ -53,7 +53,7 @@ class SiteContentAdminTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'site_name')
-        self.assertContains(response, 'name="phone"')
+        self.assertContains(response, 'phones-0-phone')
 
     def test_hero_section_save_updates_blocks(self):
         section = get_section('home', 'hero')

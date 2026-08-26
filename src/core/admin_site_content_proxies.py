@@ -5,6 +5,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from unfold.admin import ModelAdmin
 
+from src.core.admin_offer_requisites import offer_requisites_admin_view
 from src.core.admin_site_content import site_content_section_view
 from src.core.models import (
     HomeAboutSettings,
@@ -13,6 +14,7 @@ from src.core.models import (
     HomeCategoriesSettings,
     HomeHeroSettings,
     HomeProductsSettings,
+    OfferRequisitesSettings,
     SiteFooterSettings,
     SiteHeaderSettings,
     SiteSettings,
@@ -57,6 +59,11 @@ _SECTION_MODELS: tuple[tuple[type[SiteSettings], str, str], ...] = (
 )
 
 
+class OfferRequisitesAdmin(SingletonSettingsAdmin):
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        return offer_requisites_admin_view(request, model_admin=self)
+
+
 def register_site_content_section_admins() -> None:
     for model, page_slug, section_slug in _SECTION_MODELS:
         class SectionAdmin(SiteContentSectionAdmin):
@@ -66,6 +73,8 @@ def register_site_content_section_admins() -> None:
         SectionAdmin.page_slug = page_slug
         SectionAdmin.section_slug = section_slug
         admin.site.register(model, SectionAdmin)
+
+    admin.site.register(OfferRequisitesSettings, OfferRequisitesAdmin)
 
 
 register_site_content_section_admins()

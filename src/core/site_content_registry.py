@@ -241,7 +241,7 @@ def all_registry_block_keys() -> set[tuple[str, str]]:
 
 
 def build_content_sidebar_items() -> list[dict]:
-    return [
+    items = [
         {
             'title': section.sidebar_title or section.title,
             'icon': section.sidebar_icon,
@@ -249,3 +249,9 @@ def build_content_sidebar_items() -> list[dict]:
         }
         for section in CONTENT_SECTIONS
     ]
+    items.append({
+        'title': 'Оферта — Реквізити',
+        'icon': 'receipt_long',
+        'link': reverse_lazy('admin:core_offerrequisitessettings_changelist'),
+    })
+    return items

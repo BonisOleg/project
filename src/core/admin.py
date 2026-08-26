@@ -1,5 +1,5 @@
 from django.contrib import admin
-from unfold.admin import ModelAdmin
+from unfold.admin import ModelAdmin, TabularInline
 
 from .admin_utils import ReadableUnfoldFieldsMixin, SingletonModelAdminMixin
 from .admin_filters import (
@@ -7,13 +7,30 @@ from .admin_filters import (
     UkBooleanDropdownFilter,
     UkChoicesDropdownFilter,
 )
-from .models import SiteSettings, SocialLink
+from .admin_site_content_widgets import CmsAdminTextInputWidget
+from .models import SitePhone, SiteSettings, SocialLink
+
+
+class SitePhoneInline(TabularInline):
+    model = SitePhone
+    extra = 1
+    min_num = 0
+    fields = ('phone', 'is_active')
+    ordering = ('sort_order', 'id')
+    verbose_name = 'Телефон'
+    verbose_name_plural = 'Телефони'
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == 'phone':
+            kwargs['widget'] = CmsAdminTextInputWidget(attrs={'type': 'tel', 'inputmode': 'tel'})
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
 
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(ReadableUnfoldFieldsMixin, SingletonModelAdminMixin, ModelAdmin):
+    inlines = [SitePhoneInline]
     fieldsets = (
-        ('Основне', {'fields': ('site_name', 'phone', 'email', 'address', 'work_hours')}),
+        ('Основне', {'fields': ('site_name', 'email', 'address', 'work_hours')}),
         ('Маркетинг', {'fields': ('newsletter_discount', 'free_delivery_from', 'meta_description')}),
         ('Сповіщення про замовлення', {
             'description': (
@@ -22,11 +39,9 @@ class SiteSettingsAdmin(ReadableUnfoldFieldsMixin, SingletonModelAdminMixin, Mod
             ),
             'fields': ('notify_emails', 'notify_phones'),
         }),
-        ('Реквізити (безготівковий розрахунок)', {
-            'fields': (
-                'bank_recipient', 'bank_iban', 'bank_edrpou',
-                'bank_name', 'bank_details_note',
-            ),
+        ('Безготівкова оплата', {
+            'description': 'Реквізити ФОП редагуються в розділі «Вміст сторінок → Оферта — Реквізити».',
+            'fields': ('bank_details_note',),
         }),
     )
 

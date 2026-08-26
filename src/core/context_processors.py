@@ -94,6 +94,7 @@ def site_context(request):
     youtube_link = next((item for item in social_links if item.network == 'youtube' and item.url), None)
     return {
         'site_settings': settings_obj,
+        'site_phones': settings_obj.active_phones(),
         'site_blocks': _load_site_blocks(),
         'categories_menu': _categories_menu(),
         'social_links': social_links,

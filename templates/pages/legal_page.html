@@ -5,7 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/pages/content.css' %}?v=20260710e">
-<link rel="stylesheet" href="{% static 'css/pages/legal_page.css' %}?v=20260710e">
+<link rel="stylesheet" href="{% static 'css/pages/legal_page.css' %}?v=20260826a">
 {% endblock %}
 
 {% block content %}
@@ -33,6 +33,37 @@
       {% for paragraph in section.paragraphs %}
       <p class="legal-page__text">{{ paragraph }}</p>
       {% endfor %}
+      {% if section.requisites %}
+      <dl class="legal-page__requisites">
+        {% if site_settings.bank_recipient %}
+        <div class="legal-page__requisites-row">
+          <dt class="legal-page__requisites-term">Отримувач</dt>
+          <dd class="legal-page__requisites-value">{{ site_settings.bank_recipient }}</dd>
+        </div>
+        {% endif %}
+        {% if site_settings.bank_iban %}
+        <div class="legal-page__requisites-row">
+          <dt class="legal-page__requisites-term">Рахунок отримувача</dt>
+          <dd class="legal-page__requisites-value">{{ site_settings.bank_iban }}</dd>
+        </div>
+        {% endif %}
+        {% if site_settings.bank_edrpou %}
+        <div class="legal-page__requisites-row">
+          <dt class="legal-page__requisites-term">ЄДРПОУ / ІПН</dt>
+          <dd class="legal-page__requisites-value">{{ site_settings.bank_edrpou }}</dd>
+        </div>
+        {% endif %}
+        {% if site_settings.bank_name %}
+        <div class="legal-page__requisites-row">
+          <dt class="legal-page__requisites-term">Банк</dt>
+          <dd class="legal-page__requisites-value">{{ site_settings.bank_name }}</dd>
+        </div>
+        {% endif %}
+      </dl>
+      <p class="legal-page__text legal-page__text--after-requisites">
+        Актуальні контакти продавця зазначені у футері сайту. З питань договору звертайтесь на email підтримки.
+      </p>
+      {% endif %}
       {% if section.items %}
       <ul class="legal-page__list">
         {% for item in section.items %}

@@ -13,6 +13,14 @@
   <div class="content-page__actions">
     <a href="{% url 'orders:retry_payment' order.order_number %}" class="btn btn--primary">Спробувати знову</a>
   </div>
-  <p class="content-page__meta">Питання? {{ site_settings.phone }} · {{ site_settings.email }}</p>
+  <p class="content-page__meta">
+    Питання?
+    {% for phone in site_phones %}
+    <a href="tel:{{ phone }}">{{ phone }}</a>{% if not forloop.last %} · {% endif %}
+    {% empty %}
+    {% if site_settings.phone %}{{ site_settings.phone }} · {% endif %}
+    {% endfor %}
+    {{ site_settings.email }}
+  </p>
 </div>
 {% endblock %}

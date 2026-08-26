@@ -3,7 +3,6 @@ from django.db import models
 
 class SiteSettings(models.Model):
     site_name = models.CharField('Назва сайту', max_length=100, default='Oyra')
-    phone = models.CharField('Телефон', max_length=30, default='+38 (000) 000-00-00')
     email = models.EmailField('Email', default='info@oyra.ua')
     address = models.CharField('Адреса', max_length=255, default='м. Львів, Україна')
     work_hours = models.CharField('Години роботи', max_length=255, default='Пн–Пт: 9:00–18:00')
@@ -54,6 +53,43 @@ class SiteSettings(models.Model):
     @classmethod
     def load(cls):
         return cls.get_solo()
+
+    @property
+    def phone(self) -> str:
+        first = (
+            self.phones.filter(is_active=True)
+            .order_by('sort_order', 'id')
+            .values_list('phone', flat=True)
+            .first()
+        )
+        return first or ''
+
+    def active_phones(self) -> list[str]:
+        return list(
+            self.phones.filter(is_active=True)
+            .order_by('sort_order', 'id')
+            .values_list('phone', flat=True)
+        )
+
+
+class SitePhone(models.Model):
+    settings = models.ForeignKey(
+        SiteSettings,
+        on_delete=models.CASCADE,
+        related_name='phones',
+        verbose_name='Налаштування сайту',
+    )
+    phone = models.CharField('Телефон', max_length=30)
+    sort_order = models.PositiveSmallIntegerField('Порядок', default=0)
+    is_active = models.BooleanField('Активний', default=True)
+
+    class Meta:
+        ordering = ['sort_order', 'id']
+        verbose_name = 'Телефон'
+        verbose_name_plural = 'Телефони'
+
+    def __str__(self) -> str:
+        return self.phone
 
 
 class SiteBlock(models.Model):
@@ -168,6 +204,13 @@ class SiteFooterSettings(SiteSettings):
         proxy = True
         verbose_name = 'Нижній блок сайту'
         verbose_name_plural = 'Нижній блок сайту'
+
+
+class OfferRequisitesSettings(SiteSettings):
+    class Meta:
+        proxy = True
+        verbose_name = 'Оферта — Реквізити'
+        verbose_name_plural = 'Оферта — Реквізити'
 
 
 class SocialLink(models.Model):

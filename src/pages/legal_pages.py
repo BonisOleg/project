@@ -33,6 +33,7 @@ def _normalize_legal_section(section: dict) -> dict:
         'title': section.get('title', ''),
         'paragraphs': list(section.get('paragraphs') or []),
         'items': list(section.get('items') or []),
+        'requisites': bool(section.get('requisites')),
     }
 
 
