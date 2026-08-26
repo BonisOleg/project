@@ -5,7 +5,7 @@ from django.dispatch import receiver
 
 from .models import Order
 from .services.admin_order_notify import notify_admins_new_order
-from .services.order_notify import notify_order_status
+from .services.order_notify import notify_client_new_order, notify_order_status
 
 
 @receiver(pre_save, sender=Order)
@@ -36,3 +36,4 @@ def order_status_sms(sender, instance: Order, created: bool, **kwargs):
 def notify_admins_after_checkout(order: Order) -> None:
     """Викликати з checkout після фіналізації кроку оплати."""
     notify_admins_new_order(order)
+    notify_client_new_order(order)

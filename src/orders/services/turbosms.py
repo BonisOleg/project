@@ -27,6 +27,12 @@ class TurboSMSError(Exception):
     pass
 
 
+def _looks_like_balance_error(data: dict[str, Any]) -> bool:
+    """Евристика для швидкої діагностики: недостатньо коштів на балансі TurboSMS."""
+    text = f"{data.get('response_status') or ''} {data.get('response_result') or ''}".lower()
+    return any(word in text for word in ('balance', 'баланс', 'insufficient', 'кошт'))
+
+
 def normalize_ua_phone(phone: str) -> str | None:
     """Повертає 380XXXXXXXXX або None, якщо номер невалідний."""
     digits = _PHONE_DIGITS_RE.sub('', phone or '')
@@ -116,22 +122,36 @@ class TurboSMSService:
         if not send_sms and not send_viber:
             raise TurboSMSError('Немає активного каналу (SMS/Viber sender)')
 
-        payload: dict[str, Any] = {
-            'recipients': [recipient],
-        }
-        if send_sms:
-            payload['sms'] = {
-                'sender': self.sms_sender,
-                'text': text,
-            }
-        if send_viber:
-            payload['viber'] = {
-                'sender': self.viber_sender,
-                'text': text,
-                'ttl': int(self.viber_ttl),
-            }
+        sms_block = {'sender': self.sms_sender, 'text': text} if send_sms else None
+        viber_block = (
+            {'sender': self.viber_sender, 'text': text, 'ttl': int(self.viber_ttl)}
+            if send_viber else None
+        )
 
-        return self._post(payload)
+        payload: dict[str, Any] = {'recipients': [recipient]}
+        if sms_block:
+            payload['sms'] = sms_block
+        if viber_block:
+            payload['viber'] = viber_block
+
+        logger.info(
+            'TurboSMS sending: recipient_tail=%s channels=%s',
+            recipient[-4:],
+            [c for c, b in (('sms', sms_block), ('viber', viber_block)) if b],
+        )
+
+        try:
+            return self._post(payload)
+        except TurboSMSError:
+            # Viber-відправник ще не пройшов модерацію (або тимчасово недоступний) —
+            # SMS не повинен постраждати через це, тому пробуємо ще раз лише SMS-каналом.
+            if sms_block and viber_block:
+                logger.warning(
+                    'TurboSMS hybrid send failed for %s, retrying SMS-only',
+                    recipient[-4:],
+                )
+                return self._post({'recipients': [recipient], 'sms': sms_block})
+            raise
 
     def _post(self, payload: dict[str, Any]) -> dict[str, Any]:
         body = json.dumps(payload, ensure_ascii=False).encode('utf-8')
@@ -149,16 +169,33 @@ class TurboSMSService:
             with urllib.request.urlopen(request, timeout=self.timeout) as response:
                 raw = response.read().decode('utf-8')
                 data = json.loads(raw) if raw else {}
+        except urllib.error.HTTPError as exc:
+            error_body = exc.read().decode('utf-8', errors='replace') if exc.fp else ''
+            logger.warning(
+                'TurboSMS HTTP error: status=%s body=%s', exc.code, error_body,
+            )
+            raise TurboSMSError(f'TurboSMS HTTP {exc.code}: {error_body}') from exc
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, ValueError) as exc:
             logger.warning('TurboSMS request failed: %s', exc)
             raise TurboSMSError('Помилка запиту до TurboSMS') from exc
 
         if not self._is_success(data):
-            logger.info('TurboSMS API error response: %s', data)
+            logger.warning(
+                'TurboSMS API error response: status=%s code=%s balance_issue=%s raw=%s',
+                data.get('response_status'),
+                data.get('response_code'),
+                _looks_like_balance_error(data),
+                data,
+            )
             raise TurboSMSError(
                 f"TurboSMS error: {data.get('response_status') or data.get('response_code')}"
             )
 
+        logger.info(
+            'TurboSMS API success: status=%s code=%s',
+            data.get('response_status'),
+            data.get('response_code'),
+        )
         return {
             'ok': True,
             'raw': data,

@@ -18,4 +18,6 @@ DATABASES = {
     }
 }
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND успадковується з base.py: console, якщо RESEND_API_KEY/
+# EMAIL_HOST_PASSWORD не задані локально, або реальний SMTP, якщо задані —
+# так можна протестувати Resend локально без перемикання settings-модуля.

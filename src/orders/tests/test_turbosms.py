@@ -1,11 +1,16 @@
 from unittest.mock import MagicMock, patch
 
+from django.core import mail
 from django.db.models.signals import post_save
 from django.test import SimpleTestCase, TestCase, override_settings
 
 from src.orders.models import Order
 from src.orders.signals import order_status_sms
-from src.orders.services.order_notify import build_order_status_text, notify_order_status
+from src.orders.services.order_notify import (
+    build_order_status_text,
+    notify_client_new_order,
+    notify_order_status,
+)
 from src.orders.services.turbosms import TurboSMSError, TurboSMSService, normalize_ua_phone
 
 
@@ -105,6 +110,43 @@ class TurboSMSServiceTests(SimpleTestCase):
         with self.assertRaises(TurboSMSError):
             svc.send('123', 'hi')
 
+    @patch('src.orders.services.turbosms.urllib.request.urlopen')
+    def test_sms_fallback_when_viber_not_moderated(self, mock_urlopen):
+        """Якщо гібридний SMS+Viber запит відхилено (напр. Viber sender не
+        пройшов модерацію), SMS має піти окремим повторним запитом і не
+        постраждати від збою Viber-каналу."""
+        fail_response = MagicMock()
+        fail_response.read.return_value = (
+            b'{"response_code":400,"response_status":"ERROR_VIBER_SENDER_NOT_APPROVED"}'
+        )
+        fail_response.__enter__.return_value = fail_response
+        fail_response.__exit__.return_value = False
+
+        ok_response = MagicMock()
+        ok_response.read.return_value = (
+            b'{"response_code":0,"response_status":"OK","response_result":[]}'
+        )
+        ok_response.__enter__.return_value = ok_response
+        ok_response.__exit__.return_value = False
+
+        mock_urlopen.side_effect = [fail_response, ok_response]
+
+        svc = TurboSMSService(
+            token='tok',
+            sms_sender='OyraSMS',
+            viber_sender='OyraViber',
+            enabled=True,
+        )
+        result = svc.send('0501112233', 'Тест')
+        self.assertTrue(result['ok'])
+        self.assertEqual(mock_urlopen.call_count, 2)
+
+        first_body = mock_urlopen.call_args_list[0][0][0].data.decode('utf-8')
+        second_body = mock_urlopen.call_args_list[1][0][0].data.decode('utf-8')
+        self.assertIn('"viber"', first_body)
+        self.assertNotIn('"viber"', second_body)
+        self.assertIn('"sms"', second_body)
+
 
 @override_settings(TURBOSMS_ENABLED=False)
 class OrderNotifyTests(TestCase):
@@ -197,3 +239,40 @@ class OrderSmsSignalTests(TestCase):
 
         order.save(update_fields=['updated_at'])
         self.assertEqual(mock_notify.call_count, 2)
+
+
+@override_settings(TURBOSMS_ENABLED=False)
+class ClientOrderEmailTests(TestCase):
+    def setUp(self):
+        post_save.disconnect(order_status_sms, sender=Order)
+
+    def tearDown(self):
+        post_save.connect(order_status_sms, sender=Order)
+
+    def _make_order(self, **kwargs):
+        defaults = {
+            'first_name': 'Іван',
+            'last_name': 'Тест',
+            'phone': '+380501112233',
+            'email': 'client@example.com',
+            'delivery_service': Order.DELIVERY_NP,
+            'delivery_city': 'Київ',
+            'delivery_address': 'Відділення 1',
+            'subtotal': '100.00',
+            'total': '100.00',
+            'status': Order.STATUS_PENDING,
+        }
+        defaults.update(kwargs)
+        return Order.objects.create(**defaults)
+
+    def test_client_email_sent(self):
+        order = self._make_order()
+        self.assertTrue(notify_client_new_order(order))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['client@example.com'])
+        self.assertIn(order.order_number, mail.outbox[0].subject)
+
+    def test_client_email_skipped_without_email(self):
+        order = self._make_order(email='')
+        self.assertFalse(notify_client_new_order(order))
+        self.assertEqual(len(mail.outbox), 0)

@@ -80,25 +80,43 @@ def notify_admins_new_order(order: Order) -> dict[str, int]:
     site = SiteSettings.get_solo()
 
     emails = collect_admin_email_recipients(site)
-    if emails:
+    if not emails:
+        logger.info('Admin order email skipped for %s: no recipients configured', order.order_number)
+    else:
         subject = f'Нове замовлення {order.order_number}'
         from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@oyra.ua')
+        logger.info(
+            'Admin order email sending: order=%s to=%s backend=%s',
+            order.order_number,
+            emails,
+            settings.EMAIL_BACKEND,
+        )
         try:
             sent = send_mail(
                 subject,
                 text,
                 from_email,
                 emails,
-                fail_silently=True,
+                fail_silently=False,
             )
             result['email'] = int(sent or 0)
+            if not sent:
+                logger.warning('Admin order email not accepted for %s (send_mail=0)', order.order_number)
+            else:
+                logger.info('Admin order email sent for %s', order.order_number)
         except Exception:
             logger.exception('Admin order email failed for %s', order.order_number)
 
     phones = collect_admin_phone_recipients(site)
-    if phones and getattr(settings, 'TURBOSMS_ENABLED', False):
+    if not phones:
+        logger.info('Admin order SMS skipped for %s: no phone recipients configured', order.order_number)
+    elif not getattr(settings, 'TURBOSMS_ENABLED', False):
+        logger.info('Admin order SMS skipped for %s: TURBOSMS_ENABLED=False', order.order_number)
+    else:
         service = TurboSMSService()
-        if service.can_send:
+        if not service.can_send:
+            logger.info('Admin order SMS skipped for %s: TurboSMS not ready', order.order_number)
+        else:
             for phone in phones:
                 try:
                     if service.send(phone, text):

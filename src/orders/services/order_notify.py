@@ -1,10 +1,11 @@
-"""Сповіщення клієнта про статус замовлення через TurboSMS (SMS / Viber / hybrid)."""
+"""Сповіщення клієнта про замовлення: email (Resend) + SMS/Viber (TurboSMS)."""
 
 from __future__ import annotations
 
 import logging
 
 from django.conf import settings
+from django.core.mail import send_mail
 
 from src.orders.models import Order
 from src.orders.services.turbosms import TurboSMSError, TurboSMSService
@@ -57,6 +58,10 @@ def notify_order_status(order: Order, status: str | None = None) -> bool:
     Повертає True, якщо запит прийнято шлюзом.
     """
     if not getattr(settings, 'TURBOSMS_ENABLED', False):
+        logger.info(
+            'Order SMS skipped for %s: TURBOSMS_ENABLED=False',
+            order.order_number,
+        )
         return False
 
     text = build_order_status_text(order, status=status)
@@ -66,11 +71,17 @@ def notify_order_status(order: Order, status: str | None = None) -> bool:
     service = TurboSMSService()
     if not service.can_send:
         logger.info(
-            'Order SMS skipped for %s: TurboSMS not ready',
+            'Order SMS skipped for %s: TurboSMS not ready (token/sender missing)',
             order.order_number,
         )
         return False
 
+    logger.info(
+        'Order SMS sending: order=%s status=%s phone_tail=%s',
+        order.order_number,
+        status or order.status,
+        (order.phone or '')[-4:],
+    )
     try:
         service.send(order.phone, text)
     except TurboSMSError as exc:
@@ -85,4 +96,53 @@ def notify_order_status(order: Order, status: str | None = None) -> bool:
         return False
 
     logger.info('Order SMS queued for %s status=%s', order.order_number, status or order.status)
+    return True
+
+
+def build_client_order_email(order: Order) -> tuple[str, str]:
+    lines = [
+        f'{item.product_name} x{item.quantity} — {item.line_total} грн'
+        for item in order.items.all()
+    ]
+    subject = f'Oyra: замовлення {order.order_number} прийнято'
+    body = (
+        f'Доброго дня, {order.first_name}!\n\n'
+        f'Дякуємо за замовлення {order.order_number} на сайті Oyra.\n\n'
+        + ('\n'.join(lines) + '\n\n' if lines else '')
+        + f'Разом: {order.total} грн\n'
+        f'Доставка: {order.get_delivery_service_display()} / {order.delivery_city}\n'
+        f'Оплата: {order.get_payment_method_display()}\n\n'
+        f'Ми звʼяжемось з вами за номером {order.phone} для підтвердження.'
+    )
+    return subject, body
+
+
+def notify_client_new_order(order: Order) -> bool:
+    """
+    Надсилає клієнту email-підтвердження нового замовлення через Resend.
+    Помилки не переривають checkout — лише логуються.
+    """
+    if not order.email:
+        logger.info('Client order email skipped for %s: no email', order.order_number)
+        return False
+
+    subject, body = build_client_order_email(order)
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@oyra.ua')
+    logger.info(
+        'Client order email sending: order=%s to=%s backend=%s',
+        order.order_number,
+        order.email,
+        settings.EMAIL_BACKEND,
+    )
+    try:
+        sent = send_mail(subject, body, from_email, [order.email], fail_silently=False)
+    except Exception:
+        logger.exception('Client order email failed for %s', order.order_number)
+        return False
+
+    if not sent:
+        logger.warning('Client order email not accepted for %s (send_mail=0)', order.order_number)
+        return False
+
+    logger.info('Client order email sent for %s', order.order_number)
     return True
