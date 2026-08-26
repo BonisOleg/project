@@ -38,26 +38,24 @@ class Command(BaseCommand):
             self._test_sms(phone)
 
     def _test_email(self, email: str) -> None:
-        self.stdout.write('--- EMAIL (Resend) ---')
-        self.stdout.write(f'EMAIL_BACKEND       = {settings.EMAIL_BACKEND}')
-        self.stdout.write(f'EMAIL_HOST           = {getattr(settings, "EMAIL_HOST", "")}')
-        self.stdout.write(f'EMAIL_HOST_USER       = {getattr(settings, "EMAIL_HOST_USER", "")}')
+        self.stdout.write('--- EMAIL (Resend HTTP API) ---')
+        self.stdout.write(f'EMAIL_BACKEND    = {settings.EMAIL_BACKEND}')
         self.stdout.write(
-            f'EMAIL_HOST_PASSWORD задано = '
-            f'{bool(getattr(settings, "EMAIL_HOST_PASSWORD", ""))}',
+            f'RESEND_API_KEY задано = {bool(getattr(settings, "RESEND_API_KEY", ""))}',
         )
-        self.stdout.write(f'DEFAULT_FROM_EMAIL   = {settings.DEFAULT_FROM_EMAIL}')
+        self.stdout.write(f'DEFAULT_FROM_EMAIL = {settings.DEFAULT_FROM_EMAIL}')
 
         if settings.EMAIL_BACKEND.endswith('console.EmailBackend'):
             self.stdout.write(self.style.WARNING(
                 'EMAIL_BACKEND = console -> лист буде лише виведений у консоль, '
-                'реально НЕ надійде. Додайте RESEND_API_KEY у .env і перезапустіть.',
+                'реально НЕ надійде. Додайте RESEND_API_KEY (або EMAIL_HOST_PASSWORD=re_...) '
+                'у .env і перезапустіть.',
             ))
 
         try:
             sent = send_mail(
                 'Oyra: тестовий лист',
-                'Це тестове повідомлення для перевірки Resend/SMTP інтеграції.',
+                'Це тестове повідомлення для перевірки Resend HTTP API.',
                 settings.DEFAULT_FROM_EMAIL,
                 [email],
                 fail_silently=False,

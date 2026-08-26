@@ -128,27 +128,30 @@ TURBOSMS_VIBER_SENDER = config('TURBOSMS_VIBER_SENDER', default='')
 TURBOSMS_VIBER_TTL = config('TURBOSMS_VIBER_TTL', default=3600, cast=int)
 TURBOSMS_TIMEOUT = config('TURBOSMS_TIMEOUT', default=8, cast=int)
 
-# Email через Resend (SMTP-релей: https://resend.com/docs/send/smtp).
-# Достатньо вказати RESEND_API_KEY у .env — він підставляється як SMTP-пароль.
-# Якщо ключ не заданий (локальна розробка без креденшлів) — фолбек на console-backend,
-# щоб листи не втрачались мовчки, а виводились у консоль.
-EMAIL_HOST = config('EMAIL_HOST', default='smtp.resend.com')
-EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='resend')
-EMAIL_HOST_PASSWORD = config(
-    'EMAIL_HOST_PASSWORD',
-    default=config('RESEND_API_KEY', default=''),
+# Email через Resend HTTP API (https://resend.com/docs/api-reference/emails/send-email).
+# Порт 443 — працює на VPS, де SMTP :587 заблокований (DigitalOcean тощо).
+# Ключ: RESEND_API_KEY або EMAIL_HOST_PASSWORD (зворотна сумісність з .env).
+RESEND_API_KEY = config(
+    'RESEND_API_KEY',
+    default=config('EMAIL_HOST_PASSWORD', default=''),
 )
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=10, cast=int)
+RESEND_TIMEOUT = config('RESEND_TIMEOUT', default=10, cast=int)
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='Oyra <noreply@oyra.ua>')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 EMAIL_BACKEND = (
-    'django.core.mail.backends.smtp.EmailBackend'
-    if EMAIL_HOST_PASSWORD
+    'src.core.email_backends.resend.ResendEmailBackend'
+    if RESEND_API_KEY
     else 'django.core.mail.backends.console.EmailBackend'
 )
+
+# Legacy SMTP-поля лишаються в .env.example для довідки; backend їх не використовує.
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.resend.com')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='resend')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=10, cast=int)
 
 TINYMCE_DEFAULT_CONFIG = {
     'height': 400,

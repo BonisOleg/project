@@ -18,6 +18,5 @@ DATABASES = {
     }
 }
 
-# EMAIL_BACKEND успадковується з base.py: console, якщо RESEND_API_KEY/
-# EMAIL_HOST_PASSWORD не задані локально, або реальний SMTP, якщо задані —
-# так можна протестувати Resend локально без перемикання settings-модуля.
+# EMAIL_BACKEND успадковується з base.py: console без RESEND_API_KEY,
+# або Resend HTTP API (порт 443), якщо ключ заданий у .env.
