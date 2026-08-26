@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 API_SEND_URL = 'https://api.resend.com/emails'
 REQUEST_TIMEOUT_DEFAULT = 10
+# Cloudflare на api.resend.com блокує дефолтний User-Agent Python urllib (Error 1010).
+RESEND_USER_AGENT = 'OyraResend/1.0 (+https://oyra.com.ua)'
 
 
 class ResendError(Exception):
@@ -99,6 +101,7 @@ class ResendService:
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'Authorization': f'Bearer {self.api_key}',
+                'User-Agent': RESEND_USER_AGENT,
             },
             method='POST',
         )
