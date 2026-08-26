@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import html
+import mimetypes
 import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
+from pathlib import PurePosixPath
 from typing import Iterable
 from urllib.request import Request, urlopen
 
@@ -19,6 +21,8 @@ _CDATA_RE = re.compile(
 )
 _TAG_RE = re.compile(r'<[^>]+>')
 _WS_RE = re.compile(r'\s+')
+_SAFE_NAME_RE = re.compile(r'[^a-zA-Z0-9._-]+')
+_SAFE_IMAGE_SUFFIXES = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'}
 
 
 @dataclass
@@ -225,6 +229,15 @@ def download_image(url: str, timeout: int = 60) -> tuple[bytes, str]:
         data = resp.read()
         path = url.rsplit('/', 1)[-1].split('?', 1)[0] or 'image.jpg'
         return data, path
+
+
+def safe_image_filename(sku: str, order: int, filename: str) -> str:
+    """Коротке безпечне ім'я файлу для ProductImage.image (upload_to='products/')."""
+    suffix = PurePosixPath(filename).suffix.lower()
+    if suffix not in _SAFE_IMAGE_SUFFIXES:
+        suffix = mimetypes.guess_extension('image/jpeg') or '.jpg'
+    sku_part = _SAFE_NAME_RE.sub('-', sku)[:32]
+    return f'{sku_part}_{order}{suffix}'
 
 
 def iter_category_roots(categories: Iterable[YmlCategory]) -> list[YmlCategory]:

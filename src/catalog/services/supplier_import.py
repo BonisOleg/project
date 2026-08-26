@@ -7,19 +7,25 @@ from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
 from typing import BinaryIO
 
+from django.core.files.base import ContentFile
 from django.db import IntegrityError, transaction
 
-from src.catalog.models import Category, Product, Supplier, make_slug
+from src.catalog.models import Category, Product, ProductImage, Supplier, make_slug
 from src.catalog.services.supplier_import_parsers import (
     SupplierImportParseError,
     parse_supplier_file,
 )
+from src.catalog.siker_yml import download_image, safe_image_filename
 
 logger = logging.getLogger('catalog.supplier_import')
 
 IMPORT_FALLBACK_SLUG = 'import-bez-kategorii'
 IMPORT_FALLBACK_NAME = 'Імпорт / Без категорії'
 IMPORT_FALLBACK_EXTERNAL_ID = 'oyra:import-fallback'
+
+# Захист від "вигрузок-простирадл" з десятками фото на товар — цього достатньо
+# для будь-якої реальної галереї, а імпорт великого файлу лишається швидким.
+MAX_IMAGES_PER_PRODUCT = 20
 
 
 @dataclass
@@ -36,6 +42,8 @@ class ImportReport:
     updated: int = 0
     skipped: int = 0
     fallback_category_used: int = 0
+    images_added: int = 0
+    images_failed: int = 0
     errors: list[ImportRowError] = field(default_factory=list)
 
     @property
@@ -51,6 +59,10 @@ class ImportReport:
             text += (
                 f'. Потрібно розкласти по категоріях: {self.fallback_category_used}'
             )
+        if self.images_added:
+            text += f'. Завантажено фото: {self.images_added}'
+        if self.images_failed:
+            text += f' (не вдалося завантажити: {self.images_failed})'
         return text
 
 
@@ -73,6 +85,7 @@ class _ValidatedRow:
     category: Category | None
     category_provided: bool
     description: str | None
+    image_urls: list[str] = field(default_factory=list)
     used_fallback: bool = False
 
 
@@ -131,6 +144,32 @@ def _parse_stock(raw: str) -> int | None:
     return int(as_decimal)
 
 
+def _parse_image_urls(raw: str) -> list[str]:
+    """
+    Розбирає колонку «Ссылка_изображения» (Prom/Siker пише кілька URL через кому).
+
+    Без цього фото з вигрузки ігнорувались повністю — товар зберігався
+    без жодної картинки, хоча посилання в файлі були коректні.
+    """
+    text = (raw or '').strip()
+    if not text:
+        return []
+
+    urls: list[str] = []
+    seen: set[str] = set()
+    for chunk in text.split(','):
+        url = chunk.strip()
+        if not url or url in seen:
+            continue
+        if not url.lower().startswith(('http://', 'https://')):
+            continue
+        seen.add(url)
+        urls.append(url)
+        if len(urls) >= MAX_IMAGES_PER_PRODUCT:
+            break
+    return urls
+
+
 def _resolve_category(raw: str) -> Category | None:
     """Спочатку активні категорії (уникаємо дублів зі старих імпортів)."""
     text = (raw or '').strip()
@@ -175,6 +214,7 @@ def _validate_rows(
         stock_raw = (raw.get('stock') or '').strip()
         category_raw = (raw.get('category') or '').strip()
         description_raw = (raw.get('description') or '').strip()
+        images_raw = (raw.get('images') or '').strip()
 
         if not sku:
             report.errors.append(
@@ -272,6 +312,7 @@ def _validate_rows(
                 category=category,
                 category_provided=category_provided,
                 description=description_raw or None,
+                image_urls=_parse_image_urls(images_raw),
                 used_fallback=used_fallback,
             ),
         )
@@ -279,8 +320,49 @@ def _validate_rows(
     return validated, report
 
 
-def _persist_row(row: _ValidatedRow, supplier: Supplier) -> str:
-    """Створює або оновлює товар. Повертає 'created' | 'updated'."""
+def _attach_missing_images(product: Product, image_urls: list[str]) -> tuple[int, int]:
+    """
+    Довантажує фото за URL з вигрузки, якщо товар ще без жодної картинки.
+
+    Товари з наявною галереєю не чіпаємо — повторний імпорт того самого
+    файлу не повинен створювати дублікати фото.
+    Повертає (додано, помилок).
+    """
+    if not image_urls or product.images.exists():
+        return 0, 0
+
+    added = 0
+    failed = 0
+    for order, url in enumerate(image_urls):
+        try:
+            data, filename = download_image(url)
+        except Exception:  # noqa: BLE001 — мережева помилка не має валити імпорт
+            logger.warning(
+                'Не вдалося завантажити фото sku=%s url=%s',
+                product.sku,
+                url,
+                exc_info=True,
+            )
+            failed += 1
+            continue
+        if not data:
+            failed += 1
+            continue
+
+        safe_name = safe_image_filename(product.sku, order, filename)
+        image = ProductImage(
+            product=product,
+            alt_text=product.name[:200],
+            sort_order=order,
+            is_main=(order == 0),
+        )
+        image.image.save(safe_name, ContentFile(data), save=True)
+        added += 1
+    return added, failed
+
+
+def _persist_row(row: _ValidatedRow, supplier: Supplier) -> tuple[str, int, int]:
+    """Створює або оновлює товар. Повертає ('created'|'updated', фото_додано, фото_помилок)."""
     product = Product.objects.filter(sku=row.sku).first()
     if product is None:
         assert row.name is not None
@@ -298,7 +380,8 @@ def _persist_row(row: _ValidatedRow, supplier: Supplier) -> str:
             is_active=True,
         )
         product.save()
-        return 'created'
+        images_added, images_failed = _attach_missing_images(product, row.image_urls)
+        return 'created', images_added, images_failed
 
     if row.name:
         product.name = row.name
@@ -312,7 +395,8 @@ def _persist_row(row: _ValidatedRow, supplier: Supplier) -> str:
         product.description = row.description
     product.supplier = supplier
     product.save()
-    return 'updated'
+    images_added, images_failed = _attach_missing_images(product, row.image_urls)
+    return 'updated', images_added, images_failed
 
 
 def import_supplier_file(
@@ -355,7 +439,7 @@ def import_supplier_file(
         for row in validated:
             try:
                 with transaction.atomic():
-                    action = _persist_row(row, supplier)
+                    action, images_added, images_failed = _persist_row(row, supplier)
             except IntegrityError:
                 logger.exception(
                     'IntegrityError on sku=%s row=%s',
@@ -397,6 +481,8 @@ def import_supplier_file(
                     report.fallback_category_used += 1
             else:
                 report.updated += 1
+            report.images_added += images_added
+            report.images_failed += images_failed
 
     logger.info(
         'Supplier import done supplier_id=%s %s',

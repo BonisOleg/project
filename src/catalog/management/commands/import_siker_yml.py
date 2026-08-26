@@ -1,10 +1,6 @@
 """Разовий імпорт товарів з YML-вигрузки Siker."""
 from __future__ import annotations
 
-import mimetypes
-import re
-from pathlib import PurePosixPath
-
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -32,11 +28,10 @@ from src.catalog.siker_yml import (
     load_yml_bytes,
     parse_yml,
     resolve_sale_prices,
+    safe_image_filename,
 )
 from src.orders.models import OrderItem
 from src.reviews.models import Review
-
-_SAFE_NAME_RE = re.compile(r'[^a-zA-Z0-9._-]+')
 
 
 class Command(BaseCommand):
@@ -280,7 +275,7 @@ class Command(BaseCommand):
             if not data:
                 continue
 
-            safe = self._safe_filename(product.sku, order, filename)
+            safe = safe_image_filename(product.sku, order, filename)
             img = ProductImage(
                 product=product,
                 alt_text=product.name[:200],
@@ -290,13 +285,3 @@ class Command(BaseCommand):
             img.image.save(safe, ContentFile(data), save=True)
             saved += 1
         return saved
-
-    @staticmethod
-    def _safe_filename(sku: str, order: int, filename: str) -> str:
-        """Коротке ім'я: ImageField за замовчуванням varchar(100), шлях products/ + ім'я."""
-        suffix = PurePosixPath(filename).suffix.lower()
-        if suffix not in {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'}:
-            suffix = mimetypes.guess_extension('image/jpeg') or '.jpg'
-        sku_part = _SAFE_NAME_RE.sub('-', sku)[:32]
-        # products/ (~9) + ім'я ≈ до 50 символів — з запасом під WebP/унікалізацію storage
-        return f'{sku_part}_{order}{suffix}'
