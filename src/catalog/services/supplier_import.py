@@ -41,6 +41,7 @@ class ImportReport:
     created: int = 0
     updated: int = 0
     skipped: int = 0
+    deactivated: int = 0
     fallback_category_used: int = 0
     images_added: int = 0
     images_failed: int = 0
@@ -53,7 +54,8 @@ class ImportReport:
     def summary(self) -> str:
         text = (
             f'Створено: {self.created}, оновлено: {self.updated}, '
-            f'пропущено: {self.skipped}, помилок: {self.error_count}'
+            f'пропущено: {self.skipped}, знято з продажу: {self.deactivated}, '
+            f'помилок: {self.error_count}'
         )
         if self.fallback_category_used:
             text += (
@@ -202,10 +204,11 @@ def _validate_rows(
     raw_rows: list[dict[str, str]],
     *,
     fallback_category: Category,
-) -> tuple[list[_ValidatedRow], ImportReport]:
+) -> tuple[list[_ValidatedRow], ImportReport, set[str]]:
     report = ImportReport()
     validated: list[_ValidatedRow] = []
     seen_skus: dict[str, int] = {}
+    file_skus: set[str] = set()
 
     for index, raw in enumerate(raw_rows, start=2):
         sku = (raw.get('sku') or '').strip()
@@ -226,6 +229,8 @@ def _validate_rows(
                 ),
             )
             continue
+
+        file_skus.add(sku)
 
         if sku in seen_skus:
             report.errors.append(
@@ -317,7 +322,7 @@ def _validate_rows(
             ),
         )
 
-    return validated, report
+    return validated, report, file_skus
 
 
 def _attach_missing_images(product: Product, image_urls: list[str]) -> tuple[int, int]:
@@ -394,9 +399,27 @@ def _persist_row(row: _ValidatedRow, supplier: Supplier) -> tuple[str, int, int]
     if row.description:
         product.description = row.description
     product.supplier = supplier
+    product.is_active = True
     product.save()
     images_added, images_failed = _attach_missing_images(product, row.image_urls)
     return 'updated', images_added, images_failed
+
+
+def _deactivate_missing_products(file_skus: set[str]) -> int:
+    """
+    Знімає з вітрини товари, яких немає у вигрузці.
+
+    Delete не використовуємо: OrderItem.product має PROTECT, історія
+    замовлень має лишитися. QuerySet.update() не викликає save(),
+    тому availability ставимо явно разом із залишком.
+    """
+    if not file_skus:
+        return 0
+    return Product.objects.exclude(sku__in=file_skus).update(
+        is_active=False,
+        stock_quantity=0,
+        availability=Product.AVAIL_OUT,
+    )
 
 
 def import_supplier_file(
@@ -409,6 +432,8 @@ def import_supplier_file(
     """
     Парсить файл постачальника, валідує рядки і зберігає товари.
 
+    Повна заміна каталогу: SKU з файлу створюються або оновлюються,
+    решта товарів знімається з продажу (is_active=False, залишок 0).
     Категорія з файлу матчиться автоматично; якщо збігу немає —
     новий товар потрапляє в «Імпорт / Без категорії».
     """
@@ -430,10 +455,27 @@ def import_supplier_file(
         raise
 
     fallback_category = get_import_fallback_category()
-    validated, report = _validate_rows(
+    validated, report, file_skus = _validate_rows(
         raw_rows,
         fallback_category=fallback_category,
     )
+
+    if not file_skus:
+        report.errors.append(
+            _row_error(
+                0,
+                '',
+                'У файлі немає жодного артикула (SKU / Код_товара).',
+                'Каталог не змінено: порожня вигрузка не знімає товари з продажу. '
+                'Перевірте колонку «Код_товара».',
+            ),
+        )
+        logger.warning(
+            'Supplier import aborted: empty SKU set supplier_id=%s file=%s',
+            supplier.pk,
+            filename,
+        )
+        return report
 
     with transaction.atomic():
         for row in validated:
@@ -483,6 +525,8 @@ def import_supplier_file(
                 report.updated += 1
             report.images_added += images_added
             report.images_failed += images_failed
+
+        report.deactivated = _deactivate_missing_products(file_skus)
 
     logger.info(
         'Supplier import done supplier_id=%s %s',

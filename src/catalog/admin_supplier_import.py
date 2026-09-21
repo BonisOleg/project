@@ -99,6 +99,15 @@ class SupplierImportAdminMixin:
                 )
             else:
                 messages.success(request, report.summary())
+                if report.deactivated:
+                    messages.info(
+                        request,
+                        (
+                            f'{report.deactivated} товарів не було у файлі — їх знято '
+                            'з продажу (залишок 0, на сайті не показуються). '
+                            'Історія замовлень збережена.'
+                        ),
+                    )
                 if report.fallback_category_used:
                     messages.info(
                         request,
