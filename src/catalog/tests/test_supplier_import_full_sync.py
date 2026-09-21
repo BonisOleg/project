@@ -1,4 +1,4 @@
-"""Full Sync: upsert з файлу + деактивація SKU, яких немає у вигрузці."""
+"""Full Sync постачальника: upsert з файлу + деактивація лише його SKU поза вигрузкою."""
 
 from __future__ import annotations
 
@@ -58,17 +58,20 @@ class SupplierImportFullSyncTests(TestCase):
         self.assertTrue(product.is_active)
         self.assertEqual(product.availability, Product.AVAIL_OUT)
 
-    def test_deactivates_products_missing_from_file(self):
+    def test_deactivates_only_this_suppliers_missing_products(self):
         kept = self._product(sku='KEEP-1')
+        missing = self._product(sku='GONE-1', slug='tovar-gone-1')
         other = self._product(
             sku='OTHER-1',
             slug='tovar-other-1',
             supplier=self.other_supplier,
+            stock_quantity=11,
         )
         manual = self._product(
             sku='MANUAL-1',
             slug='tovar-manual-1',
             supplier=None,
+            stock_quantity=4,
         )
 
         report = import_supplier_file(
@@ -78,19 +81,26 @@ class SupplierImportFullSyncTests(TestCase):
         )
 
         kept.refresh_from_db()
+        missing.refresh_from_db()
         other.refresh_from_db()
         manual.refresh_from_db()
 
         self.assertEqual(report.updated, 1)
-        self.assertEqual(report.deactivated, 2)
+        self.assertEqual(report.deactivated, 1)
         self.assertTrue(kept.is_active)
         self.assertEqual(kept.stock_quantity, 3)
 
-        for missing in (other, manual):
-            self.assertFalse(missing.is_active)
-            self.assertEqual(missing.stock_quantity, 0)
-            self.assertEqual(missing.availability, Product.AVAIL_OUT)
-            self.assertTrue(Product.objects.filter(pk=missing.pk).exists())
+        self.assertFalse(missing.is_active)
+        self.assertEqual(missing.stock_quantity, 0)
+        self.assertEqual(missing.availability, Product.AVAIL_OUT)
+        self.assertTrue(Product.objects.filter(pk=missing.pk).exists())
+
+        self.assertTrue(other.is_active)
+        self.assertEqual(other.stock_quantity, 11)
+        self.assertEqual(other.supplier_id, self.other_supplier.pk)
+        self.assertTrue(manual.is_active)
+        self.assertEqual(manual.stock_quantity, 4)
+        self.assertIsNone(manual.supplier_id)
 
     def test_reactivates_previously_deactivated_sku(self):
         product = self._product(

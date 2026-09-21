@@ -405,20 +405,25 @@ def _persist_row(row: _ValidatedRow, supplier: Supplier) -> tuple[str, int, int]
     return 'updated', images_added, images_failed
 
 
-def _deactivate_missing_products(file_skus: set[str]) -> int:
+def _deactivate_missing_products(supplier: Supplier, file_skus: set[str]) -> int:
     """
-    Знімає з вітрини товари, яких немає у вигрузці.
+    Знімає з вітрини товари цього постачальника, яких немає у вигрузці.
 
-    Delete не використовуємо: OrderItem.product має PROTECT, історія
-    замовлень має лишитися. QuerySet.update() не викликає save(),
-    тому availability ставимо явно разом із залишком.
+    Інші постачальники і товари без постачальника не чіпаємо — наступні
+    заливки не повинні зникати через файл Siker (і навпаки).
+    Delete не використовуємо: OrderItem.product має PROTECT.
+    QuerySet.update() не викликає save(), тому availability ставимо явно.
     """
     if not file_skus:
         return 0
-    return Product.objects.exclude(sku__in=file_skus).update(
-        is_active=False,
-        stock_quantity=0,
-        availability=Product.AVAIL_OUT,
+    return (
+        Product.objects.filter(supplier=supplier)
+        .exclude(sku__in=file_skus)
+        .update(
+            is_active=False,
+            stock_quantity=0,
+            availability=Product.AVAIL_OUT,
+        )
     )
 
 
@@ -432,8 +437,9 @@ def import_supplier_file(
     """
     Парсить файл постачальника, валідує рядки і зберігає товари.
 
-    Повна заміна каталогу: SKU з файлу створюються або оновлюються,
-    решта товарів знімається з продажу (is_active=False, залишок 0).
+    Повна заміна асортименту цього постачальника: SKU з файлу
+    створюються або оновлюються, його товари поза файлом знімаються
+    з продажу (is_active=False, залишок 0). Чужі постачальники не чіпаємо.
     Категорія з файлу матчиться автоматично; якщо збігу немає —
     новий товар потрапляє в «Імпорт / Без категорії».
     """
@@ -526,7 +532,7 @@ def import_supplier_file(
             report.images_added += images_added
             report.images_failed += images_failed
 
-        report.deactivated = _deactivate_missing_products(file_skus)
+        report.deactivated = _deactivate_missing_products(supplier, file_skus)
 
     logger.info(
         'Supplier import done supplier_id=%s %s',
