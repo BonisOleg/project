@@ -21,6 +21,23 @@ class SiteSettings(models.Model):
     )
     meta_description = models.TextField('Meta description головної', blank=True)
 
+    # Google Tag Manager / верифікація Merchant Center
+    gtm_enabled = models.BooleanField('GTM увімкнено', default=True)
+    gtm_container_id = models.CharField(
+        'GTM Container ID',
+        max_length=32,
+        blank=True,
+        default='GTM-ML3T82P6',
+        help_text='Формат: GTM-XXXXXXX',
+    )
+    google_site_verification = models.CharField(
+        'Google site verification',
+        max_length=128,
+        blank=True,
+        default='PwqksGkk03OfHYb8_lnn2SKIGcS6boJgRCNgA2DRz0A',
+        help_text='Значення content з meta google-site-verification',
+    )
+
     # Сповіщення про нові замовлення (дублікати на глобальні контакти)
     notify_emails = models.TextField(
         'Email для сповіщень про замовлення',
@@ -217,6 +234,13 @@ class OfferRequisitesSettings(SiteSettings):
         proxy = True
         verbose_name = 'Оферта — Реквізити'
         verbose_name_plural = 'Оферта — Реквізити'
+
+
+class GoogleTagManagerSettings(SiteSettings):
+    class Meta:
+        proxy = True
+        verbose_name = 'Google Tag Manager'
+        verbose_name_plural = 'Google Tag Manager'
 
 
 class SocialLink(models.Model):

@@ -7,7 +7,9 @@ from unfold.admin import ModelAdmin
 
 from src.core.admin_offer_requisites import offer_requisites_admin_view
 from src.core.admin_site_content import site_content_section_view
+from src.core.admin_utils import ReadableUnfoldFieldsMixin
 from src.core.models import (
+    GoogleTagManagerSettings,
     HomeAboutSettings,
     HomeBenefitsSettings,
     HomeBlogSettings,
@@ -64,6 +66,27 @@ class OfferRequisitesAdmin(SingletonSettingsAdmin):
         return offer_requisites_admin_view(request, model_admin=self)
 
 
+class GoogleTagManagerAdmin(ReadableUnfoldFieldsMixin, SingletonSettingsAdmin):
+    fieldsets = (
+        ('Менеджер тегів Google', {
+            'description': (
+                'Контейнер GTM підключається на всіх сторінках сайту '
+                '(скрипт у head та noscript одразу після body). '
+                'Вимкніть «GTM увімкнено», щоб тимчасово прибрати код. '
+                'Фід товарів для Merchant Center: /feeds/google.xml'
+            ),
+            'fields': ('gtm_enabled', 'gtm_container_id'),
+        }),
+        ('Верифікація Google', {
+            'description': (
+                'Meta-тег google-site-verification для підтвердження магазину '
+                '(Merchant Center / Search Console).'
+            ),
+            'fields': ('google_site_verification',),
+        }),
+    )
+
+
 def register_site_content_section_admins() -> None:
     for model, page_slug, section_slug in _SECTION_MODELS:
         class SectionAdmin(SiteContentSectionAdmin):
@@ -75,6 +98,7 @@ def register_site_content_section_admins() -> None:
         admin.site.register(model, SectionAdmin)
 
     admin.site.register(OfferRequisitesSettings, OfferRequisitesAdmin)
+    admin.site.register(GoogleTagManagerSettings, GoogleTagManagerAdmin)
 
 
 register_site_content_section_admins()

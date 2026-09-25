@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from csp.constants import NONCE
 from decouple import config
 from django.templatetags.static import static
 from django.urls import reverse_lazy
@@ -240,6 +241,17 @@ UNFOLD = {
                 ],
             },
             {
+                'title': 'Google Tag Manager',
+                'separator': True,
+                'items': [
+                    {
+                        'title': 'Google Tag Manager',
+                        'icon': 'analytics',
+                        'link': reverse_lazy('admin:core_googletagmanagersettings_changelist'),
+                    },
+                ],
+            },
+            {
                 'title': 'Вміст сторінок',
                 'separator': True,
                 'collapsible': True,
@@ -388,12 +400,35 @@ CONTENT_SECURITY_POLICY = {
     'EXCLUDE_URL_PREFIXES': (f'/{ADMIN_URL}',),
     'DIRECTIVES': {
         'default-src': ("'self'",),
-        'script-src': ("'self'",),
+        'script-src': (
+            "'self'",
+            NONCE,
+            'https://www.googletagmanager.com',
+            'https://www.google-analytics.com',
+            'https://ssl.google-analytics.com',
+        ),
         'style-src': ("'self'", 'https://fonts.googleapis.com'),
         'font-src': ("'self'", 'https://fonts.gstatic.com'),
-        'img-src': ("'self'", 'data:', 'https:'),
-        'connect-src': ("'self'",),
-        'frame-src': ("'self'", 'https://www.liqpay.ua'),
+        'img-src': (
+            "'self'",
+            'data:',
+            'https:',
+            'https://www.googletagmanager.com',
+            'https://www.google-analytics.com',
+        ),
+        'connect-src': (
+            "'self'",
+            'https://www.googletagmanager.com',
+            'https://www.google-analytics.com',
+            'https://analytics.google.com',
+            'https://region1.google-analytics.com',
+            'https://stats.g.doubleclick.net',
+        ),
+        'frame-src': (
+            "'self'",
+            'https://www.liqpay.ua',
+            'https://www.googletagmanager.com',
+        ),
         'frame-ancestors': ("'none'",),
         'base-uri': ("'self'",),
         'form-action': ("'self'",),

@@ -2,10 +2,22 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
+  {% if site_settings.gtm_enabled and site_settings.gtm_container_id %}
+  <!-- Google Tag Manager -->
+  <script {% if request.csp_nonce %}nonce="{{ request.csp_nonce }}"{% endif %}>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','{{ site_settings.gtm_container_id|escapejs }}');</script>
+  <!-- End Google Tag Manager -->
+  {% endif %}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{% block title %}{{ page_title|default:"Oyra" }} — інтернет-магазин{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}{{ site_settings.meta_description|default:'Oyra — преміальний інтернет-магазин корисних товарів для дому, офісу та відпочинку.' }}{% endblock %}">
+  {% if site_settings.google_site_verification %}
+  <meta name="google-site-verification" content="{{ site_settings.google_site_verification }}">
+  {% endif %}
   <link rel="icon" href="{% static 'images/favicon/favicon.svg' %}?v=20260710c" type="image/svg+xml">
   <link rel="icon" href="{% static 'images/favicon/favicon.ico' %}?v=20260710c" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon/favicon-32.png' %}?v=20260710c">
@@ -32,6 +44,12 @@
   <script type="module" src="{% static 'js/main.js' %}?v=20260806b"></script>
 </head>
 <body class="has-bottom-nav {% block body_class %}{% endblock %}">
+  {% if site_settings.gtm_enabled and site_settings.gtm_container_id %}
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ site_settings.gtm_container_id|urlencode }}"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  {% endif %}
   {% include 'partials/header.html' %}
 
   <div class="messages" id="toast-root" aria-live="polite" aria-relevant="additions">

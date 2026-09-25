@@ -16,4 +16,5 @@ app_name = 'seo'
 urlpatterns = [
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
     path('robots.txt', views.robots_txt, name='robots'),
+    path('feeds/google.xml', views.google_product_feed, name='google_feed'),
 ]

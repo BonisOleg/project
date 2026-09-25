@@ -6,6 +6,7 @@ from django.views.decorators.http import require_GET
 from src.blog.models import Post
 from src.catalog.models import Category, Product
 from src.pages.models import StaticPage
+from src.seo.google_feed import build_google_feed_xml
 
 
 class ProductSitemap(Sitemap):
@@ -54,3 +55,9 @@ def robots_txt(request):
         f'Sitemap: {request.build_absolute_uri(reverse("seo:sitemap"))}',
     ]
     return HttpResponse('\n'.join(lines), content_type='text/plain')
+
+
+@require_GET
+def google_product_feed(request):
+    xml = build_google_feed_xml(request)
+    return HttpResponse(xml, content_type='application/xml; charset=utf-8')
