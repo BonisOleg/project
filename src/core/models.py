@@ -1,3 +1,4 @@
+from django.core.validators import RegexValidator
 from django.db import models
 
 
@@ -29,6 +30,12 @@ class SiteSettings(models.Model):
         blank=True,
         default='GTM-ML3T82P6',
         help_text='Формат: GTM-XXXXXXX',
+        validators=[
+            RegexValidator(
+                regex=r'^(GTM-[A-Z0-9]+)?$',
+                message='Очікується формат GTM-XXXXXXX',
+            ),
+        ],
     )
     google_site_verification = models.CharField(
         'Google site verification',
