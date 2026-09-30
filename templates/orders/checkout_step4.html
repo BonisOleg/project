@@ -85,7 +85,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ CSP_NONCE }}">
 (function () {
   var form = document.querySelector('.checkout-payment');
   if (!form) return;

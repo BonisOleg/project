@@ -88,5 +88,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script type="module" src="{% static 'js/modules/checkout_delivery.js' %}?v=20260805c"></script>
+<script nonce="{{ CSP_NONCE }}" type="module" src="{% static 'js/modules/checkout_delivery.js' %}?v=20260805c"></script>
 {% endblock %}

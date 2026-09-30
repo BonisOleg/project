@@ -175,5 +175,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script type="module" src="{% static 'js/modules/catalog_filters.js' %}?v=20260806a"></script>
+<script nonce="{{ CSP_NONCE }}" type="module" src="{% static 'js/modules/catalog_filters.js' %}?v=20260806a"></script>
 {% endblock %}

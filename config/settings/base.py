@@ -406,7 +406,6 @@ CONTENT_SECURITY_POLICY = {
         'script-src': (
             "'self'",
             NONCE,
-            "'strict-dynamic'",
             "'unsafe-eval'",  # Custom JavaScript variables / деякі теги GTM
             'https://www.googletagmanager.com',
             'https://tagmanager.google.com',

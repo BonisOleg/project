@@ -129,7 +129,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script type="module">
+<script nonce="{{ CSP_NONCE }}" type="module">
 // #region agent log
 function oyraHeroDebugSnapshot(runId = 'pre-fix') {
   const hero = document.querySelector('.hero');

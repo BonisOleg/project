@@ -41,8 +41,8 @@
   <link rel="stylesheet" href="{% static 'css/components/cookie_banner.css' %}?v=20260710a">
   <link rel="stylesheet" href="{% static 'css/components/toast.css' %}?v=20260710b">
   {% block extra_css %}{% endblock %}
-  <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
-  <script type="module" src="{% static 'js/main.js' %}?v=20260806b"></script>
+  <script nonce="{{ CSP_NONCE }}" src="{% static 'vendor/htmx.min.js' %}" defer></script>
+  <script nonce="{{ CSP_NONCE }}" type="module" src="{% static 'js/main.js' %}?v=20260806b"></script>
 </head>
 <body class="has-bottom-nav {% block body_class %}{% endblock %}">
   {% if site_settings.gtm_enabled and site_settings.gtm_container_id %}
