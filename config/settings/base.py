@@ -401,10 +401,13 @@ CONTENT_SECURITY_POLICY = {
     'EXCLUDE_URL_PREFIXES': (f'/{ADMIN_URL}',),
     'DIRECTIVES': {
         'default-src': ("'self'",),
-        # GTM + GA4 + Google Ads (див. https://developers.google.com/tag-platform/security/guides/csp)
+        # GTM + GA4 + Google Ads + Tag Assistant Preview
+        # https://developers.google.com/tag-platform/security/guides/csp
         'script-src': (
             "'self'",
             NONCE,
+            "'strict-dynamic'",
+            "'unsafe-eval'",  # Custom JavaScript variables / деякі теги GTM
             'https://www.googletagmanager.com',
             'https://tagmanager.google.com',
             'https://*.googletagmanager.com',
@@ -417,18 +420,25 @@ CONTENT_SECURITY_POLICY = {
             'https://*.google.com',
             'https://www.google.com.ua',
             'https://*.google.com.ua',
+            'https://adservice.google.com',
+            'https://adservice.google.com.ua',
             'https://googleads.g.doubleclick.net',
             'https://*.g.doubleclick.net',
+            'https://www.gstatic.com',
+            'https://ssl.gstatic.com',
         ),
         'style-src': (
             "'self'",
+            "'unsafe-inline'",  # inline styles від Tag Assistant / GTM preview
             'https://fonts.googleapis.com',
             'https://www.googletagmanager.com',
             'https://tagmanager.google.com',
+            'https://www.gstatic.com',
         ),
         'font-src': (
             "'self'",
             'https://fonts.gstatic.com',
+            'https://www.gstatic.com',
             'data:',
         ),
         'img-src': (
@@ -450,6 +460,8 @@ CONTENT_SECURITY_POLICY = {
             'https://www.google.com.ua',
             'https://google.com.ua',
             'https://*.google.com.ua',
+            'https://adservice.google.com',
+            'https://adservice.google.com.ua',
             'https://www.googleadservices.com',
             'https://*.googleadservices.com',
             'https://pagead2.googlesyndication.com',
@@ -458,6 +470,7 @@ CONTENT_SECURITY_POLICY = {
             'https://*.doubleclick.net',
             'https://*.g.doubleclick.net',
             'https://*.merchant-center-analytics.goog',
+            'https://www.gstatic.com',
         ),
         'frame-src': (
             "'self'",
@@ -471,6 +484,12 @@ CONTENT_SECURITY_POLICY = {
             'https://*.google.com',
             'https://www.google.com.ua',
             'https://*.google.com.ua',
+        ),
+        'worker-src': (
+            "'self'",
+            'blob:',
+            'https://www.googletagmanager.com',
+            'https://*.googletagmanager.com',
         ),
         'frame-ancestors': ("'none'",),
         'base-uri': ("'self'",),
