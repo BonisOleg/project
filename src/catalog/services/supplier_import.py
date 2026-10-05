@@ -9,6 +9,7 @@ from typing import BinaryIO
 
 from django.core.files.base import ContentFile
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 
 from src.catalog.models import Category, Product, ProductImage, Supplier, make_slug
 from src.catalog.services.supplier_import_parsers import (
@@ -407,17 +408,17 @@ def _persist_row(row: _ValidatedRow, supplier: Supplier) -> tuple[str, int, int]
 
 def _deactivate_missing_products(supplier: Supplier, file_skus: set[str]) -> int:
     """
-    Знімає з вітрини товари цього постачальника, яких немає у вигрузці.
+    Знімає з вітрини позиції, яких немає у вигрузці.
 
-    Інші постачальники і товари без постачальника не чіпаємо — наступні
-    заливки не повинні зникати через файл Siker (і навпаки).
-    Delete не використовуємо: OrderItem.product має PROTECT.
+    Беремо товари цього постачальника і товари без постачальника
+    (стара YML-заливка Siker не ставила FK). Інших постачальників
+    не чіпаємо. Delete не використовуємо: OrderItem.product має PROTECT.
     QuerySet.update() не викликає save(), тому availability ставимо явно.
     """
     if not file_skus:
         return 0
     return (
-        Product.objects.filter(supplier=supplier)
+        Product.objects.filter(Q(supplier=supplier) | Q(supplier__isnull=True))
         .exclude(sku__in=file_skus)
         .update(
             is_active=False,
@@ -438,8 +439,9 @@ def import_supplier_file(
     Парсить файл постачальника, валідує рядки і зберігає товари.
 
     Повна заміна асортименту цього постачальника: SKU з файлу
-    створюються або оновлюються, його товари поза файлом знімаються
-    з продажу (is_active=False, залишок 0). Чужі постачальники не чіпаємо.
+    створюються або оновлюються, його товари і позиції без постачальника
+    поза файлом знімаються з продажу (is_active=False, залишок 0).
+    Чужі постачальники не чіпаємо.
     Категорія з файлу матчиться автоматично; якщо збігу немає —
     новий товар потрапляє в «Імпорт / Без категорії».
     """

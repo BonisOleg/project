@@ -86,7 +86,7 @@ class SupplierImportFullSyncTests(TestCase):
         manual.refresh_from_db()
 
         self.assertEqual(report.updated, 1)
-        self.assertEqual(report.deactivated, 1)
+        self.assertEqual(report.deactivated, 2)
         self.assertTrue(kept.is_active)
         self.assertEqual(kept.stock_quantity, 3)
 
@@ -95,12 +95,14 @@ class SupplierImportFullSyncTests(TestCase):
         self.assertEqual(missing.availability, Product.AVAIL_OUT)
         self.assertTrue(Product.objects.filter(pk=missing.pk).exists())
 
+        # Стара YML-заливка без FK теж має зникнути з вітрини.
+        self.assertFalse(manual.is_active)
+        self.assertEqual(manual.stock_quantity, 0)
+        self.assertIsNone(manual.supplier_id)
+
         self.assertTrue(other.is_active)
         self.assertEqual(other.stock_quantity, 11)
         self.assertEqual(other.supplier_id, self.other_supplier.pk)
-        self.assertTrue(manual.is_active)
-        self.assertEqual(manual.stock_quantity, 4)
-        self.assertIsNone(manual.supplier_id)
 
     def test_reactivates_previously_deactivated_sku(self):
         product = self._product(
