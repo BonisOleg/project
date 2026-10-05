@@ -166,9 +166,22 @@ curl -sf http://127.0.0.1/healthz/
 | Зміни через git | Не патчити nginx/settings на сервері вручну |
 | `.env` не в git | Секрети лише на сервері |
 
-## Renew SSL
+## Auto-renew SSL
+
+Certbot на хості, HTTP-01 через webroot (`/var/www/certbot`). `certbot.timer` двічі на добу перевіряє термін; після успішного renew deploy-hook перезавантажує nginx у Docker.
+
+Увімкнути один раз на Droplet (після HTTPS-деплою):
 
 ```bash
-certbot renew
-docker compose -f docker-compose.yml -f docker-compose.prod.yml exec nginx nginx -s reload
+cd /var/www/oyra
+git pull origin main
+bash deploy/docker/deploy.sh
+bash deploy/ssl/setup-auto-renew.sh
+```
+
+Перевірка:
+
+```bash
+systemctl status certbot.timer
+certbot renew --dry-run
 ```
