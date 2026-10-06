@@ -12,6 +12,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import Q
 
 from src.catalog.models import Category, Product, ProductImage, Supplier, make_slug
+from src.catalog.services.supplier_import_params import sync_product_attributes
 from src.catalog.services.supplier_import_parsers import (
     SupplierImportParseError,
     parse_supplier_file,
@@ -89,6 +90,7 @@ class _ValidatedRow:
     category_provided: bool
     description: str | None
     image_urls: list[str] = field(default_factory=list)
+    attributes: list[tuple[str, str]] = field(default_factory=list)
     used_fallback: bool = False
 
 
@@ -219,6 +221,12 @@ def _validate_rows(
         category_raw = (raw.get('category') or '').strip()
         description_raw = (raw.get('description') or '').strip()
         images_raw = (raw.get('images') or '').strip()
+        raw_attributes = raw.get('_attributes') or []
+        attributes = [
+            (str(name), str(value))
+            for name, value in raw_attributes
+            if str(name).strip() and str(value).strip()
+        ]
 
         if not sku:
             report.errors.append(
@@ -319,6 +327,7 @@ def _validate_rows(
                 category_provided=category_provided,
                 description=description_raw or None,
                 image_urls=_parse_image_urls(images_raw),
+                attributes=attributes,
                 used_fallback=used_fallback,
             ),
         )
@@ -386,6 +395,7 @@ def _persist_row(row: _ValidatedRow, supplier: Supplier) -> tuple[str, int, int]
             is_active=True,
         )
         product.save()
+        sync_product_attributes(product, row.attributes)
         images_added, images_failed = _attach_missing_images(product, row.image_urls)
         return 'created', images_added, images_failed
 
@@ -402,6 +412,7 @@ def _persist_row(row: _ValidatedRow, supplier: Supplier) -> tuple[str, int, int]
     product.supplier = supplier
     product.is_active = True
     product.save()
+    sync_product_attributes(product, row.attributes)
     images_added, images_failed = _attach_missing_images(product, row.image_urls)
     return 'updated', images_added, images_failed
 

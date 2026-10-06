@@ -10,7 +10,12 @@ import csv
 import io
 import json
 import logging
-from typing import Any, BinaryIO, Literal, Mapping
+from typing import Any, BinaryIO, Literal, Mapping, Sequence
+
+from src.catalog.services.supplier_import_params import (
+    extract_mapping_attributes,
+    extract_prom_attributes,
+)
 
 logger = logging.getLogger('catalog.supplier_import')
 
@@ -181,26 +186,71 @@ def _cell_str(value: Any) -> str:
     return str(value).strip()
 
 
+def _first_header_value(
+    headers: Sequence[Any],
+    values: Sequence[Any],
+    header: str,
+) -> str:
+    """Перше непусте значення для заголовка (дублікати Prom не затирають sku)."""
+    found = ''
+    for index, name in enumerate(headers):
+        if name != header:
+            continue
+        cell = _cell_str(values[index] if index < len(values) else '')
+        if cell:
+            return cell
+        found = cell
+    return found
+
+
+def _attach_attributes(
+    mapped: dict[str, Any],
+    attributes: list[tuple[str, str]],
+) -> dict[str, Any]:
+    if attributes:
+        mapped['_attributes'] = attributes
+    return mapped
+
+
 def _rows_from_mappings(
     raw_rows: list[Mapping[str, Any]],
     column_map: dict[str, str],
-) -> list[dict[str, str]]:
-    rows: list[dict[str, str]] = []
+    *,
+    name_locale: NameLocale,
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
     for raw in raw_rows:
-        mapped: dict[str, str] = {}
+        mapped: dict[str, Any] = {}
         for field, header in column_map.items():
             mapped[field] = _cell_str(raw.get(header))
-        if any(mapped.values()):
+        attrs = extract_mapping_attributes(raw, name_locale=name_locale)
+        _attach_attributes(mapped, attrs)
+        if any(value for key, value in mapped.items() if key != '_attributes'):
             rows.append(mapped)
     return rows
 
 
-def _map_rows(
+def _rows_from_value_table(
     headers: list[str],
-    raw_rows: list[Mapping[str, Any]],
+    value_rows: list[Sequence[Any]],
+    column_map: dict[str, str],
     *,
     name_locale: NameLocale,
-) -> list[dict[str, str]]:
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for values in value_rows:
+        mapped: dict[str, Any] = {
+            field: _first_header_value(headers, values, header)
+            for field, header in column_map.items()
+        }
+        attrs = extract_prom_attributes(headers, values, name_locale=name_locale)
+        _attach_attributes(mapped, attrs)
+        if any(value for key, value in mapped.items() if key != '_attributes'):
+            rows.append(mapped)
+    return rows
+
+
+def _require_sku_map(headers: list[str], *, name_locale: NameLocale) -> dict[str, str]:
     column_map = _build_column_map(headers, name_locale=name_locale)
     if 'sku' not in column_map:
         raise SupplierImportParseError(
@@ -212,13 +262,42 @@ def _map_rows(
         column_map,
         name_locale,
     )
-    rows = _rows_from_mappings(raw_rows, column_map)
+    return column_map
+
+
+def _ensure_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     if not rows:
         raise SupplierImportParseError(
             'У файлі немає рядків з товарами. Перевірте, що це повна вигрузка, '
             'а не лише заголовки.',
         )
     return rows
+
+
+def _map_rows(
+    headers: list[str],
+    raw_rows: list[Mapping[str, Any]],
+    *,
+    name_locale: NameLocale,
+) -> list[dict[str, Any]]:
+    column_map = _require_sku_map(headers, name_locale=name_locale)
+    return _ensure_rows(
+        _rows_from_mappings(raw_rows, column_map, name_locale=name_locale),
+    )
+
+
+def _map_value_rows(
+    headers: list[str],
+    value_rows: list[Sequence[Any]],
+    *,
+    name_locale: NameLocale,
+) -> list[dict[str, Any]]:
+    column_map = _require_sku_map(headers, name_locale=name_locale)
+    return _ensure_rows(
+        _rows_from_value_table(
+            headers, value_rows, column_map, name_locale=name_locale,
+        ),
+    )
 
 
 def parse_csv(
@@ -246,13 +325,18 @@ def parse_csv(
     except csv.Error:
         dialect = csv.excel
 
-    reader = csv.DictReader(io.StringIO(text), dialect=dialect)
-    if not reader.fieldnames:
+    reader = csv.reader(io.StringIO(text), dialect=dialect)
+    try:
+        header_row = next(reader)
+    except StopIteration as exc:
+        raise SupplierImportParseError('CSV без заголовків.') from exc
+
+    headers = [str(h) if h is not None else '' for h in header_row]
+    if not any(h.strip() for h in headers):
         raise SupplierImportParseError('CSV без заголовків.')
 
-    headers = [str(h) for h in reader.fieldnames if h is not None]
-    raw_rows = [dict(row) for row in reader]
-    return _map_rows(headers, raw_rows, name_locale=name_locale)
+    value_rows = [row for row in reader]
+    return _map_value_rows(headers, value_rows, name_locale=name_locale)
 
 
 def parse_xlsx(
@@ -284,15 +368,11 @@ def parse_xlsx(
         if not any(headers):
             raise SupplierImportParseError('XLSX без заголовків.')
 
-        header_index = {h: i for i, h in enumerate(headers)}
-        raw_rows: list[dict[str, Any]] = []
+        value_rows: list[Sequence[Any]] = []
         for values in iterator:
-            row_dict: dict[str, Any] = {}
-            for header, idx in header_index.items():
-                row_dict[header] = values[idx] if idx < len(values) else None
-            raw_rows.append(row_dict)
+            value_rows.append(list(values) if values is not None else [])
 
-        return _map_rows(headers, raw_rows, name_locale=name_locale)
+        return _map_value_rows(headers, value_rows, name_locale=name_locale)
     finally:
         workbook.close()
 
