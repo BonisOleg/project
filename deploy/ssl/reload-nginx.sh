@@ -16,4 +16,5 @@ if [ "${USE_HTTPS:-false}" = "true" ] && [ -d "/etc/letsencrypt/live/${DOMAIN:-o
   COMPOSE_FILES+=(-f docker-compose.prod.yml)
 fi
 
-docker compose "${COMPOSE_FILES[@]}" exec -T nginx nginx -s reload
+# nginx -s reload пише notice у stderr — certbot трактує це як помилку хука.
+docker compose "${COMPOSE_FILES[@]}" exec -T nginx nginx -s reload 2>/dev/null

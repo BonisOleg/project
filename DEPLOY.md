@@ -168,9 +168,12 @@ curl -sf http://127.0.0.1/healthz/
 
 ## Auto-renew SSL
 
-Certbot на хості, HTTP-01 через webroot (`/var/www/certbot`). `certbot.timer` двічі на добу перевіряє термін; після успішного renew deploy-hook перезавантажує nginx у Docker.
+Certbot на хості, HTTP-01 через **webroot** (`/var/www/certbot`).  
+`certbot.timer` двічі на добу перевіряє термін; після успішного renew deploy-hook робить `nginx -s reload` у Docker.
 
-Увімкнути один раз на Droplet (після HTTPS-деплою):
+> **Не використовуйте `standalone`:** порт 80 зайнятий контейнером nginx — renew падає з «Could not bind TCP port 80», і сертифікат тихо протухає (саме це сталося 07.10.2026).
+
+Увімкнути / полагодити один раз на Droplet (після HTTPS-деплою):
 
 ```bash
 cd /var/www/oyra
@@ -179,9 +182,18 @@ bash deploy/docker/deploy.sh
 bash deploy/ssl/setup-auto-renew.sh
 ```
 
+Терміновий renew:
+
+```bash
+bash deploy/ssl/renew-now.sh
+```
+
 Перевірка:
 
 ```bash
 systemctl status certbot.timer
-certbot renew --dry-run
+grep -E 'authenticator|webroot' /etc/letsencrypt/renewal/oyra.com.ua.conf
+# має бути: authenticator = webroot
+certbot renew --dry-run --no-random-sleep-on-renew
+openssl x509 -in /etc/letsencrypt/live/oyra.com.ua/fullchain.pem -noout -dates
 ```
