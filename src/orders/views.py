@@ -1,8 +1,9 @@
 import uuid
+from urllib.parse import urlencode
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -10,14 +11,21 @@ from django.views.decorators.http import require_GET, require_POST
 
 from src.cart.services import CartService
 from src.core.breadcrumbs import make_breadcrumbs
+from src.core.models import SiteSettings
 
 from .forms import CheckoutStep2Form, CheckoutStep3Form, CheckoutPaymentForm
 from .models import Order, OrderItem
 from .services.liqpay import LiqPayService
 from .services.nova_poshta import NovaPoshtaError, NovaPoshtaService
+from .services.ownership import (
+    make_order_access_token,
+    remember_own_order,
+    user_can_access_order,
+)
+from .services.promo_usage import mark_promo_used
+from .services.sync import sync_order_with_cart
 from .services.ukrposhta import UkrposhtaError, UkrposhtaService
 from .signals import notify_admins_after_checkout
-from src.core.models import SiteSettings
 
 User = get_user_model()
 
@@ -119,11 +127,21 @@ def _get_checkout_order(request):
 
 
 def _finalize_checkout_session(request, order: Order) -> None:
+    mark_promo_used(order)
     cart = CartService(request)
     cart.clear()
     request.session.pop('checkout_order_id', None)
     request.session.pop('promo_code', None)
     notify_admins_after_checkout(order)
+
+
+def _thank_you_path_with_token(order: Order) -> str:
+    path = reverse('orders:thank_you', kwargs={'order_number': order.order_number})
+    return f'{path}?{urlencode({"t": make_order_access_token(order)})}'
+
+
+def _thank_you_absolute_url(request, order: Order) -> str:
+    return request.build_absolute_uri(_thank_you_path_with_token(order))
 
 
 def _create_order_from_cart(request):
@@ -145,7 +163,7 @@ def _create_order_from_cart(request):
         subtotal=subtotal,
         discount=discount,
         total=total,
-        promo_code=promo_code,
+        promo_code=promo.code if promo else '',
         delivery_service=Order.DELIVERY_NP,
         delivery_city='',
         delivery_address='',
@@ -162,7 +180,19 @@ def _create_order_from_cart(request):
             line_total=line['line_total'],
         )
     request.session['checkout_order_id'] = order.pk
+    remember_own_order(request.session, order)
     return order
+
+
+def _ensure_checkout_order(request, cart):
+    """Повертає синхронізоване pending-замовлення або None (порожній кошик)."""
+    order = _get_checkout_order(request)
+    if order:
+        if not sync_order_with_cart(order, cart, request.session):
+            return None
+        order.refresh_from_db()
+        return order
+    return _create_order_from_cart(request)
 
 
 def checkout(request, step=1):
@@ -171,7 +201,11 @@ def checkout(request, step=1):
         messages.warning(request, 'Кошик порожній')
         return redirect('cart:detail')
 
-    order = _get_checkout_order(request) or _create_order_from_cart(request)
+    order = _ensure_checkout_order(request, cart)
+    if not order:
+        messages.warning(request, 'Кошик порожній')
+        return redirect('cart:detail')
+
     step = int(step)
     if step < 1 or step > 4:
         step = 1
@@ -216,26 +250,30 @@ def checkout(request, step=1):
     form = CheckoutPaymentForm(request.POST or None, instance=order)
 
     if request.method == 'POST' and form.is_valid():
-        order = form.save(commit=False)
-        method = order.payment_method
-        if method == Order.PAYMENT_BANK:
+        payment_method = form.cleaned_data['payment_method']
+        if not sync_order_with_cart(order, cart, request.session):
+            messages.warning(request, 'Кошик порожній')
+            return redirect('cart:detail')
+        order.refresh_from_db()
+        order.payment_method = payment_method
+
+        if payment_method == Order.PAYMENT_BANK:
             order.status = Order.STATUS_AWAITING_PAYMENT
             order.save()
             _finalize_checkout_session(request, order)
-            return redirect('orders:thank_you', order_number=order.order_number)
-        if method == Order.PAYMENT_COD:
+            return redirect(_thank_you_path_with_token(order))
+        if payment_method == Order.PAYMENT_COD:
             order.status = Order.STATUS_PENDING
             order.save()
             _finalize_checkout_session(request, order)
-            return redirect('orders:thank_you', order_number=order.order_number)
+            return redirect(_thank_you_path_with_token(order))
         # LiqPay — зберігаємо метод і показуємо кнопку оплати
         order.status = Order.STATUS_PENDING
         order.save(update_fields=['payment_method', 'status', 'updated_at'])
+        order.refresh_from_db()
         if request.POST.get('proceed_liqpay') == '1':
             notify_admins_after_checkout(order)
-            result_url = request.build_absolute_uri(
-                reverse('orders:thank_you', kwargs={'order_number': order.order_number}),
-            )
+            result_url = _thank_you_absolute_url(request, order)
             server_url = request.build_absolute_uri(reverse('orders:liqpay_callback'))
             checkout_data = liqpay.create_checkout(order, result_url, server_url)
             return render(request, 'orders/checkout_step4.html', {
@@ -249,9 +287,7 @@ def checkout(request, step=1):
                 'breadcrumbs': _checkout_crumbs(step),
             })
 
-    result_url = request.build_absolute_uri(
-        reverse('orders:thank_you', kwargs={'order_number': order.order_number}),
-    )
+    result_url = _thank_you_absolute_url(request, order)
     server_url = request.build_absolute_uri(reverse('orders:liqpay_callback'))
     checkout_data = liqpay.create_checkout(order, result_url, server_url)
     return render(request, 'orders/checkout_step4.html', {
@@ -271,8 +307,14 @@ def thank_you(request, order_number):
         Order.objects.prefetch_related('items'),
         order_number=order_number,
     )
+    session_owner = user_can_access_order(request, order, allow_token=False)
+    if not session_owner and not user_can_access_order(
+        request, order, allow_token=True,
+    ):
+        raise Http404()
     site = SiteSettings.get_solo()
-    if order.status in (
+    # Token-only (SameSite=Strict повернення з LiqPay): лише render, без side effects
+    if session_owner and order.status in (
         Order.STATUS_PAID,
         Order.STATUS_PENDING,
         Order.STATUS_AWAITING_PAYMENT,
@@ -298,6 +340,8 @@ def thank_you(request, order_number):
 
 def payment_error(request, order_number):
     order = get_object_or_404(Order, order_number=order_number)
+    if not user_can_access_order(request, order, allow_token=True):
+        raise Http404()
     return render(request, 'orders/payment_error.html', {
         'order': order,
         'breadcrumbs': make_breadcrumbs(('Помилка оплати', '')),
@@ -310,6 +354,9 @@ def retry_payment(request, order_number):
         order_number=order_number,
         status__in=(Order.STATUS_PENDING, Order.STATUS_AWAITING_PAYMENT),
     )
+    # Токен навмисно ігнорується — лише session/user
+    if not user_can_access_order(request, order, allow_token=False):
+        raise Http404()
     request.session['checkout_order_id'] = order.pk
     return redirect('orders:checkout_step', step=4)
 
@@ -342,6 +389,7 @@ def liqpay_callback(request):
             order.save(update_fields=['status', 'liqpay_transaction_id', 'updated_at'])
             if order.create_account and not order.user_id:
                 _maybe_create_user(order)
+        mark_promo_used(order)
     elif status in ('failure', 'error', 'reversed'):
         pass
 
