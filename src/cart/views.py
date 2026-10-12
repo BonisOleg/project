@@ -23,6 +23,7 @@ def _cart_promo_context(request, cart):
         'promo': promo,
         'discount_amount': pricing.discount,
         'total': pricing.total,
+        'promo_excludes_sale_items': pricing.promo_excludes_sale_items,
     }
 
 

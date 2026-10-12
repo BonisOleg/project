@@ -5,6 +5,9 @@
   <p class="cart-promo__applied">
     Промокод {{ promo.code }} застосовано: −{{ discount_amount|format_price }}
   </p>
+  {% if promo_excludes_sale_items %}
+  <p class="cart-promo__note">Промокод не діє на акційні товари.</p>
+  {% endif %}
   <form
     class="cart-promo__remove"
     action="{% url 'cart:promo_remove' %}"
