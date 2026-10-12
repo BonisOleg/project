@@ -17,15 +17,7 @@
 
     <aside class="cart-sidebar">
       {% include 'cart/_cart_summary.html' with lines=lines %}
-
-      <div class="cart-promo">
-        <span class="cart-promo__label">Промокод</span>
-        <form class="cart-promo__form" action="{% url 'cart:promo' %}" method="post">
-          {% csrf_token %}
-          <input class="field__input" type="text" name="promo_code" placeholder="OYRA15" autocomplete="off">
-          <button class="btn btn--secondary" type="submit">OK</button>
-        </form>
-      </div>
+      {% include 'cart/_cart_promo.html' %}
     </aside>
   </div>
 </div>

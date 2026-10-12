@@ -1,0 +1,33 @@
+{% load ui_tags %}
+<div class="cart-promo" id="cart-promo"{% if oob %} hx-swap-oob="true"{% endif %}>
+  <span class="cart-promo__label">Промокод</span>
+  {% if promo %}
+  <p class="cart-promo__applied">
+    Промокод {{ promo.code }} застосовано: −{{ discount_amount|format_price }}
+  </p>
+  <form
+    class="cart-promo__remove"
+    action="{% url 'cart:promo_remove' %}"
+    method="post"
+    hx-post="{% url 'cart:promo_remove' %}"
+    hx-target="#cart-lines"
+    hx-swap="outerHTML"
+  >
+    {% csrf_token %}
+    <button class="btn btn--secondary btn--block" type="submit">Видалити промокод</button>
+  </form>
+  {% else %}
+  <form
+    class="cart-promo__form"
+    action="{% url 'cart:promo' %}"
+    method="post"
+    hx-post="{% url 'cart:promo' %}"
+    hx-target="#cart-lines"
+    hx-swap="outerHTML"
+  >
+    {% csrf_token %}
+    <input class="field__input" type="text" name="promo_code" placeholder="Промокод" autocomplete="off">
+    <button class="btn btn--secondary" type="submit">OK</button>
+  </form>
+  {% endif %}
+</div>

@@ -10,18 +10,31 @@ from .compare import CompareService
 from .services import CartService
 
 
-def cart_detail(request):
-    cart = CartService(request)
+def _cart_promo_context(request, cart):
     promo_code = request.session.get('promo_code', '')
     promo = cart.apply_promo(promo_code) if promo_code else None
-    return render(request, 'cart/detail.html', {
+    if promo_code and not promo:
+        request.session.pop('promo_code', None)
+    subtotal = cart.subtotal
+    total = cart.total(promo)
+    discount_amount = (subtotal - total) if promo else 0
+    return {
         'lines': cart.get_lines(),
-        'subtotal': cart.subtotal,
+        'subtotal': subtotal,
         'promo': promo,
-        'total': cart.total(promo),
+        'discount_amount': discount_amount,
+        'total': total,
+    }
+
+
+def cart_detail(request):
+    cart = CartService(request)
+    ctx = _cart_promo_context(request, cart)
+    ctx.update({
         'page_title': 'Кошик',
         'breadcrumbs': make_breadcrumbs(('Кошик', '')),
     })
+    return render(request, 'cart/detail.html', ctx)
 
 
 @require_POST
@@ -41,14 +54,7 @@ def cart_add(request, product_id):
 
 
 def _cart_htmx_context(request, cart):
-    promo_code = request.session.get('promo_code', '')
-    promo = cart.apply_promo(promo_code) if promo_code else None
-    return {
-        'lines': cart.get_lines(),
-        'subtotal': cart.subtotal,
-        'promo': promo,
-        'total': cart.total(promo),
-    }
+    return _cart_promo_context(request, cart)
 
 
 @require_POST
@@ -76,11 +82,23 @@ def apply_promo(request):
     code = request.POST.get('promo_code', '').strip()
     promo = cart.apply_promo(code)
     if promo:
-        request.session['promo_code'] = code
+        request.session['promo_code'] = promo.code
         messages.success(request, 'Промокод застосовано')
     else:
         request.session.pop('promo_code', None)
         messages.error(request, 'Невірний або прострочений промокод')
+    if request.htmx:
+        return render(request, 'cart/_cart_lines.html', _cart_htmx_context(request, cart))
+    return redirect('cart:detail')
+
+
+@require_POST
+def remove_promo(request):
+    request.session.pop('promo_code', None)
+    messages.info(request, 'Промокод видалено')
+    cart = CartService(request)
+    if request.htmx:
+        return render(request, 'cart/_cart_lines.html', _cart_htmx_context(request, cart))
     return redirect('cart:detail')
 
 

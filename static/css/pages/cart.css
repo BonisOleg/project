@@ -269,6 +269,35 @@
   gap: var(--sp-2);
 }
 
+.cart-promo__applied {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--c-success);
+  line-height: 1.4;
+}
+
+.cart-promo__remove {
+  margin: 0;
+}
+
+@media (max-width: 767px) {
+  .cart-promo__form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cart-promo__form .btn {
+    width: 100%;
+  }
+}
+
+@supports (-webkit-touch-callout: none) {
+  .cart-promo__form .field__input,
+  .cart-promo__form .btn,
+  .cart-promo__remove .btn {
+    font-size: 16px;
+  }
+}
+
 @media (min-width: 480px) {
   .cart-item {
     grid-template-columns: 100px minmax(0, 1fr) auto;

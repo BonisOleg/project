@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     'src.blog',
     'src.pages',
     'src.seo',
-    'src.promotions',
+    'src.promotions.apps.PromotionsConfig',
     'src.reviews',
 ]
 

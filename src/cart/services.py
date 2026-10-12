@@ -36,6 +36,7 @@ class CartService:
 
     def clear(self):
         self.request.session[self.session_key] = {}
+        self.request.session.pop('promo_code', None)
         self.request.session.modified = True
 
     def get_lines(self):
