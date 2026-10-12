@@ -81,6 +81,10 @@ class Order(models.Model):
     delivery_cost = models.DecimalField('Доставка', max_digits=10, decimal_places=2, default=0)
     total = models.DecimalField('Разом', max_digits=10, decimal_places=2)
     promo_code = models.CharField('Промокод', max_length=50, blank=True)
+    promo_counted = models.BooleanField(
+        'Промокод зараховано в used_count',
+        default=False,
+    )
     status = models.CharField('Статус', max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
     liqpay_order_id = models.CharField('LiqPay order ID', max_length=64, blank=True)
     liqpay_transaction_id = models.CharField('LiqPay transaction', max_length=64, blank=True)
