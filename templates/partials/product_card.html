@@ -23,7 +23,7 @@
     <div class="product-card__footer">
       <div class="product-card__price">
         <span class="product-card__price-current">{{ product.price|format_price }}</span>
-        {% if product.old_price %}<span class="product-card__price-old">{{ product.old_price|format_price }}</span>{% endif %}
+        {% if product.old_price and product.old_price > product.price %}<span class="product-card__price-old">{{ product.old_price|format_price }}</span>{% endif %}
       </div>
       <form action="{% url 'cart:add' product.pk %}" method="post" hx-post="{% url 'cart:add' product.pk %}" hx-target="#cart-count" hx-swap="outerHTML">
         {% csrf_token %}

@@ -22,7 +22,7 @@ SEED_SKUS = (
 
 class Command(BaseCommand):
     help = (
-        'Міняє місцями price/old_price, де old_price < price (помилка імпорту Siker), '
+        'Очищає невалідний old_price (old_price <= price) без swap/charge-min, '
         'оновлює is_on_sale, опційно видаляє seed-тестові товари.'
     )
 
@@ -43,44 +43,38 @@ class Command(BaseCommand):
         dry = options['dry_run']
         skip_delete = options['skip_delete_seed']
 
-        inverted = Product.objects.filter(
+        invalid = Product.objects.filter(
             old_price__isnull=False,
-            old_price__lt=F('price'),
+            old_price__lte=F('price'),
         )
-        count = inverted.count()
-        self.stdout.write(f'Інвертованих цін: {count}')
+        count = invalid.count()
+        self.stdout.write(f'Невалідних old_price: {count}')
 
         if dry:
-            for p in inverted[:10]:
+            for p in invalid[:10]:
                 self.stdout.write(
-                    f'  {p.sku}: price {p.price} ↔ old {p.old_price}'
+                    f'  {p.sku}: clear old {p.old_price} (price {p.price})'
                 )
             if count > 10:
                 self.stdout.write(f'  … ще {count - 10}')
         else:
-            # bulk swap через два кроки з тимчасовим полем неможливий без raw SQL;
-            # оновлюємо пакетами в Python (сотні записів — ок).
-            swapped = 0
-            for p in inverted.iterator(chunk_size=200):
-                new_price, new_old = p.old_price, p.price
-                p.price = new_price
-                p.old_price = new_old
-                p.is_on_sale = True
-                p.save(update_fields=['price', 'old_price', 'is_on_sale', 'updated_at'])
-                swapped += 1
-            self.stdout.write(self.style.SUCCESS(f'Поміняно цін: {swapped}'))
+            cleared_old = invalid.update(old_price=None, is_on_sale=False)
+            self.stdout.write(self.style.SUCCESS(
+                f'Очищено old_price: {cleared_old}'
+            ))
 
-            # Синхронізація прапорця для всіх з коректною акцією
             synced = Product.objects.filter(
                 old_price__isnull=False,
                 old_price__gt=F('price'),
             ).update(is_on_sale=True)
-            cleared = Product.objects.filter(
+            cleared_flag = Product.objects.filter(
                 is_on_sale=True,
             ).filter(
                 old_price__isnull=True,
             ).update(is_on_sale=False)
-            self.stdout.write(f'is_on_sale=True: {synced}, знято зайві: {cleared}')
+            self.stdout.write(
+                f'is_on_sale=True: {synced}, знято зайві: {cleared_flag}'
+            )
 
         seed_qs = Product.objects.filter(sku__in=SEED_SKUS)
         seed_count = seed_qs.count()

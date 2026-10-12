@@ -56,7 +56,12 @@ class Command(BaseCommand):
             )
             if not dry:
                 product.price = new_price
-                product.save(update_fields=['price', 'updated_at'])
+                update_fields = ['price', 'updated_at']
+                if product.old_price is not None and product.old_price <= new_price:
+                    product.old_price = None
+                    product.is_on_sale = False
+                    update_fields.extend(['old_price', 'is_on_sale'])
+                product.save(update_fields=update_fields)
             updated += 1
 
         label = 'DRY-RUN' if dry else 'Готово'

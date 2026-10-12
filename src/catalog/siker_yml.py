@@ -98,16 +98,16 @@ def resolve_sale_prices(
     """
     Нормалізація цін Siker → поля магазину.
 
-    У вигрузці: ``price`` — звичайна (вища), ``priceDrop`` — акційна (нижча).
-    У каталозі: ``price`` — поточна до оплати, ``old_price`` — перекреслена
-    (має бути вищою за ``price``, інакше блок «Акції» не показує товар).
+    Припущення: актуальна роздрібна/продажна = ``priceDrop`` якщо є, інакше
+    ``price``. ``old_price`` лише коли list вищий за продажну (перекреслена).
+    Ніколи не заряджаємо min() і не ставимо fake old нижчу за price.
     """
-    if price_drop is None or price_drop == list_price:
+    if price_drop is None:
         return list_price, None
-    if price_drop < list_price:
-        return price_drop, list_price
-    # priceDrop вищий за price — трактуємо як «стару» ціну
-    return list_price, price_drop
+    selling = price_drop
+    if list_price > selling:
+        return selling, list_price
+    return selling, None
 
 
 def clean_description_html(raw: str) -> str:
