@@ -5,6 +5,7 @@ from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
 from src.core.breadcrumbs import make_breadcrumbs
+from src.orders.services.pricing import price_cart
 
 from .compare import CompareService
 from .services import CartService
@@ -15,15 +16,13 @@ def _cart_promo_context(request, cart):
     promo = cart.apply_promo(promo_code) if promo_code else None
     if promo_code and not promo:
         request.session.pop('promo_code', None)
-    subtotal = cart.subtotal
-    total = cart.total(promo)
-    discount_amount = (subtotal - total) if promo else 0
+    pricing = price_cart(cart, promo)
     return {
-        'lines': cart.get_lines(),
-        'subtotal': subtotal,
+        'lines': pricing.lines,
+        'subtotal': pricing.subtotal,
         'promo': promo,
-        'discount_amount': discount_amount,
-        'total': total,
+        'discount_amount': pricing.discount,
+        'total': pricing.total,
     }
 
 

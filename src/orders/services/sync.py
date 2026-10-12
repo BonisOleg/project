@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.db import transaction
 
 from src.orders.models import Order, OrderItem
+from src.orders.services.pricing import price_cart
 
 
 def sync_order_with_cart(order, cart, session) -> bool:
@@ -19,25 +20,6 @@ def sync_order_with_cart(order, cart, session) -> bool:
         if order.status not in (Order.STATUS_PENDING, Order.STATUS_AWAITING_PAYMENT):
             return True
 
-        lines = cart.get_lines()
-        if not lines:
-            return False
-
-        order.items.all().delete()
-        subtotal = Decimal('0')
-        for line in lines:
-            line_total = line['line_total']
-            subtotal += line_total
-            OrderItem.objects.create(
-                order=order,
-                product=line['product'],
-                product_name=line['product'].name,
-                product_sku=line['product'].sku,
-                price=line['product'].price,
-                quantity=line['quantity'],
-                line_total=line_total,
-            )
-
         promo_code = (session.get('promo_code') or '').strip()
         promo = cart.apply_promo(promo_code) if promo_code else None
         if promo_code and not promo:
@@ -45,19 +27,27 @@ def sync_order_with_cart(order, cart, session) -> bool:
             session.modified = True
             promo_code = ''
 
-        if promo:
-            goods_total = promo.apply_discount(subtotal)
-            discount = subtotal - goods_total
-            promo_code = promo.code
-        else:
-            goods_total = subtotal
-            discount = Decimal('0')
-            promo_code = ''
+        pricing = price_cart(cart, promo)
+        if not pricing.lines:
+            return False
 
-        order.subtotal = subtotal
-        order.discount = discount
-        order.promo_code = promo_code
-        order.total = goods_total + (order.delivery_cost or Decimal('0'))
+        order.items.all().delete()
+        for line in pricing.lines:
+            OrderItem.objects.create(
+                order=order,
+                product=line['product'],
+                product_name=line['product'].name,
+                product_sku=line['product'].sku,
+                price=line['unit_price'],
+                quantity=line['quantity'],
+                line_total=line['line_total'],
+            )
+
+        delivery = order.delivery_cost or Decimal('0.00')
+        order.subtotal = pricing.subtotal
+        order.discount = pricing.discount
+        order.promo_code = promo.code if promo else ''
+        order.total = pricing.total + delivery
         order.save(update_fields=[
             'subtotal', 'discount', 'promo_code', 'total', 'updated_at',
         ])

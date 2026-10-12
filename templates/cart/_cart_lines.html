@@ -15,7 +15,7 @@
         <a href="{{ line.product.get_absolute_url }}">{{ line.product.name }}</a>
       </h2>
       <p class="cart-item__sku">Артикул: {{ line.product.sku }}</p>
-      <p class="cart-item__unit">{{ line.product.price|format_price }} / шт</p>
+      <p class="cart-item__unit">{{ line.unit_price|format_price }} / шт</p>
       <div class="cart-item__footer">
         <form action="{% url 'cart:update' line.product.pk %}" method="post" hx-post="{% url 'cart:update' line.product.pk %}" hx-target="#cart-lines" hx-swap="outerHTML">
           {% csrf_token %}

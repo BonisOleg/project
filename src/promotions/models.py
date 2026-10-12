@@ -1,7 +1,13 @@
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import models
 from django.utils import timezone
+
+_TWOPLACES = Decimal('0.01')
+
+
+def _money(value) -> Decimal:
+    return Decimal(value).quantize(_TWOPLACES, rounding=ROUND_HALF_UP)
 
 
 class PromoCode(models.Model):
@@ -40,8 +46,16 @@ class PromoCode(models.Model):
             return False
         return True
 
-    def apply_discount(self, subtotal):
+    def discount_for(self, subtotal) -> Decimal:
+        """Сума знижки (не новий total), quantized, ≤ subtotal."""
+        subtotal = _money(subtotal)
         if self.discount_type == self.TYPE_PERCENT:
-            discount = subtotal * (self.discount_value / Decimal('100'))
-            return max(subtotal - discount, Decimal('0'))
-        return max(subtotal - self.discount_value, Decimal('0'))
+            discount = _money(subtotal * (self.discount_value / Decimal('100')))
+        else:
+            discount = _money(self.discount_value)
+        return min(discount, subtotal)
+
+    def apply_discount(self, subtotal):
+        """Повертає новий total після знижки (backward compatible)."""
+        subtotal = _money(subtotal)
+        return _money(subtotal - self.discount_for(subtotal))

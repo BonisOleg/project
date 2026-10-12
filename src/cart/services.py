@@ -1,6 +1,6 @@
-from decimal import Decimal
-
 from django.conf import settings
+
+from src.orders.services.pricing import price_cart
 
 
 class CartService:
@@ -60,7 +60,7 @@ class CartService:
 
     @property
     def subtotal(self):
-        return sum(line['line_total'] for line in self.get_lines())
+        return price_cart(self, None).subtotal
 
     def apply_promo(self, code):
         from src.promotions.models import PromoCode
@@ -73,7 +73,4 @@ class CartService:
         return None
 
     def total(self, promo=None):
-        subtotal = self.subtotal
-        if promo:
-            return promo.apply_discount(subtotal)
-        return subtotal
+        return price_cart(self, promo).total

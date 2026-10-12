@@ -1,4 +1,5 @@
 import uuid
+from decimal import Decimal
 from urllib.parse import urlencode
 
 from django.contrib import messages
@@ -22,6 +23,7 @@ from .services.ownership import (
     remember_own_order,
     user_can_access_order,
 )
+from .services.pricing import price_cart
 from .services.promo_usage import mark_promo_used
 from .services.sync import sync_order_with_cart
 from .services.ukrposhta import UkrposhtaError, UkrposhtaService
@@ -146,36 +148,35 @@ def _thank_you_absolute_url(request, order: Order) -> str:
 
 def _create_order_from_cart(request):
     cart = CartService(request)
-    lines = cart.get_lines()
-    if not lines:
-        return None
     promo_code = request.session.get('promo_code', '')
     promo = cart.apply_promo(promo_code) if promo_code else None
-    subtotal = cart.subtotal
-    discount = subtotal - cart.total(promo) if promo else 0
-    total = cart.total(promo)
+    pricing = price_cart(cart, promo)
+    if not pricing.lines:
+        return None
+    delivery = Decimal('0.00')
     order = Order.objects.create(
         user=request.user if request.user.is_authenticated else None,
         first_name=request.user.first_name if request.user.is_authenticated else '',
         last_name=request.user.last_name if request.user.is_authenticated else '',
         phone=getattr(request.user, 'phone', '') if request.user.is_authenticated else '',
         email=request.user.email if request.user.is_authenticated else '',
-        subtotal=subtotal,
-        discount=discount,
-        total=total,
+        subtotal=pricing.subtotal,
+        discount=pricing.discount,
+        delivery_cost=delivery,
+        total=pricing.total + delivery,
         promo_code=promo.code if promo else '',
         delivery_service=Order.DELIVERY_NP,
         delivery_city='',
         delivery_address='',
         liqpay_order_id=uuid.uuid4().hex[:16],
     )
-    for line in lines:
+    for line in pricing.lines:
         OrderItem.objects.create(
             order=order,
             product=line['product'],
             product_name=line['product'].name,
             product_sku=line['product'].sku,
-            price=line['product'].price,
+            price=line['unit_price'],
             quantity=line['quantity'],
             line_total=line['line_total'],
         )
