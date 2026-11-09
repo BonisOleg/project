@@ -149,3 +149,10 @@
   </div>
 </section>
 {% endblock %}
+
+{% block extra_js %}
+{% if purchase_datalayer %}
+{{ purchase_datalayer|json_script:"oyra-purchase-datalayer" }}
+<script nonce="{{ CSP_NONCE }}" type="module" src="{% static 'js/modules/purchase_datalayer.js' %}?v=20261109a"></script>
+{% endif %}
+{% endblock %}

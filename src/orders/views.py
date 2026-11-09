@@ -14,6 +14,7 @@ from src.cart.services import CartService
 from src.core.breadcrumbs import make_breadcrumbs
 from src.core.models import SiteSettings
 
+from .analytics_purchase import build_purchase_datalayer
 from .forms import CheckoutStep2Form, CheckoutStep3Form, CheckoutPaymentForm
 from .models import Order, OrderItem
 from .services.liqpay import LiqPayService
@@ -331,11 +332,17 @@ def thank_you(request, order_number):
                 cart.clear()
             request.session.pop('checkout_order_id', None)
             request.session.pop('promo_code', None)
+
+    purchase_datalayer = None
+    if site.gtm_enabled and site.gtm_container_id:
+        purchase_datalayer = build_purchase_datalayer(order)
+
     return render(request, 'orders/thank_you.html', {
         'order': order,
         'site_settings': site,
         'page_title': 'Замовлення оформлено',
         'breadcrumbs': make_breadcrumbs(('Замовлення оформлено', '')),
+        'purchase_datalayer': purchase_datalayer,
     })
 
 

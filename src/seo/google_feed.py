@@ -8,7 +8,7 @@ from xml.etree.ElementTree import Element, SubElement, register_namespace, tostr
 
 from django.utils.html import strip_tags
 
-from src.catalog.models import Product
+from src.catalog.models import Category, Product
 from src.core.models import SiteSettings
 
 G_NS = 'http://base.google.com/ns/1.0'
@@ -20,6 +20,18 @@ AVAILABILITY_MAP = {
     Product.AVAIL_EXPECTED: 'preorder',
 }
 _WS_RE = re.compile(r'\s+')
+
+# Головні розділи сайту для сегментації Performance Max (custom_label_0).
+ROOT_CUSTOM_LABELS = frozenset({
+    'Дім і сад',
+    'Дорожні валізи',
+    'Крісла',
+    'Будівництво і ремонт',
+    'Дитячі товари',
+    'Спорт і відпочинок',
+    'Зоотовари',
+})
+FALLBACK_CUSTOM_LABEL = 'Інше'
 
 
 def _text(value: str) -> str:
@@ -43,10 +55,48 @@ def _absolute_media_url(request, image_field) -> str | None:
     return request.build_absolute_uri(image_field.url)
 
 
+def _custom_label_from_root_name(name: str | None) -> str:
+    cleaned = (name or '').strip()
+    if cleaned in ROOT_CUSTOM_LABELS:
+        return cleaned
+    return FALLBACK_CUSTOM_LABEL
+
+
+def build_category_root_label_map() -> dict[int, str]:
+    """category_id → назва кореневої мітки (або «Інше»)."""
+    rows = list(Category.objects.only('id', 'name', 'parent_id'))
+    by_id = {row.id: row for row in rows}
+    cache: dict[int, str] = {}
+
+    def resolve(category_id: int) -> str:
+        if category_id in cache:
+            return cache[category_id]
+        seen: set[int] = set()
+        node = by_id.get(category_id)
+        path: list[int] = []
+        while node is not None and node.id not in seen:
+            seen.add(node.id)
+            path.append(node.id)
+            if node.parent_id is None:
+                label = _custom_label_from_root_name(node.name)
+                for cid in path:
+                    cache[cid] = label
+                return label
+            node = by_id.get(node.parent_id)
+        for cid in path:
+            cache[cid] = FALLBACK_CUSTOM_LABEL
+        return FALLBACK_CUSTOM_LABEL
+
+    for row in rows:
+        resolve(row.id)
+    return cache
+
+
 def build_google_feed_xml(request) -> bytes:
     settings_obj = SiteSettings.get_solo()
     site_name = settings_obj.site_name or 'Oyra'
     home_url = request.build_absolute_uri('/')
+    root_labels = build_category_root_label_map()
 
     rss = Element('rss', {'version': '2.0'})
     channel = SubElement(rss, 'channel')
@@ -109,6 +159,12 @@ def build_google_feed_xml(request) -> bytes:
             _g(item, 'price', _money(product.price))
 
         _g(item, 'identifier_exists', 'no')
+
+        if product.category_id:
+            label = root_labels.get(product.category_id, FALLBACK_CUSTOM_LABEL)
+        else:
+            label = FALLBACK_CUSTOM_LABEL
+        _g(item, 'custom_label_0', label)
 
     xml_body = tostring(rss, encoding='utf-8', method='xml')
     return b"<?xml version='1.0' encoding='utf-8'?>" + xml_body
