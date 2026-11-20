@@ -151,8 +151,13 @@
 {% endblock %}
 
 {% block extra_js %}
+{% if purchase_datalayer or purchase_poll_url %}
 {% if purchase_datalayer %}
 {{ purchase_datalayer|json_script:"oyra-purchase-datalayer" }}
-<script nonce="{{ CSP_NONCE }}" type="module" src="{% static 'js/modules/purchase_datalayer.js' %}?v=20261109a"></script>
+{% endif %}
+{% if purchase_poll_url %}
+<div id="oyra-purchase-poll" hidden data-url="{{ purchase_poll_url }}"></div>
+{% endif %}
+<script nonce="{{ CSP_NONCE }}" type="module" src="{% static 'js/modules/purchase_datalayer.js' %}?v=20261120a"></script>
 {% endif %}
 {% endblock %}

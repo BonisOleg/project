@@ -88,6 +88,7 @@ class CategoryAdmin(DropdownFiltersMixin, SortableAdminMixin, TinyMCEAdminMixin,
             'classes': ('collapse',),
         }),
         ('Відображення на сайті', {'fields': ('sort_order', 'is_active')}),
+        ('Google фід', {'fields': ('feed_season',)}),
         ('SEO (пошукові системи)', {
             'fields': ('meta_title', 'meta_description'),
             'classes': ('collapse',),
@@ -292,6 +293,7 @@ class ProductAdmin(
             ),
             'classes': ('collapse',),
         }),
+        ('Google фід', {'fields': ('feed_priority',)}),
         ('Медіа', {
             'fields': ('youtube_url', 'video_url', 'has_video'),
             'classes': ('collapse',),

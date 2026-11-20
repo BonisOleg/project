@@ -14,7 +14,7 @@ from src.cart.services import CartService
 from src.core.breadcrumbs import make_breadcrumbs
 from src.core.models import SiteSettings
 
-from .analytics_purchase import build_purchase_datalayer
+from .analytics_purchase import build_purchase_datalayer, purchase_is_ready
 from .forms import CheckoutStep2Form, CheckoutStep3Form, CheckoutPaymentForm
 from .models import Order, OrderItem
 from .services.liqpay import LiqPayService
@@ -334,8 +334,12 @@ def thank_you(request, order_number):
             request.session.pop('promo_code', None)
 
     purchase_datalayer = None
+    purchase_poll_url = ''
     if site.gtm_enabled and site.gtm_container_id:
-        purchase_datalayer = build_purchase_datalayer(order)
+        if purchase_is_ready(order):
+            purchase_datalayer = build_purchase_datalayer(order)
+        elif order.payment_method == Order.PAYMENT_LIQPAY:
+            purchase_poll_url = _purchase_poll_url(request, order)
 
     return render(request, 'orders/thank_you.html', {
         'order': order,
@@ -343,6 +347,40 @@ def thank_you(request, order_number):
         'page_title': 'Замовлення оформлено',
         'breadcrumbs': make_breadcrumbs(('Замовлення оформлено', '')),
         'purchase_datalayer': purchase_datalayer,
+        'purchase_poll_url': purchase_poll_url,
+    })
+
+
+def _purchase_poll_url(request, order: Order) -> str:
+    path = reverse('orders:purchase_status', kwargs={'order_number': order.order_number})
+    token = request.GET.get('t', '')
+    if token:
+        return f'{path}?{urlencode({"t": token})}'
+    return path
+
+
+def _purchase_json(payload, status=200):
+    response = JsonResponse(payload, status=status)
+    response['Cache-Control'] = 'private, no-store'
+    return response
+
+
+@require_GET
+def purchase_status(request, order_number):
+    """Статус покупки для dataLayer. Контакти лише після готовності події."""
+    order = get_object_or_404(
+        Order.objects.prefetch_related('items'),
+        order_number=order_number,
+    )
+    if not user_can_access_order(request, order, allow_token=True):
+        raise Http404()
+    site = SiteSettings.get_solo()
+    gtm_on = bool(site.gtm_enabled and site.gtm_container_id)
+    if not gtm_on or not purchase_is_ready(order):
+        return _purchase_json({'ready': False})
+    return _purchase_json({
+        'ready': True,
+        'payload': build_purchase_datalayer(order),
     })
 
 

@@ -55,6 +55,26 @@ class Category(models.Model):
     )
     sort_order = models.PositiveIntegerField('Порядок', default=0)
     is_active = models.BooleanField('Активна', default=True)
+    FEED_SEASON_WINTER = 'winter'
+    FEED_SEASON_SPRING = 'spring_summer'
+    FEED_SEASON_ALL = 'all_season'
+    FEED_SEASON_CHOICES = [
+        ('', 'Як у батьківської'),
+        (FEED_SEASON_WINTER, 'Зима'),
+        (FEED_SEASON_SPRING, 'Весна-літо'),
+        (FEED_SEASON_ALL, 'Всесезон'),
+    ]
+    feed_season = models.CharField(
+        'Сезонність (custom_label_2)',
+        max_length=20,
+        choices=FEED_SEASON_CHOICES,
+        blank=True,
+        default='',
+        help_text=(
+            'Порожнє значення бере сезон батьківської категорії. '
+            '«Всесезон» зупиняє спадковість.'
+        ),
+    )
     meta_title = models.CharField('SEO-заголовок', max_length=255, blank=True)
     meta_description = models.TextField('SEO-опис', blank=True)
 
@@ -240,6 +260,26 @@ class Product(models.Model):
     )
     is_active = models.BooleanField('Активний', default=True)
     is_top_sale = models.BooleanField('Хіт продажу', default=False)
+    FEED_PRIORITY_GENERATORS = 'generators'
+    FEED_PRIORITY_HIT = 'hit'
+    FEED_PRIORITY_STANDARD = 'standard'
+    FEED_PRIORITY_CHOICES = [
+        ('', 'Авто'),
+        (FEED_PRIORITY_GENERATORS, 'Генератори'),
+        (FEED_PRIORITY_HIT, 'Хіт'),
+        (FEED_PRIORITY_STANDARD, 'Стандарт'),
+    ]
+    feed_priority = models.CharField(
+        'Пріоритет (custom_label_3)',
+        max_length=20,
+        choices=FEED_PRIORITY_CHOICES,
+        blank=True,
+        default='',
+        help_text=(
+            'Порожнє: категорія «Генератори» → Генератори, '
+            'інакше галочка «Хіт продажу» → Хіт, інакше Стандарт.'
+        ),
+    )
     is_new = models.BooleanField('Новинка', default=False)
     is_on_sale = models.BooleanField('Акція', default=False)
     has_video = models.BooleanField('Є відео', default=False)

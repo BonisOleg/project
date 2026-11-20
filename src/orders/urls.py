@@ -12,6 +12,11 @@ urlpatterns = [
     path('api/up/cities/', views.up_cities, name='up_cities'),
     path('api/up/postoffices/', views.up_postoffices, name='up_postoffices'),
     path('thank-you/<str:order_number>/', views.thank_you, name='thank_you'),
+    path(
+        'api/purchase/<str:order_number>/',
+        views.purchase_status,
+        name='purchase_status',
+    ),
     path('payment-error/<str:order_number>/', views.payment_error, name='payment_error'),
     path('retry/<str:order_number>/', views.retry_payment, name='retry_payment'),
     path('liqpay/callback/', views.liqpay_callback, name='liqpay_callback'),

@@ -21,6 +21,26 @@ def _e164_ua_phone(raw: str) -> str | None:
     return f'+{digits}'
 
 
+def goods_value(order: Order) -> Decimal:
+    """Сума товарів після знижки, без доставки."""
+    subtotal = order.subtotal if order.subtotal is not None else Decimal('0')
+    discount = order.discount if order.discount is not None else Decimal('0')
+    value = subtotal - discount
+    if value < 0:
+        value = Decimal('0')
+    return value
+
+
+def purchase_is_ready(order: Order) -> bool:
+    """
+    COD і рахунок — на оформлене замовлення.
+    LiqPay — лише після підтвердженої оплати.
+    """
+    if order.payment_method == Order.PAYMENT_LIQPAY:
+        return order.status == Order.STATUS_PAID
+    return order.payment_method in (Order.PAYMENT_COD, Order.PAYMENT_BANK)
+
+
 def build_purchase_datalayer(order: Order) -> dict[str, Any]:
     """
     Payload для dataLayer.push на сторінці thank-you.
@@ -54,7 +74,7 @@ def build_purchase_datalayer(order: Order) -> dict[str, Any]:
         'event': 'purchase',
         'ecommerce': {
             'transaction_id': order.order_number,
-            'value': _money_number(order.total),
+            'value': _money_number(goods_value(order)),
             'currency': 'UAH',
             'items': items,
         },

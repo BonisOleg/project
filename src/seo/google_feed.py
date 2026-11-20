@@ -10,6 +10,14 @@ from django.utils.html import strip_tags
 
 from src.catalog.models import Category, Product
 from src.core.models import SiteSettings
+from src.seo.merchant_labels import (
+    feed_selling_price,
+    generator_mpn,
+    load_categories,
+    price_group,
+    priority_label,
+    season_label,
+)
 
 G_NS = 'http://base.google.com/ns/1.0'
 register_namespace('g', G_NS)
@@ -97,6 +105,7 @@ def build_google_feed_xml(request) -> bytes:
     site_name = settings_obj.site_name or 'Oyra'
     home_url = request.build_absolute_uri('/')
     root_labels = build_category_root_label_map()
+    categories = load_categories()
 
     rss = Element('rss', {'version': '2.0'})
     channel = SubElement(rss, 'channel')
@@ -158,13 +167,20 @@ def build_google_feed_xml(request) -> bytes:
         else:
             _g(item, 'price', _money(product.price))
 
-        _g(item, 'identifier_exists', 'no')
+        mpn = generator_mpn(product, categories)
+        if mpn:
+            _g(item, 'mpn', mpn)
+        else:
+            _g(item, 'identifier_exists', 'no')
 
         if product.category_id:
             label = root_labels.get(product.category_id, FALLBACK_CUSTOM_LABEL)
         else:
             label = FALLBACK_CUSTOM_LABEL
         _g(item, 'custom_label_0', label)
+        _g(item, 'custom_label_1', price_group(feed_selling_price(product)))
+        _g(item, 'custom_label_2', season_label(product, categories))
+        _g(item, 'custom_label_3', priority_label(product, categories))
 
     xml_body = tostring(rss, encoding='utf-8', method='xml')
     return b"<?xml version='1.0' encoding='utf-8'?>" + xml_body
