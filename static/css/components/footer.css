@@ -205,6 +205,11 @@
   margin-left: auto;
 }
 
+.newsletter__form .field {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
+
 .newsletter__form .field__input {
   flex: 1 1 10rem;
   min-width: 0;
@@ -297,13 +302,17 @@
     margin-left: 0;
   }
 
+  .newsletter__form .field,
   .newsletter__form .field__input {
     flex: 0 0 auto;
     width: 100%;
     min-height: 2.75rem;
+    box-sizing: border-box;
+  }
+
+  .newsletter__form .field__input {
     height: 2.75rem;
     padding-block: 0;
-    box-sizing: border-box;
   }
 
   .newsletter__form .btn {

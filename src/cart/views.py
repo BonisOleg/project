@@ -5,6 +5,7 @@ from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
 from src.core.breadcrumbs import make_breadcrumbs
+from src.core.rate_limit import rate_limit
 from src.orders.services.pricing import price_cart
 
 from .compare import CompareService
@@ -76,6 +77,7 @@ def cart_remove(request, product_id):
     return redirect('cart:detail')
 
 
+@rate_limit()
 @require_POST
 def apply_promo(request):
     cart = CartService(request)

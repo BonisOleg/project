@@ -32,8 +32,8 @@
   <link rel="stylesheet" href="{% static 'css/3_base.css' %}?v=20260710h">
   <link rel="stylesheet" href="{% static 'css/components/header.css' %}?v=20260806d">
   <link rel="stylesheet" href="{% static 'css/components/phone_tooltip.css' %}?v=20260806a">
-  <link rel="stylesheet" href="{% static 'css/components/footer.css' %}?v=20260805a">
-  <link rel="stylesheet" href="{% static 'css/components/button.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components/footer.css' %}?v=20261120a">
+  <link rel="stylesheet" href="{% static 'css/components/button.css' %}?v=20261120a">
   <link rel="stylesheet" href="{% static 'css/components/breadcrumbs.css' %}">
   <link rel="stylesheet" href="{% static 'css/components/product_card.css' %}?v=20260713h">
   <link rel="stylesheet" href="{% static 'css/components/wishlist.css' %}?v=20260713h">
@@ -42,7 +42,7 @@
   <link rel="stylesheet" href="{% static 'css/components/toast.css' %}?v=20260710b">
   {% block extra_css %}{% endblock %}
   <script nonce="{{ CSP_NONCE }}" src="{% static 'vendor/htmx.min.js' %}" defer></script>
-  <script nonce="{{ CSP_NONCE }}" type="module" src="{% static 'js/main.js' %}?v=20260806b"></script>
+  <script nonce="{{ CSP_NONCE }}" type="module" src="{% static 'js/main.js' %}?v=20261120a"></script>
 </head>
 <body class="has-bottom-nav {% block body_class %}{% endblock %}">
   {% if site_settings.gtm_enabled and site_settings.gtm_container_id %}

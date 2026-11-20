@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 
 from csp.constants import NONCE
@@ -37,6 +38,7 @@ INSTALLED_APPS = [
     'src.seo',
     'src.promotions.apps.PromotionsConfig',
     'src.reviews',
+    'axes',
 ]
 
 MIDDLEWARE = [
@@ -51,6 +53,7 @@ MIDDLEWARE = [
     'django_htmx.middleware.HtmxMiddleware',
     'csp.middleware.CSPMiddleware',
     'config.middleware.AdminUkrainianMiddleware',
+    'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -79,12 +82,35 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 AUTH_USER_MODEL = 'accounts.User'
 
+AUTHENTICATION_BACKENDS = [
+    'src.accounts.axes_backend.OyraAxesBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {'min_length': 8},
+    },
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
+
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+]
+
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = timedelta(minutes=5)
+AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]
+AXES_RESET_ON_SUCCESS = True
+AXES_USERNAME_FORM_FIELD = 'username'
+AXES_CLIENT_IP_CALLABLE = 'src.core.client_ip.client_ip'
+AXES_COOLOFF_MESSAGE = 'Забагато невдалих спроб входу. Спробуйте знову за 5 хвилин.'
+AXES_HTTP_RESPONSE_CODE = 429
 
 LANGUAGE_CODE = 'uk'
 LANGUAGES = [
@@ -492,7 +518,7 @@ CONTENT_SECURITY_POLICY = {
         ),
         'frame-ancestors': ("'none'",),
         'base-uri': ("'self'",),
-        'form-action': ("'self'",),
+        'form-action': ("'self'", 'https://www.liqpay.ua'),
     },
 }
 

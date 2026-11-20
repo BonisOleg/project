@@ -1,11 +1,4 @@
-from django.conf import settings
-from django.http import JsonResponse
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
-import json
-import time
-from pathlib import Path
 
 
 def home(request):
@@ -49,27 +42,3 @@ def handler500(request):
     return render(request, 'pages/500.html', {
         'breadcrumbs': make_breadcrumbs(('Помилка сервера', '')),
     }, status=500)
-
-
-@csrf_exempt
-@require_POST
-def debug_hero_layout(request):
-    if not settings.DEBUG:
-        return JsonResponse({'ok': False}, status=404)
-
-    try:
-        payload = json.loads(request.body.decode('utf-8'))
-    except (json.JSONDecodeError, UnicodeDecodeError):
-        return JsonResponse({'ok': False}, status=400)
-
-    log_path = Path(settings.BASE_DIR) / '.cursor' / 'debug-0f4f88.log'
-    log_path.parent.mkdir(parents=True, exist_ok=True)
-    entry = {
-        'sessionId': '0f4f88',
-        'timestamp': int(time.time() * 1000),
-        **payload,
-    }
-    with log_path.open('a', encoding='utf-8') as log_file:
-        log_file.write(json.dumps(entry, ensure_ascii=False) + '\n')
-
-    return JsonResponse({'ok': True})

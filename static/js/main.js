@@ -12,6 +12,7 @@ import { initToasts } from './modules/toast.js';
 import { initPasswordToggle } from './modules/password_toggle.js';
 import { initCatalogDropdown } from './modules/catalog_dropdown.js';
 import { initPhoneTooltip } from './modules/phone_tooltip.js';
+import { initFormGuard } from './modules/form_guard.js';
 
 function onReady(callback) {
   if (document.readyState === 'loading') {
@@ -36,6 +37,7 @@ onReady(() => {
   initPasswordToggle();
   initCatalogDropdown();
   initPhoneTooltip();
+  initFormGuard();
 });
 
 document.body.addEventListener('htmx:configRequest', (event) => {
@@ -52,6 +54,7 @@ document.body.addEventListener('htmx:afterSwap', (event) => {
   if (target?.id === 'home-products-panel') {
     initProductScroll(target);
   }
+  initFormGuard(target || document);
   initToasts(document.getElementById('toast-root') || document);
 });
 

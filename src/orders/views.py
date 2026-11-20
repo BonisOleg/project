@@ -1,3 +1,4 @@
+import logging
 import uuid
 from decimal import Decimal
 from urllib.parse import urlencode
@@ -12,7 +13,9 @@ from django.views.decorators.http import require_GET, require_POST
 
 from src.cart.services import CartService
 from src.core.breadcrumbs import make_breadcrumbs
+from src.core.forms_security import honeypot_tripped
 from src.core.models import SiteSettings
+from src.core.rate_limit import RATE_LIMIT_MESSAGE, consume_rate_limit
 
 from .analytics_purchase import build_purchase_datalayer, purchase_is_ready
 from .forms import CheckoutStep2Form, CheckoutStep3Form, CheckoutPaymentForm
@@ -31,6 +34,7 @@ from .services.ukrposhta import UkrposhtaError, UkrposhtaService
 from .signals import notify_admins_after_checkout
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 def _checkout_order_ready(request):
@@ -203,6 +207,15 @@ def checkout(request, step=1):
         messages.warning(request, 'Кошик порожній')
         return redirect('cart:detail')
 
+    if _get_checkout_order(request) is None and not consume_rate_limit(
+        request, 'order-create',
+    ):
+        return HttpResponse(
+            RATE_LIMIT_MESSAGE,
+            status=429,
+            content_type='text/plain; charset=utf-8',
+        )
+
     order = _ensure_checkout_order(request, cart)
     if not order:
         messages.warning(request, 'Кошик порожній')
@@ -220,6 +233,8 @@ def checkout(request, step=1):
         })
 
     if step == 2:
+        if request.method == 'POST' and honeypot_tripped(request.POST):
+            return redirect('orders:checkout_step', step=3)
         form = CheckoutStep2Form(request.POST or None, instance=order)
         if request.user.is_authenticated:
             form.fields.pop('create_account', None)
@@ -429,6 +444,13 @@ def liqpay_callback(request):
             return HttpResponse(status=404)
 
     if status in ('success', 'sandbox'):
+        if not svc.payment_is_acceptable(order, payload):
+            logger.warning(
+                'LiqPay callback rejected order=%s status=%s',
+                order.order_number,
+                status,
+            )
+            return HttpResponse(status=400)
         if order.status != Order.STATUS_PAID:
             order.status = Order.STATUS_PAID
             order.liqpay_transaction_id = payload.get('transaction_id', '')

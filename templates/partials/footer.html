@@ -75,7 +75,32 @@
       </div>
       <form class="newsletter__form" action="{% url 'pages:newsletter' %}" method="post">
         {% csrf_token %}
-        <input class="field__input" type="email" name="email" placeholder="Ваш email" required>
+        <div class="hp-field">
+          <label class="hp-field__label" for="newsletter-company">Компанія</label>
+          <input
+            class="hp-field__input"
+            id="newsletter-company"
+            type="text"
+            name="company_website"
+            tabindex="-1"
+            autocomplete="off"
+            aria-hidden="true"
+            value=""
+          >
+        </div>
+        <div class="field">
+          <input
+            class="field__input"
+            type="email"
+            name="email"
+            placeholder="Ваш email"
+            autocomplete="email"
+            inputmode="email"
+            maxlength="254"
+            data-kind="email"
+            required
+          >
+        </div>
         <button class="btn btn--primary" type="submit">Підписатись</button>
       </form>
     </div>

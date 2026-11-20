@@ -1,7 +1,9 @@
 import base64
 import hashlib
+import hmac
 import json
 import logging
+from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
 
@@ -32,7 +34,28 @@ class LiqPayService:
             return {}
 
     def verify_callback(self, data_b64, signature):
-        return self._sign(data_b64) == signature
+        if not self.private_key or not data_b64 or not signature:
+            return False
+        expected = self._sign(data_b64)
+        try:
+            return hmac.compare_digest(expected, signature)
+        except (TypeError, ValueError):
+            return False
+
+    def payment_is_acceptable(self, order, payload) -> bool:
+        status = (payload or {}).get('status')
+        if status == 'sandbox':
+            if not settings.LIQPAY_SANDBOX:
+                return False
+        elif status != 'success':
+            return False
+        if str((payload or {}).get('currency') or '').upper() != 'UAH':
+            return False
+        try:
+            amount = Decimal(str(payload.get('amount')))
+        except (InvalidOperation, TypeError, ValueError, ArithmeticError):
+            return False
+        return abs(amount - Decimal(order.total)) <= Decimal('0.01')
 
     def create_checkout(self, order, result_url, server_url):
         payload = {

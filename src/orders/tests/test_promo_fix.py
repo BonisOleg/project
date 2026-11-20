@@ -100,11 +100,15 @@ class PromoFixBase(TestCase):
         request.session = client.session
         return CartService(request)
 
-    def _liqpay_callback_payload(self, order, status='success'):
+    def _liqpay_callback_payload(self, order, status='success', amount=None, currency='UAH'):
+        if amount is None:
+            amount = format(order.total, 'f')
         payload = {
             'order_id': order.liqpay_order_id,
             'status': status,
             'transaction_id': 'tx-1',
+            'amount': amount,
+            'currency': currency,
         }
         data_b64 = base64.b64encode(
             json.dumps(payload, ensure_ascii=False).encode(),

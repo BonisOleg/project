@@ -3,29 +3,95 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 
 from src.core.breadcrumbs import make_breadcrumbs
+from src.core.forms_security import HoneypotFormMixin, honeypot_tripped
+from src.core.rate_limit import rate_limit
+from src.core.safe_redirect import safe_next
+from src.core.validators import (
+    clean_limited_text,
+    clean_person_name,
+    clean_place,
+    normalize_ua_phone,
+)
 
 from .legal_pages import get_legal_page, get_related_legal_pages
 from .models import DropshippingApplication, FAQItem, NewsletterSubscription, StaticPage
 
 
-class NewsletterForm(forms.ModelForm):
+class NewsletterForm(HoneypotFormMixin, forms.ModelForm):
     class Meta:
         model = NewsletterSubscription
         fields = ('email',)
-        widgets = {'email': forms.EmailInput(attrs={'class': 'field__input', 'placeholder': 'Ваш email'})}
+        widgets = {
+            'email': forms.EmailInput(attrs={
+                'class': 'field__input',
+                'placeholder': 'Ваш email',
+                'autocomplete': 'email',
+                'inputmode': 'email',
+                'maxlength': '254',
+                'data-kind': 'email',
+            }),
+        }
 
 
-class DropshippingForm(forms.ModelForm):
+class DropshippingForm(HoneypotFormMixin, forms.ModelForm):
     class Meta:
         model = DropshippingApplication
         fields = ('name', 'phone', 'email', 'city', 'comment')
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'field__input'}),
-            'phone': forms.TelInput(attrs={'class': 'field__input'}),
-            'email': forms.EmailInput(attrs={'class': 'field__input'}),
-            'city': forms.TextInput(attrs={'class': 'field__input'}),
-            'comment': forms.Textarea(attrs={'class': 'field__input', 'rows': 4}),
+            'name': forms.TextInput(attrs={
+                'class': 'field__input',
+                'autocomplete': 'name',
+                'autocapitalize': 'words',
+                'minlength': '2',
+                'maxlength': '100',
+                'pattern': r"[A-Za-zА-Яа-яІіЇїЄєҐґ'’ \-]{2,100}",
+                'data-kind': 'name',
+            }),
+            'phone': forms.TelInput(attrs={
+                'class': 'field__input',
+                'autocomplete': 'tel',
+                'inputmode': 'tel',
+                'maxlength': '22',
+                'pattern': r'[0-9+() \-]{9,22}',
+                'data-kind': 'phone',
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'field__input',
+                'autocomplete': 'email',
+                'inputmode': 'email',
+                'maxlength': '254',
+                'data-kind': 'email',
+            }),
+            'city': forms.TextInput(attrs={
+                'class': 'field__input',
+                'autocomplete': 'address-level2',
+                'autocapitalize': 'words',
+                'minlength': '2',
+                'maxlength': '120',
+                'pattern': r"[A-Za-zА-Яа-яІіЇїЄєҐґ'’ .,()\-]{2,120}",
+                'data-kind': 'place',
+            }),
+            'comment': forms.Textarea(attrs={
+                'class': 'field__input',
+                'rows': 4,
+                'maxlength': '1000',
+                'data-kind': 'comment',
+            }),
         }
+
+    def clean_name(self):
+        return clean_person_name(self.cleaned_data.get('name'), label='Імʼя')
+
+    def clean_phone(self):
+        return normalize_ua_phone(self.cleaned_data.get('phone'))
+
+    def clean_city(self):
+        return clean_place(self.cleaned_data.get('city'), max_len=120)
+
+    def clean_comment(self):
+        return clean_limited_text(
+            self.cleaned_data.get('comment'), max_len=1000, label='Коментар',
+        )
 
 
 def _page_crumbs(page):
@@ -79,7 +145,11 @@ def instructions(request, page):
     })
 
 
+@rate_limit()
 def dropshipping(request, page):
+    if request.method == 'POST' and honeypot_tripped(request.POST):
+        messages.success(request, 'Заявку надіслано. Ми звʼяжемось з вами.')
+        return redirect('pages:static', slug=page.slug)
     form = DropshippingForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         form.save()
@@ -92,13 +162,17 @@ def dropshipping(request, page):
     })
 
 
+@rate_limit()
 def newsletter_subscribe(request):
     if request.method != 'POST':
         return redirect('core:home')
+    if honeypot_tripped(request.POST):
+        messages.success(request, 'Дякуємо за підписку! Знижку надіслано на email.')
+        return redirect(safe_next(request))
     form = NewsletterForm(request.POST)
     if form.is_valid():
         form.save()
         messages.success(request, 'Дякуємо за підписку! Знижку надіслано на email.')
     else:
         messages.error(request, 'Цей email вже підписаний або некоректний.')
-    return redirect(request.META.get('HTTP_REFERER', '/'))
+    return redirect(safe_next(request))

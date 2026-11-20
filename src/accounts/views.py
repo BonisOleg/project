@@ -6,10 +6,14 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 
 from src.catalog.models import Product
 from src.core.breadcrumbs import make_breadcrumbs
+from src.core.forms_security import honeypot_tripped
+from src.core.rate_limit import rate_limit
+from src.core.safe_redirect import safe_next
 
 from .forms import AddressForm, LoginForm, PasswordResetForm, ProfileForm, RegisterForm
 from .models import DeliveryAddress
@@ -36,6 +40,7 @@ class OyraLogoutView(LogoutView):
     next_page = 'core:home'
 
 
+@method_decorator(rate_limit(), name='dispatch')
 class OyraPasswordResetView(PasswordResetView):
     template_name = 'accounts/password_reset.html'
     form_class = PasswordResetForm
@@ -50,6 +55,11 @@ class OyraPasswordResetView(PasswordResetView):
         )
         return ctx
 
+    def post(self, request, *args, **kwargs):
+        if honeypot_tripped(request.POST):
+            return redirect(self.success_url)
+        return super().post(request, *args, **kwargs)
+
 
 class OyraPasswordResetDoneView(PasswordResetDoneView):
     template_name = 'accounts/password_reset_done.html'
@@ -63,9 +73,13 @@ class OyraPasswordResetDoneView(PasswordResetDoneView):
         return ctx
 
 
+@rate_limit()
 def register(request):
     if request.user.is_authenticated:
         return redirect('accounts:cabinet')
+    if request.method == 'POST' and honeypot_tripped(request.POST):
+        messages.success(request, 'Реєстрація успішна')
+        return redirect('core:home')
     form = RegisterForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         if not form.cleaned_data.get('agree'):
@@ -113,7 +127,7 @@ def wishlist_add(request, product_id):
     get_object_or_404(Product, pk=product_id, is_active=True)
     WishlistService(request).toggle(product_id)
     messages.success(request, 'Додано в обране')
-    return redirect(request.META.get('HTTP_REFERER', '/'))
+    return redirect(safe_next(request))
 
 
 @require_POST
@@ -140,7 +154,7 @@ def wishlist_toggle(request, product_id):
         return HttpResponse(btn_html + count_html)
 
     messages.success(request, 'Додано в обране' if wished else 'Видалено з обраного')
-    return redirect(request.META.get('HTTP_REFERER', '/'))
+    return redirect(safe_next(request))
 
 
 @require_POST
